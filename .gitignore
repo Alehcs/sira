@@ -26,3 +26,6 @@ data/raw/
 .DS_Store
 .vscode/
 .idea/
+
+# Local runtime state (cost log, caches)
+var/

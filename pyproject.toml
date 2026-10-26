@@ -1,0 +1,29 @@
+[project]
+name = "sira"
+version = "0.1.0"
+description = "An AI astronomer built to be proven wrong in public."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.50",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+sira = "sira.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sira"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
