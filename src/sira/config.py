@@ -26,6 +26,9 @@ CAPS = {
     "baseten": Caps(_money("SIRA_CAP_BASETEN_TOTAL", 90), _money("SIRA_CAP_BASETEN_DAILY", 15)),
 }
 
+# daily caps for expensive models, on top of the provider caps
+MODEL_CAPS = {"muse-wonder-1.0": _money("SIRA_CAP_WONDER_DAILY", 3)}
+
 KEYS = {
     "meta": os.getenv("MODEL_API_KEY", ""),
     "baseten": os.getenv("BASETEN_API_KEY", ""),

@@ -40,3 +40,11 @@ def test_total_cap_blocks(tmp_path):
     m.record("meta", "muse-wonder-1.0", Usage(input_tokens=10_000, output_tokens=1_000))
     with pytest.raises(BudgetExceeded, match="total"):
         m.check("meta")
+
+
+def test_wonder_daily_cap_blocks_only_wonder(tmp_path):
+    m = CostMeter(tmp_path / "c.jsonl", {"meta": Caps(100, 100)}, {"muse-wonder-1.0": 0.05})
+    m.record("meta", "muse-wonder-1.0", Usage(input_tokens=10_000, output_tokens=1_000))
+    with pytest.raises(BudgetExceeded, match="muse-wonder"):
+        m.check("meta", "muse-wonder-1.0")
+    m.check("meta", "muse-spark-1.3")

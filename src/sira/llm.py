@@ -33,7 +33,7 @@ class LLM:
         return self.clients[provider]
 
     def chat(self, provider: str, model: str, messages: list[dict], tag: str = "", **kwargs):
-        self.meter.check(provider)
+        self.meter.check(provider, model)
         response = self._client(provider).chat.completions.create(model=model, messages=messages, **kwargs)
         self.meter.record(provider, model, usage_of(response), tag)
         return response

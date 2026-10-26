@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import CAPS, COST_LOG, Caps
+from .config import CAPS, COST_LOG, MODEL_CAPS, Caps
 
 # USD per million tokens: (input, cached input, output)
 PRICES = {
@@ -37,28 +37,31 @@ def price(provider: str, model: str, usage: Usage) -> float:
 
 
 class CostMeter:
-    def __init__(self, path: Path = COST_LOG, caps: dict[str, Caps] = CAPS):
+    def __init__(self, path: Path = COST_LOG, caps: dict[str, Caps] = CAPS, model_caps: dict[str, float] = MODEL_CAPS):
         self.path = Path(path)
         self.caps = caps
+        self.model_caps = model_caps
 
     def _rows(self) -> list[dict]:
         if not self.path.exists():
             return []
         return [json.loads(line) for line in self.path.read_text().splitlines() if line.strip()]
 
-    def spent(self, provider: str, day: str | None = None) -> float:
-        rows = [r for r in self._rows() if r["provider"] == provider]
+    def spent(self, provider: str, day: str | None = None, model: str | None = None) -> float:
+        rows = [r for r in self._rows() if r["provider"] == provider and (model is None or r["model"] == model)]
         if day:
             rows = [r for r in rows if r["time"].startswith(day)]
         return sum(r["usd"] for r in rows)
 
-    def check(self, provider: str) -> None:
+    def check(self, provider: str, model: str | None = None) -> None:
         caps = self.caps[provider]
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if self.spent(provider) >= caps.total:
             raise BudgetExceeded(f"{provider}: total cap ${caps.total} reached")
         if self.spent(provider, today) >= caps.daily:
             raise BudgetExceeded(f"{provider}: daily cap ${caps.daily} reached")
+        if model in self.model_caps and self.spent(provider, today, model) >= self.model_caps[model]:
+            raise BudgetExceeded(f"{model}: daily cap ${self.model_caps[model]} reached")
 
     def record(self, provider: str, model: str, usage: Usage, tag: str = "") -> float:
         usd = price(provider, model, usage)
