@@ -1,0 +1,13 @@
+{
+ "source": "57 dev-split supernovae from the snapshot",
+ "ztfg": {
+  "drift": -0.02543,
+  "spread": 0.10957,
+  "pairs": 1177
+ },
+ "ztfr": {
+  "drift": -0.01053,
+  "spread": 0.06421,
+  "pairs": 2961
+ }
+}

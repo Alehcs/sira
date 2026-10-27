@@ -63,8 +63,13 @@ def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: flo
             problems.append(f"outcome {o['seq']}: measured before its bet was sealed")
             continue
         value = p.get("flux") if p["kind"] == "det" else p.get("limit")
-        redo = live.measure(live._at(bet["forecasts"], p["mjd"], p["band"]), p["kind"], value, p.get("flux_err", 0.0))
-        if not all(_close(redo[k], p.get(k)) for k in redo):
+        args = (p["kind"], value, p.get("flux_err", 0.0))
+        redo = live.measure(live._at(bet["forecasts"], p["mjd"], p["band"]), *args)
+        rivals = {name: live.measure(live._at(grid, p["mjd"], p["band"]), *args)
+                  for name, grid in bet.get("baselines", {}).items()}
+        given = p.get("baselines", {})
+        if not all(_close(redo[k], p.get(k)) for k in redo) or set(rivals) != set(given) or not all(
+                _close(v, given[name].get(k)) for name, score in rivals.items() for k, v in score.items()):
             problems.append(f"outcome {o['seq']}: its score does not follow from the sealed forecast")
     answers = [e for e in entries if e["kind"] == "answer"]
     for a in answers:

@@ -32,6 +32,9 @@ def test_forecast_mixes_hypotheses_and_keeps_room_for_none_of_them():
     assert result["weights"]["null"] == live.NULL_WEIGHT
     assert len(result["forecasts"]) == len(live.DAYS) * len(live.BANDS)
     assert 0 <= result["question"]["p_yes"] <= 1
+    assert all(f["eig"] >= 0 for f in result["forecasts"])
+    assert result["decision"]["action"] in ("wait", "think", "confident")
+    assert len(result["baselines"]["b0"]) == len(result["forecasts"])
 
 
 def test_forecasts_are_interpolated_between_days():
@@ -60,7 +63,14 @@ def test_only_measurements_after_the_seal_are_scored(tmp_path, monkeypatch):
     assert all(np.isfinite(o["payload"]["log_score"]) and 0 <= o["payload"]["pit"] <= 1 for o in outcomes)
     assert [e["kind"] for e in new].count("answer") == 1
     assert live.resolve(book, None, 61346.0) == []
+    assert all("b0" in o["payload"]["baselines"] for o in outcomes)
     assert verify_module.verify(tmp_path)["passes"]
+    lines = book.path.read_text().splitlines()
+    forged = __import__("json").loads(lines[2])
+    forged["payload"]["baselines"]["b0"]["log_score"] = -0.001
+    book.path.write_text("\n".join(lines[:2]) + "\n")
+    book.append("outcome", forged["payload"])
+    assert any("does not follow" in p for p in verify_module.verify(tmp_path)["problems"])
 
 
 def test_a_hypothesis_with_a_broken_forecast_is_dropped(monkeypatch):

@@ -72,3 +72,11 @@ def test_a_point_after_the_cut_is_refused(fit):
     ph = flare()
     with pytest.raises(FutureData):
         fit(Phot(ph.t, ph.band, ph.flux, ph.err, ph.t.max() - 1))
+
+
+def test_b0_fades_with_the_climate_and_grows_less_sure():
+    from sira.baselines import b0
+    view = {"photometry": [{"mjd": 100.0, "band": "ztfr", "kind": "det", "flux": 100.0}]}
+    table = {"ztfr": {"drift": -0.02, "spread": 0.1}}
+    near, far = b0(view, np.array([101.0, 105.0]), np.array(["ztfr", "ztfr"]), table)
+    assert far[0][2] < near[0][2] < 100.5 and far[0][3] > near[0][3] > 0

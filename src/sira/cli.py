@@ -94,6 +94,14 @@ def verify(args) -> None:
         raise SystemExit(1)
 
 
+def climate(args) -> None:
+    from .baselines import CLIMATE, climatology
+
+    table = climatology(Path(args.root))
+    CLIMATE.write_text(json.dumps(table, indent=1) + "\n")
+    print(json.dumps(table, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -130,6 +138,9 @@ def main() -> None:
     proof.add_argument("--since", nargs="*", default=[], metavar="SEQ:HASH",
                        help="heads seen before, which must still be in the ledger")
     proof.set_defaults(run=verify)
+    clim = sub.add_parser("climatology", help="rebuild the B0 table from the snapshot's dev half")
+    clim.add_argument("--root", default="data/snapshot")
+    clim.set_defaults(run=climate)
     args = parser.parse_args()
     args.run(args)
 

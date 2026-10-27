@@ -5,7 +5,8 @@ import numpy as np
 from astropy.time import Time
 from scipy import stats
 
-from . import alerce, catalogs, photometry, scoring
+from . import alerce, baselines, catalogs, photometry, scoring
+from .decide import decide, eig
 from .fetch import client
 from .firewall import as_of
 from .ledger import Ledger, mjd, upgrade, utcnow
@@ -76,9 +77,15 @@ def forecast(view: dict, ebv: float) -> dict | None:
     if not kept:
         return None
     weights = {k: (weights[k] * (1 - NULL_WEIGHT) / kept if k != "null" else NULL_WEIGHT) for k in preds}
-    forecasts = [{"mjd": round(float(t[i]), 4), "band": str(band[i]),
-                  "parts": [[k, round(weights[k], 4), round(float(mu[i]), 2), round(float(sd[i]), 2)]
-                            for k, (mu, sd) in preds.items()]} for i in range(len(t))]
+    err = float(np.median(ph.err))
+    forecasts = []
+    for i in range(len(t)):
+        parts = [[k, round(weights[k], 4), round(float(mu[i]), 2), round(float(sd[i]), 2)] for k, (mu, sd) in preds.items()]
+        forecasts.append({"mjd": round(float(t[i]), 4), "band": str(band[i]), "parts": parts,
+                          "eig": round(eig(parts, err), 3)})
+    # B0, climatology, is sealed beside SIRA and graded by the same rule
+    rival = [{"mjd": f["mjd"], "band": f["band"], "parts": p}
+             for f, p in zip(forecasts, baselines.b0(view, t, band))]
     r = [x for x in view["photometry"] if x["kind"] == "det" and x["band"] == "ztfr" and x["flux"] > 0]
     question = None
     if r:
@@ -89,7 +96,8 @@ def forecast(view: dict, ebv: float) -> dict | None:
         question = {"text": "Brighter in r three days from now than at its last r detection?", "band": "ztfr",
                     "mjd": at["mjd"], "reference": round(last, 2), "p_yes": round(float(p), 3)}
     return {"n_points": len(ph), "weights": {k: round(v, 4) for k, v in weights.items()},
-            "killed": killed, "forecasts": forecasts, "question": question}
+            "killed": killed, "forecasts": forecasts, "question": question,
+            "decision": decide(forecasts, weights, t0), "baselines": {"b0": rival}}
 
 
 def _at(forecasts: list[dict], t: float, band: str) -> list | None:
@@ -156,9 +164,14 @@ def resolve(ledger: Ledger, c, now: float) -> list[dict]:
             parts = _at(bet["forecasts"], r["mjd"], r["band"])
             # rounded first, so anyone can recompute the score from the ledger alone
             if r["kind"] == "det":
-                score = measure(parts, "det", round(r["flux"], 2), round(r["flux_err"], 2))
+                args = ("det", round(r["flux"], 2), round(r["flux_err"], 2))
             else:
-                score = measure(parts, "limit", round(photometry.flux(r["mag"], 0)[0], 2))
+                args = ("limit", round(photometry.flux(r["mag"], 0)[0], 2))
+            score = measure(parts, *args)
+            rivals = {name: measure(_at(grid, r["mjd"], r["band"]), *args)
+                      for name, grid in bet.get("baselines", {}).items()}
+            if rivals:
+                score["baselines"] = rivals
             new.append(ledger.append("outcome", {"bet": bet["bet"], "object": bet["object"], "mjd": r["mjd"],
                                                  "band": r["band"], "kind": r["kind"]} | score))
         q = bet.get("question")
