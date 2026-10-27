@@ -27,7 +27,10 @@ jobs:
       - name: Verify the ledger before adding to it
         run: uv run sira verify --ledger ledger
       - name: Score open bets, place new ones, anchor
-        run: uv run sira live --ledger ledger
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+        run: uv run sira live --ledger ledger --team --night-usd 4
       - name: Verify again, against the archive
         run: uv run sira verify --ledger ledger --online
       - name: Publish
