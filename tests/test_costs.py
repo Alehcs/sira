@@ -48,3 +48,11 @@ def test_wonder_daily_cap_blocks_only_wonder(tmp_path):
     with pytest.raises(BudgetExceeded, match="muse-wonder"):
         m.check("meta", "muse-wonder-1.0")
     m.check("meta", "muse-spark-1.3")
+
+
+def test_no_daily_cap_means_only_the_total_counts(tmp_path):
+    caps = {"meta": Caps(1.0), "baseten": Caps(1.0)}
+    m = CostMeter(tmp_path / "c.jsonl", caps, {})
+    m.record("meta", "muse-spark-1.3", Usage(input_tokens=400_000))
+    m.check("meta")
+    assert m.left("meta") == pytest.approx(0.5)

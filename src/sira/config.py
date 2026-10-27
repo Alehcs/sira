@@ -11,23 +11,24 @@ BASETEN_URL = "https://inference.baseten.co/v1"
 SPARK_OPEN = "meta-models/muse-spark-open-1026"
 
 
-def _money(name: str, default: float) -> float:
-    return float(os.getenv(name, default))
+def _money(name: str, default: float | None = None) -> float | None:
+    value = os.getenv(name, "")
+    return float(value) if value.strip() else default
 
 
 @dataclass(frozen=True)
 class Caps:
     total: float
-    daily: float
+    daily: float | None = None
 
 
 CAPS = {
-    "meta": Caps(_money("SIRA_CAP_META_TOTAL", 140), _money("SIRA_CAP_META_DAILY", 15)),
-    "baseten": Caps(_money("SIRA_CAP_BASETEN_TOTAL", 90), _money("SIRA_CAP_BASETEN_DAILY", 15)),
+    "meta": Caps(_money("SIRA_CAP_META_TOTAL", 150), _money("SIRA_CAP_META_DAILY")),
+    "baseten": Caps(_money("SIRA_CAP_BASETEN_TOTAL", 100), _money("SIRA_CAP_BASETEN_DAILY")),
 }
 
-# daily caps for expensive models, on top of the provider caps
-MODEL_CAPS = {"muse-wonder-1.0": _money("SIRA_CAP_WONDER_DAILY", 3)}
+# optional daily caps for expensive models, on top of the provider caps
+MODEL_CAPS = {m: cap for m, cap in {"muse-wonder-1.0": _money("SIRA_CAP_WONDER_DAILY")}.items() if cap is not None}
 
 KEYS = {
     "meta": os.getenv("MODEL_API_KEY", ""),

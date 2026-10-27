@@ -58,7 +58,7 @@ class CostMeter:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if self.spent(provider) >= caps.total:
             raise BudgetExceeded(f"{provider}: total cap ${caps.total} reached")
-        if self.spent(provider, today) >= caps.daily:
+        if caps.daily is not None and self.spent(provider, today) >= caps.daily:
             raise BudgetExceeded(f"{provider}: daily cap ${caps.daily} reached")
         if model in self.model_caps and self.spent(provider, today, model) >= self.model_caps[model]:
             raise BudgetExceeded(f"{model}: daily cap ${self.model_caps[model]} reached")
@@ -80,7 +80,8 @@ class CostMeter:
 
     def left(self, provider: str) -> float:
         caps, today = self.caps[provider], datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        return min(caps.total - self.spent(provider), caps.daily - self.spent(provider, today))
+        left = caps.total - self.spent(provider)
+        return left if caps.daily is None else min(left, caps.daily - self.spent(provider, today))
 
     def summary(self) -> dict[str, dict[str, float]]:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
