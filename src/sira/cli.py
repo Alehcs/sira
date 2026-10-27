@@ -65,6 +65,19 @@ def probe(args) -> None:
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
 
 
+def accept(args) -> None:
+    from . import accept as checks
+
+    if args.test == "at3":
+        import pytest
+        raise SystemExit(pytest.main(["-q", "tests/test_firewall.py", "tests/test_models.py"]))
+    result = getattr(checks, args.test)(args.root)
+    out = Path("var") / f"accept-{args.test}.json"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(json.dumps(result, indent=1))
+    print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -87,6 +100,10 @@ def main() -> None:
     memory = sub.add_parser("probe", help="measure what a model remembers about known transients")
     memory.add_argument("--model", choices=["spark", "wonder"], default="spark")
     memory.set_defaults(run=probe)
+    check = sub.add_parser("accept", help="run an acceptance test from the roadmap")
+    check.add_argument("test", choices=["at1", "at2", "at3"])
+    check.add_argument("--root", default="data/snapshot")
+    check.set_defaults(run=accept)
     args = parser.parse_args()
     args.run(args)
 
