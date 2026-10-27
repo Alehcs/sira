@@ -3,7 +3,6 @@ import io
 
 import numpy as np
 from astropy.io import fits
-from astropy.stats import mad_std
 from astropy.visualization import ZScaleInterval
 from PIL import Image
 
@@ -39,25 +38,11 @@ def to_png(data: bytes, upscale: int = 4) -> bytes:
     return _png(_stretch(img, *ZSCALE.get_limits(img)), upscale)
 
 
-def flux_ratio(science: np.ndarray, template: np.ndarray, nsigma: float = 5) -> float | None:
-    above = template - np.median(template)
-    bright = above > nsigma * mad_std(template)
-    if bright.sum() < 20:
-        return None
-    return float((science - np.median(science))[bright].sum() / above[bright].sum())
-
-
 def matched(science: bytes, template: bytes, difference: bytes, common: bool = True, upscale: int = 4) -> list[bytes]:
     sci, tpl, dif = load(science), load(template), load(difference)
     lo, hi = ZSCALE.get_limits(sci)
-    if common:
-        # template moved to the science flux scale, so an unchanged star looks the same in both
-        ratio = flux_ratio(sci, tpl)
-        if ratio is None or ratio <= 0:
-            ratio = mad_std(sci) / (mad_std(tpl) or 1.0)
-        tpl, t_lo, t_hi = np.median(sci) + ratio * (tpl - np.median(tpl)), lo, hi
-    else:
-        t_lo, t_hi = ZSCALE.get_limits(tpl)
+    # ZTF cutouts already share sky level and flux scale, so the science stretch serves the template too
+    t_lo, t_hi = (lo, hi) if common else ZSCALE.get_limits(tpl)
     # difference centred on its background: grey is no change, white brighter, black fainter
     mid = np.median(dif)
     d_lo, d_hi = ZSCALE.get_limits(dif)

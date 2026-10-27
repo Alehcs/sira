@@ -38,8 +38,11 @@ def check_reader(args) -> None:
     from .reader import check
 
     extra = {"reasoning_effort": args.effort} if args.effort else {}
-    result = check(args.root, args.model, few_shot=not args.zero_shot, workers=args.workers, **extra)
-    out = Path("var") / f"reader-{args.model}{'-' + args.effort if args.effort else ''}{'-zero' if args.zero_shot else ''}.json"
+    result = check(args.root, args.protocol, args.cases, args.model, few_shot=not args.zero_shot,
+                   workers=args.workers, **extra)
+    name = "-".join([args.model, args.protocol, args.cases] + ([args.effort] if args.effort else [])
+                    + (["zero"] if args.zero_shot else []))
+    out = Path("var") / f"reader-{name}.json"
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(result, indent=1))
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
@@ -57,6 +60,8 @@ def main() -> None:
     snap.set_defaults(run=snapshot)
     reader = sub.add_parser("check-reader", help="score the image reader on the real/bogus valset")
     reader.add_argument("--model", choices=["spark-open", "spark"], default="spark-open")
+    reader.add_argument("--protocol", choices=["v1", "v1-symmetric", "v1-matched", "v2"], default="v2")
+    reader.add_argument("--cases", choices=["dev", "valset", "holdout"], default="dev")
     reader.add_argument("--effort", help="reasoning effort, overrides the model default")
     reader.add_argument("--zero-shot", action="store_true")
     reader.add_argument("--root", default="data/snapshot")
