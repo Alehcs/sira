@@ -80,3 +80,20 @@ def test_budget_rejects_a_supernova_placed_too_far_away():
     assert models.budget(near)["possible"] and 0.3 < models.budget(near)["nickel"] < 1.2
     assert not models.budget(far)["possible"]
     assert models.budget(fit("lens", ph)) is None
+
+
+def test_every_hypothesis_fits_and_forecasts_through_one_entry_point():
+    m = salt3()
+    ph, _ = sampled(lambda t, b: m.bandflux(b, t, zp=23.9, zpsys="ab"), 59985, 60040, 2, seed=6)
+    for kind in models.HYPOTHESES:
+        f = fit(kind, ph)
+        mu, sd = f.predict([60045.0, 60060.0], ["ztfg", "ztfr"])
+        assert f.model == kind and f.seconds < 5 and np.all(np.isfinite(mu)) and np.all(sd > 0), kind
+
+
+def test_forecast_past_the_template_keeps_fading_with_growing_doubt():
+    m = salt3()
+    ph, _ = sampled(lambda t, b: m.bandflux(b, t, zp=23.9, zpsys="ab"), 59985, 60040, 2, seed=7)
+    mu, sd = fit("ia", ph).predict([60045.0, 60070.0, 60100.0], ["ztfr"] * 3)
+    assert mu[0] > mu[1] > mu[2] > 0
+    assert sd[1] / mu[1] < sd[2] / mu[2]

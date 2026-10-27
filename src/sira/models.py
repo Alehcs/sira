@@ -19,6 +19,7 @@ TEMPLATES = {
     "ibc": ("nugent-sn1bc", {}, (0.005, 0.2)),
     "iin": ("nugent-sn2n", {}, (0.005, 0.3)),
 }
+HYPOTHESES = (*TEMPLATES, "lens", "tde", "agn", "null", "instrument")
 _Z = np.linspace(0.003, 0.4, 4000)
 _MU = Planck18.distmod(_Z).value
 
@@ -132,10 +133,32 @@ def fit_template(kind: str, ph: Phot, mwebv: float = 0.0, z: float | None = None
 
     def flux(p, t, band):
         fitted.set(**dict(zip(names, p)))
-        return np.asarray(fitted.bandflux(band, t, zp=ZP, zpsys="ab"), dtype=float)
+        end, out = fitted.maxtime(), np.zeros(len(t))
+        inside = t <= end
+        if inside.any():
+            out[inside] = fitted.bandflux(band[inside], t[inside], zp=ZP, zpsys="ab")
+        if (~inside).any():
+            # past the end of the template, keep fading at its last rate, linear in magnitude
+            b = band[~inside]
+            last = fitted.bandflux(b, np.full(len(b), end - 0.5), zp=ZP, zpsys="ab")
+            before = fitted.bandflux(b, np.full(len(b), end - 10.5), zp=ZP, zpsys="ab")
+            rate = np.nan_to_num(np.log(np.clip(last, 1e-12, None) / np.clip(before, 1e-12, None)) / 10)
+            out[~inside] = last * np.exp(np.minimum(rate, 0) * (t[~inside] - end + 0.5))
+        return out
+
+    def noise(t, band):
+        # an extrapolated forecast loses 3% of its flux in certainty per day
+        beyond = np.clip(t - fitted.maxtime(), 0, None)
+        return (0.03 * beyond * flux(x, t, band)) ** 2
 
     return Fit(kind, names, x, cov, flux, float(res.chisq), int(res.ndof), time.time() - start,
-               {"source": source, "mwebv": mwebv, "model": fitted, "inflate": inflate})
+               {"source": source, "mwebv": mwebv, "model": fitted, "inflate": inflate}, noise)
+
+
+def _cov(jac: np.ndarray, lo: np.ndarray, hi: np.ndarray, inflate: float) -> np.ndarray:
+    # bounds act as a weak prior: what the data cannot see stays uncertain instead of breaking the inverse
+    _, sv, vt = np.linalg.svd(np.vstack([jac, np.diag(2 / (hi - lo))]), full_matrices=False)
+    return (vt.T / sv ** 2) @ vt * inflate
 
 
 def _magnification(u: np.ndarray) -> np.ndarray:
@@ -170,16 +193,20 @@ def fit_lens(ph: Phot) -> Fit | None:
     if best is None:
         return None
     chi2, ndof = float(2 * best.cost), max(len(ph) - len(best.x), 1)
-    cov = np.linalg.pinv(best.jac.T @ best.jac) * max(1.0, chi2 / ndof)
+    cov = _cov(best.jac, lo, hi, max(1.0, chi2 / ndof))
     names = ["t0", "u0", "tE"] + [f"fs_{b}" for b in bands]
     return Fit("lens", names, best.x, cov, flux, chi2, ndof, time.time() - start)
 
 
 def fit(kind: str, ph: Phot, mwebv: float = 0.0) -> Fit | None:
-    if kind == "lens":
-        return fit_lens(ph)
+    from . import baselines, nuclear
+
+    others = {"lens": fit_lens, "tde": nuclear.fit_tde, "agn": nuclear.fit_agn,
+              "null": baselines.fit_null, "instrument": baselines.fit_instrument}
     if kind in TEMPLATES:
         return fit_template(kind, ph, mwebv)
+    if kind in others:
+        return others[kind](ph)
     raise KeyError(f"unknown hypothesis {kind}")
 
 
