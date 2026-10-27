@@ -17,6 +17,7 @@ ROLES = {
     "senior": ("meta", WONDER, "max"),
     "forecaster": ("meta", SPARK, "minimal"),
     "leverrier": ("meta", WONDER, "high"),
+    "llm_only": ("meta", SPARK, "high"),
 }
 LAB = ("You work in SIRA, a lab of AI astronomers that bets in public on how cosmic transients will evolve and "
        "lets the sky grade every bet. You never see names, survey IDs, dates or exact positions: times are days "
@@ -177,3 +178,26 @@ def bits(parts: list, reference: float, direction: str, chance) -> float:
     w = sum(p[1] for p in parts)
     each = [(p[1] / w, chance([p], reference, direction)) for p in parts]
     return max(h(sum(wk * pk for wk, pk in each)) - sum(wk * h(pk) for wk, pk in each), 0.0)
+
+
+def llm_only(llm: LLM, case: dict, days: tuple, bands: tuple) -> tuple[dict, dict]:
+    # B2: the same model with no physics code, to show what the lab adds
+    task = ("You forecast a transient's brightness from its light curve alone, with no physics code to help. Give "
+            "your best estimate and one-sigma uncertainty of the flux in microjansky for each band and day ahead, and "
+            "the probability of each class. "
+            'JSON: {"classes": {"ia": p, "ii": p, "ibc": p, "tde": p, "other": p}, '
+            '"forecast": [{"band": "g" or "r", "day": number, "flux": number, "sd": number}]}')
+    payload = {"case": case, "days_ahead": list(days), "bands": [b[-1] for b in bands]}
+    data, event = call(llm, "llm_only", task, payload, case["case"])
+    raw = data.get("classes") if isinstance(data.get("classes"), dict) else {}
+    classes = {k: max(float(raw.get(k, 0) or 0), 0.0) for k in ("ia", "ii", "ibc", "tde", "other")}
+    total = sum(classes.values()) or 1.0
+    points = {}
+    for item in data.get("forecast") if isinstance(data.get("forecast"), list) else []:
+        try:
+            key = ("ztf" + str(item["band"]).strip().lower()[-1], int(round(float(item["day"]))))
+            points[key] = (float(item["flux"]), max(abs(float(item["sd"])), 1.0))
+        except (KeyError, TypeError, ValueError):
+            continue
+    out = {"classes": {k: round(v / total, 4) for k, v in classes.items()}, "points": points}
+    return out, event | {"decision": f"forecasts {len(points)} points alone"}

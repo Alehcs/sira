@@ -196,9 +196,11 @@ def settle(question: dict, outcomes: list[dict]) -> dict:
     return {"mjd": first["mjd"], "yes": bool(yes), "p_yes": p, "log_score": round(math.log(p if yes else 1 - p), 4)}
 
 
-def resolve(ledger: Ledger, c, now: float) -> list[dict]:
+def resolve(ledger: Ledger, c, now: float, look=None, seals: dict | None = None, when: str | None = None) -> list[dict]:
+    # look(oid, now) gives the object as known now; a replay passes the snapshot and its own seal times
+    look = look or (lambda oid, t: observe(c, oid, t))
     entries = ledger.entries()
-    seals = _seals(entries)
+    seals = _seals(entries) if seals is None else seals
     done = {(e["payload"]["bet"], e["payload"]["mjd"], e["payload"]["band"]) for e in entries if e["kind"] == "outcome"}
     answered = {(e["payload"]["bet"], e["payload"].get("which", "question")) for e in entries if e["kind"] == "answer"}
     new = []
@@ -208,7 +210,7 @@ def resolve(ledger: Ledger, c, now: float) -> list[dict]:
         # never score a bet that was not sealed, and stop once its window has closed
         if sealed is None or now > last_day + 3:
             continue
-        rows = [r for r in observe(c, bet["object"], now)["photometry"]
+        rows = [r for r in look(bet["object"], now)["photometry"]
                 if r["band"] in BANDS and sealed < r["mjd"] <= last_day + 1]
         for r in rows:
             if (bet["bet"], r["mjd"], r["band"]) in done:
@@ -225,14 +227,14 @@ def resolve(ledger: Ledger, c, now: float) -> list[dict]:
             if rivals:
                 score["baselines"] = rivals
             new.append(ledger.append("outcome", {"bet": bet["bet"], "object": bet["object"], "mjd": r["mjd"],
-                                                 "band": r["band"], "kind": r["kind"]} | score))
+                                                 "band": r["band"], "kind": r["kind"]} | score, now=when))
         for which in QUESTIONS:
             q = bet.get(which)
             if q and (bet["bet"], which) not in answered and now > q["mjd"] + 1.5:
                 mine = [e["payload"] for e in ledger.entries()
                         if e["kind"] == "outcome" and e["payload"]["bet"] == bet["bet"]]
                 new.append(ledger.append("answer", {"bet": bet["bet"], "object": bet["object"], "which": which}
-                                         | settle(q, mine)))
+                                         | settle(q, mine), now=when))
     return new
 
 

@@ -151,7 +151,7 @@ def tally(outcomes: list[dict]) -> dict:
     return {"n": len(outcomes), "log10_e": round(log_e / math.log(10), 3), "verdict": word}
 
 
-def judge(ledger, now: float) -> list[dict]:
+def judge(ledger, now: float, when: str | None = None) -> list[dict]:
     # e-values stay valid when watched every night, so a verdict is sealed as soon as it is decisive
     entries, new = ledger.entries(), []
     judged = {e["payload"]["bet"] for e in entries if e["kind"] == "verdict"}
@@ -161,13 +161,15 @@ def judge(ledger, now: float) -> list[dict]:
         mine = [e["payload"] for e in entries if e["kind"] == "outcome" and e["payload"]["bet"] == bet["bet"]]
         result = tally(mine)
         if result["verdict"] != "abstain" or now > max(f["mjd"] for f in bet["forecasts"]) + 3:
-            new.append(ledger.append("verdict", {"bet": bet["bet"], "object": bet["object"]} | result))
+            new.append(ledger.append("verdict", {"bet": bet["bet"], "object": bet["object"]} | result, now=when))
     return new
 
 
-def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NIGHT) -> tuple[list[dict], float]:
+def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NIGHT, look=None,
+          when: str | None = None) -> tuple[list[dict], float]:
     from .live import observe, seen
 
+    look = look or (lambda oid, t: as_of(observe(c, oid, t), t))
     entries = ledger.entries()
     flagged = {e["payload"]["bet"] for e in entries if e["kind"] == "surprise"}
     bets = {e["payload"]["bet"]: e["payload"] for e in entries if e["kind"] == "bet"}
@@ -185,9 +187,9 @@ def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NI
         if not s["surprised"]:
             continue
         leaps += 1
-        new.append(ledger.append("surprise", {"bet": bet_id, "object": bet["object"]} | s))
-        view = as_of(observe(c, bet["object"], now), now)
-        ebv = catalogs.mw_ebv(c, view["ra"], view["dec"])
+        new.append(ledger.append("surprise", {"bet": bet_id, "object": bet["object"]} | s, now=when))
+        view = look(bet["object"], now)
+        ebv = catalogs.mw_ebv(c or client(), view["ra"], view["dec"])
         old = physics(view, ebv, days=LEAP_DAYS)
         if not old:
             continue
@@ -201,7 +203,7 @@ def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NI
         ph = phot(view)
         null, fitted = fit("null", ph), []
         for proposal, event in results:
-            new.append(ledger.append("event", event | {"object": bet["object"]}))
+            new.append(ledger.append("event", event | {"object": bet["object"]}, now=when))
             spent += event["cost_usd"]
             try:
                 f = dsl.fit_spec({"components": proposal["components"]}, ph, proposal["name"] or proposal["leap"])
@@ -227,5 +229,5 @@ def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NI
             "made_at": round(now, 5), "rule": LEAP_RULE, "parent": bet_id, "chosen": proposal["name"],
             "forecasts": grid, "baselines": {"old": assemble(old, old["weights"], view)["forecasts"]},
             "proposals": [p for p, _ in results], "seen": seen(view),
-            "cost_usd": round(sum(e["cost_usd"] for _, e in results), 5)}))
+            "cost_usd": round(sum(e["cost_usd"] for _, e in results), 5)}, now=when))
     return new, spent

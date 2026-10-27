@@ -123,6 +123,19 @@ def moments(args) -> None:
         print(f"[{m['kind']}] {m['time']} {m['object']}: {m['text']}")
 
 
+def replay(args) -> None:
+    from .llm import LLM
+    from .replay import pick, report, run
+
+    root, out = Path(args.root), Path(args.out)
+    if not args.report_only:
+        oids = args.oids or pick(root, args.split, args.per)
+        print(json.dumps(run(root, oids, out, LLM(), args.workers), indent=1))
+    result = report(root, out)
+    (out / "report.json").write_text(json.dumps(result, indent=1))
+    print(json.dumps(result, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -174,6 +187,15 @@ def main() -> None:
     best.add_argument("--ledger", default="ledger")
     best.add_argument("--top", type=int, default=20)
     best.set_defaults(run=moments)
+    rerun = sub.add_parser("replay", help="replay snapshot cases through the whole lab, with B0, B1 and B2 beside it")
+    rerun.add_argument("oids", nargs="*")
+    rerun.add_argument("--root", default="data/snapshot")
+    rerun.add_argument("--split", default="dev", choices=["dev", "test"])
+    rerun.add_argument("--per", type=int, default=2, help="cases per category when no ids are given")
+    rerun.add_argument("--out", default="var/replay/dev")
+    rerun.add_argument("--workers", type=int, default=4)
+    rerun.add_argument("--report-only", action="store_true")
+    rerun.set_defaults(run=replay)
     args = parser.parse_args()
     args.run(args)
 
