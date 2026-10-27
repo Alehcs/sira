@@ -161,7 +161,7 @@ def _bogus_set(pool, oids: list[str], out: Path, folder: str, failures: list, ch
     return found
 
 
-def _git_sha() -> str | None:
+def code_version() -> str | None:
     git = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout.strip()
     try:
         return git("rev-parse", "HEAD") + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
@@ -177,7 +177,7 @@ def _safe(fn, *args):
 
 
 def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS, log=print) -> dict:
-    out, code = Path(out), _git_sha()
+    out, code = Path(out), code_version()
     failures, checksums, objects, truth = [], {}, [], {}
     c = client()
     with client(verify=False) as bts_client:  # BTS serves a self-signed certificate

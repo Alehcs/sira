@@ -1,5 +1,6 @@
 import argparse
 import json
+from pathlib import Path
 
 from .costs import CostMeter
 from .llm import LLM, SPARK, WONDER
@@ -33,6 +34,17 @@ def snapshot(args) -> None:
     print(f"failures: {len(m['failures'])}")
 
 
+def check_reader(args) -> None:
+    from .reader import check
+
+    extra = {"reasoning_effort": args.effort} if args.effort else {}
+    result = check(args.root, args.model, few_shot=not args.zero_shot, workers=args.workers, **extra)
+    out = Path("var") / f"reader-{args.model}{'-' + args.effort if args.effort else ''}{'-zero' if args.zero_shot else ''}.json"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(json.dumps(result, indent=1))
+    print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -43,6 +55,13 @@ def main() -> None:
     snap.add_argument("--workers", type=int, default=8)
     snap.add_argument("--no-rubin", action="store_true")
     snap.set_defaults(run=snapshot)
+    reader = sub.add_parser("check-reader", help="score the image reader on the real/bogus valset")
+    reader.add_argument("--model", choices=["spark-open", "spark"], default="spark-open")
+    reader.add_argument("--effort", help="reasoning effort, overrides the model default")
+    reader.add_argument("--zero-shot", action="store_true")
+    reader.add_argument("--root", default="data/snapshot")
+    reader.add_argument("--workers", type=int, default=8)
+    reader.set_defaults(run=check_reader)
     args = parser.parse_args()
     args.run(args)
 
