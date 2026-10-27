@@ -19,7 +19,13 @@ Everything in this repository was written during the hackathon, starting October
 
 ## Data and acknowledgments
 
-SIRA uses only public data. This project makes use of data from the Zwicky Transient Facility (ZTF), the ALeRCE broker, and the ZTF Bright Transient Survey. Full acknowledgments will be listed here as data sources are integrated.
+SIRA uses only public data:
+
+- Alerts, light curves and image stamps from the [Zwicky Transient Facility](https://www.ztf.caltech.edu) (ZTF), served by the [ALeRCE](https://alerce.science) broker.
+- Classifications and redshifts from the [ZTF Bright Transient Survey](https://sites.astro.caltech.edu/ztf/bts/explorer.php).
+- Rubin Observatory alerts through the [Fink](https://fink-broker.org) broker.
+- Host galaxy images from the [DESI Legacy Imaging Surveys](https://www.legacysurvey.org/acknowledgment/).
+- The ZTF DR17 microlensing catalog by R. Zhai ([doi:10.5281/zenodo.13829674](https://doi.org/10.5281/zenodo.13829674), [arXiv:2311.18627](https://arxiv.org/abs/2311.18627)).
 
 ## License
 
