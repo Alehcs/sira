@@ -12,7 +12,7 @@ from . import team as lab
 from .fetch import client
 from .firewall import as_of
 from .ledger import Ledger
-from .leverrier import judge, watch
+from .leverrier import adopted, judge, watch
 from .live import BANDS, DAYS, assemble, physics, resolve, seen
 from .probe import coarse
 from .snapshot import code_version
@@ -48,20 +48,11 @@ def pick(root: Path, split: str, per: int) -> list[str]:
     return out
 
 
-def _b2_grid(points: dict, view: dict, t: np.ndarray, band: np.ndarray) -> list[dict]:
-    dets = [r for r in view["photometry"] if r["kind"] == "det" and r["flux"] > 0]
-    grid = []
-    for when, b in zip(t, band):
-        day = int(round(when - view["as_of"]))
-        if (b, day) in points:
-            mu, sd = points[(b, day)]
-        else:
-            # a point the model left out falls back on persistence, with wide doubt
-            own = [r for r in dets if r["band"] == b] or dets
-            mu = max(own, key=lambda r: r["mjd"])["flux"]
-            sd = 0.5 * abs(mu) + 1
-        grid.append({"mjd": round(float(when), 4), "band": str(b), "parts": [["llm", 1.0, round(mu, 2), round(sd, 2)]]})
-    return grid
+def _classes(weights: dict) -> dict:
+    out = dict.fromkeys(CLASSES, 0.0)
+    for k, v in weights.items():
+        out[k if k in out else "other"] += v
+    return out
 
 
 def case(root: Path, oid: str, out: Path, llm, gap: int = len(DAYS), n: int = CHECKS) -> dict:
@@ -81,25 +72,21 @@ def case(root: Path, oid: str, out: Path, llm, gap: int = len(DAYS), n: int = CH
             resolve(book, c, t, look=look, seals=seals, when=when)
             judge(book, t, when=when)
             watch(book, c, llm, t, pool, f"{t:.2f}", look=look, when=when)
-            view = look(oid, t)
-            sira, events = lab.investigate(llm, view, ebv, pool, [lab.SENIOR_PER_NIGHT], readings.get(oid))
+            view, known = look(oid, t), adopted(book.entries(), oid)
+            alone = pool.submit(agents.llm_only, llm, lab.case_of(view), DAYS, BANDS)
+            sira, events = lab.investigate(llm, view, ebv, pool, [lab.SENIOR_PER_NIGHT], readings.get(oid), known, alone)
             for e in events:
                 book.append("event", e | {"object": oid}, now=when)
-            b2, event = agents.llm_only(llm, lab.case_of(view), DAYS, BANDS)
-            book.append("event", event | {"object": oid}, now=when)
             if sira is None:
-                # the team dropped it; the physics bet stands in, so every forecaster faces the same data
-                phys = physics(view, ebv)
+                # the team dropped it; its physics and the model's forecast stand in, so every rival faces the same data
+                phys = physics(view, ebv, adopted=known)
                 if phys is None:
                     continue
-                sira = assemble(phys, phys["weights"], view)
-                sira["baselines"]["b1"] = sira["forecasts"]
+                sira = assemble(phys, phys["weights"], view, None if alone.exception() else alone.result()[0])
+                sira["baselines"]["b1"] = assemble(phys, phys["weights"], view)["forecasts"]
                 sira["dropped"] = True
-            t_grid = np.array([f["mjd"] for f in sira["forecasts"]])
-            b_grid = np.array([f["band"] for f in sira["forecasts"]])
-            sira["baselines"]["b2"] = _b2_grid(b2["points"], view, t_grid, b_grid)
             book.append("bet", {"bet": f"{oid}-{t:.2f}", "object": oid, "model": "v1", "made_at": t,
-                                "b2_classes": b2["classes"], "seen": seen(view)} | sira, now=when)
+                                "seen": seen(view)} | sira, now=when)
         if times:
             end = times[-1] + gap + 1
             seals = {e["payload"]["bet"]: e["payload"]["made_at"] for e in book.entries() if e["kind"] == "bet"}
@@ -149,10 +136,9 @@ def report(root: Path, out: Path) -> dict:
                 counts["bets"] += 1
                 counts["dropped"] += bool(p.get("dropped"))
                 true = klass(truth[p["object"]]["type"])
-                weights = {("other" if k == "null" else k): v for k, v in p["weights"].items()}
-                b1 = p["baselines"]["b1"][0]["parts"]
-                b1_weights = {("other" if q[0] == "null" else q[0]): q[1] for q in b1}
-                for name, w in (("sira", weights), ("b1", b1_weights), ("b2", p.get("b2_classes", {}))):
+                b1 = _classes({q[0]: q[1] for q in p["baselines"]["b1"][0]["parts"]})
+                for name, w in (("sira", _classes(p.get("classes") or p["weights"])), ("b1", b1),
+                                ("b2", p.get("b2_classes", {}))):
                     loss[name].append(-math.log(max(w.get(true, 0.0) / (sum(w.values()) or 1), 1e-3)))
             elif e["kind"] == "outcome" and bets.get(p["bet"], {}).get("model") != "leverrier":
                 rivals = p.get("baselines", {})

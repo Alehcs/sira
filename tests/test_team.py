@@ -125,3 +125,27 @@ def test_random_audits_send_plain_bets_to_the_senior(monkeypatch):
     answers = ANSWERS | {"senior reviewer": {"favoured": "ia", "missing": None, "question": "q1", "factors": {}, "why": "ok"}}
     bet, events = run(answers, [1])
     assert bet["director"]["audit"] and "senior" in [e["role"] for e in events]
+
+
+ALONE = {"no physics code to help": {"classes": {"ia": 0.7, "ii": 0.3},
+                                     "forecast": [{"band": "r", "day": 1, "flux": 40, "sd": 5}]}}
+
+
+def test_the_models_own_forecast_joins_the_bet():
+    obj, _ = sn_object()
+    view, llm = as_of(obj, NOW), reply(ANSWERS | ALONE)
+    with ThreadPoolExecutor(4) as pool:
+        alone = pool.submit(agents.llm_only, llm, team.case_of(view), (1, 2, 3, 4, 5), ("ztfg", "ztfr"))
+        bet, events = team.investigate(llm, view, 0.02, pool, [0], alone=alone)
+    assert set(bet["baselines"]) == {"b0", "b1", "b2"} and "llm_only" in [e["role"] for e in events]
+    assert all(f["parts"][-1][0] == "llm" for f in bet["forecasts"]) and bet["b2_classes"]["ia"] == 0.7
+
+
+def test_a_failed_forecast_leaves_the_physics_alone():
+    from concurrent.futures import Future
+    obj, _ = sn_object()
+    alone = Future()
+    alone.set_exception(TimeoutError("no reply"))
+    with ThreadPoolExecutor(4) as pool:
+        bet, _ = team.investigate(reply(ANSWERS), as_of(obj, NOW), 0.02, pool, [0], alone=alone)
+    assert set(bet["baselines"]) == {"b0", "b1"} and all(p[0] != "llm" for f in bet["forecasts"] for p in f["parts"])

@@ -67,7 +67,8 @@ def _questions(sira: dict, theories: list[dict], now: float) -> list[dict]:
         return {"id": qid, "text": f"{word} than {reference:g} microjansky in {band[-1]} {day} days from now?",
                 "band": band, "mjd": at["mjd"], "reference": reference, "direction": direction,
                 "p_yes": round(chance(at["parts"], reference, direction), 3),
-                "bits": round(agents.bits(at["parts"], reference, direction, chance), 3), "source": source}
+                "bits": round(agents.bits([p for p in at["parts"] if p[0] != "llm"], reference, direction, chance), 3),
+                "source": source}
 
     out = []
     q = sira["question"]
@@ -80,10 +81,22 @@ def _questions(sira: dict, theories: list[dict], now: float) -> list[dict]:
     return out
 
 
-def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict | None = None) -> tuple[dict | None, list[dict]]:
-    phys = physics(view, ebv)
-    if not phys:
+def _mind(alone) -> tuple[dict | None, list[dict]]:
+    # the model's own forecast, made beside the team; if that call failed, SIRA bets on its physics alone
+    if alone is None:
         return None, []
+    try:
+        out, event = alone.result()
+    except Exception:
+        return None, []
+    return out, [event]
+
+
+def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict | None = None,
+                adopted: dict | None = None, alone=None) -> tuple[dict | None, list[dict]]:
+    phys = physics(view, ebv, adopted=adopted)
+    if not phys:
+        return None, _mind(alone)[1]
     case, now = case_of(view) | ({"stamp_reader": reading} if reading else {}), view["as_of"]
     top = sorted(phys["summaries"], key=lambda k: -phys["summaries"][k]["weight"])[:3]
     jobs = [("t", k) for k in top] + [("s", lens) for lens in agents.LENSES]
@@ -91,7 +104,8 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
                             else agents.skeptic(llm, j[1], case, phys), jobs))
     theories = [r[0] for r in results[:len(top)]]
     lenses = {lens: r[0] for lens, r in zip(agents.LENSES, results[len(top):])}
-    events = [r[1] for r in results]
+    mind, events = _mind(alone)
+    events += [r[1] for r in results]
     if lenses["instrument"]["artifact"] and lenses["instrument"]["confidence"] >= ARTIFACT:
         return None, events + [{"role": "lab", "case": case["case"], "cost_usd": 0.0,
                                 "decision": "dropped: the instrument skeptic calls it an artifact"}]
@@ -99,7 +113,7 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
     for item in lenses["physics"]["implausible"]:
         if item["hypothesis"] in weights and item["hypothesis"] != "null":
             weights[item["hypothesis"]] *= DOUBTED
-    b1, sira = assemble(phys, phys["weights"], view), assemble(phys, weights, view)
+    b1, sira = assemble(phys, phys["weights"], view), assemble(phys, weights, view, mind)
     questions = _questions(sira, theories, now)
     if not questions:
         return None, events
@@ -119,7 +133,7 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
         for k, factor in review["factors"].items():
             if k in weights:
                 weights[k] *= factor
-        sira = assemble(phys, weights, view)
+        sira = assemble(phys, weights, view, mind)
         questions = _questions(sira, theories, now)
         choice = choice | {"question": review["question"] if review["question"] in {q["id"] for q in questions}
                            else choice["question"], "senior": review, "audit": audit}
@@ -129,7 +143,7 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
     memory = lenses["memory"]
     return sira | {
         "risky": picked if picked["id"] != "q0" else None, "wording": words,
-        "baselines": {"b0": sira["baselines"]["b0"], "b1": b1["forecasts"]},
+        "baselines": sira["baselines"] | {"b1": b1["forecasts"]},
         "theories": theories, "skeptics": lenses, "director": choice,
         "remembered": bool(memory["recognised"] and memory["confidence"] >= REMEMBERED),
         "team": {"calls": len(events), "cost_usd": round(sum(e["cost_usd"] for e in events), 4)},

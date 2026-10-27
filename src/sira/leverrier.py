@@ -151,6 +151,26 @@ def tally(outcomes: list[dict]) -> dict:
     return {"n": len(outcomes), "log10_e": round(log_e / math.log(10), 3), "verdict": word}
 
 
+def pits(outcomes: list[dict], forecast: str | None = None) -> list[float]:
+    # a surprise judged on the physics alone reads B1's scores; otherwise the sealed forecast's own
+    rows = [o.get("baselines", {}).get(forecast, {}) for o in outcomes] if forecast else outcomes
+    return [r["pit"] for r in rows if r.get("pit") is not None]
+
+
+def adopted(entries: list[dict], oid: str) -> dict | None:
+    # a model that won its sealed test on this object joins the hypotheses of every later bet on it
+    leaps = {e["payload"]["bet"]: e["payload"] for e in entries
+             if e["kind"] == "bet" and e["payload"].get("model") == "leverrier"}
+    for e in reversed(entries):
+        p = e["payload"]
+        if e["kind"] == "verdict" and p["object"] == oid and p["verdict"] == "neptune" and p["bet"] in leaps:
+            chosen = [q for q in leaps[p["bet"]]["proposals"] if q.get("bic") is not None and q.get("components")]
+            if chosen:
+                best = min(chosen, key=lambda q: q["bic"])
+                return {"name": best["name"], "components": best["components"]}
+    return None
+
+
 def judge(ledger, now: float, when: str | None = None) -> list[dict]:
     # e-values stay valid when watched every night, so a verdict is sealed as soon as it is decisive
     entries, new = ledger.entries(), []
@@ -183,19 +203,22 @@ def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NI
         # a leap bet is judged by its e-value, never re-examined
         if leaps >= limit or bet is None or bet.get("model") == "leverrier" or bet_id in flagged:
             continue
-        s = surprised([o["pit"] for o in mine])
+        # surprise is a failure of the physics, so a pooled bet is judged by its physics alone
+        forecast = "b1" if "b1" in bet.get("baselines", {}) else None
+        s = surprised(pits(mine, forecast))
         if not s["surprised"]:
             continue
         leaps += 1
-        new.append(ledger.append("surprise", {"bet": bet_id, "object": bet["object"]} | s, now=when))
+        new.append(ledger.append("surprise", {"bet": bet_id, "object": bet["object"]} | s
+                                 | ({"forecast": forecast} if forecast else {}), now=when))
         view = look(bet["object"], now)
         ebv = catalogs.mw_ebv(c or client(), view["ra"], view["dec"])
-        old = physics(view, ebv, days=LEAP_DAYS)
+        old = physics(view, ebv, days=LEAP_DAYS, adopted=adopted(entries, bet["object"]))
         if not old:
             continue
-        misses = []
+        misses, theory = [], bet["baselines"][forecast] if forecast else bet["forecasts"]
         for o in mine:
-            mean, spread = scoring.mix_moments(_at(bet["forecasts"], o["mjd"], o["band"]))
+            mean, spread = scoring.mix_moments(_at(theory, o["mjd"], o["band"]))
             misses.append({"day": round(o["mjd"] - now, 2), "band": o["band"][-1], "observed": o["flux"],
                            "forecast": round(mean, 1), "spread": round(spread, 1)})
         case_now = blind(view)

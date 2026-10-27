@@ -5,18 +5,20 @@ import numpy as np
 from astropy.time import Time
 from scipy import stats
 
-from . import alerce, baselines, catalogs, photometry, scoring
+from . import alerce, baselines, catalogs, dsl, photometry, scoring
 from .decide import decide, eig
 from .fetch import client
 from .firewall import as_of
 from .ledger import Ledger, mjd, upgrade, utcnow
-from .models import budget, fit, phot
+from .models import fit, phot
 
 HYPOTHESES = ("ia", "ii", "ibc", "tde")
 # share of each class among bright supernova candidates (Perley et al. 2020, ZTF Bright Transient Survey), rounded
 PRIORS = {"ia": 0.70, "ii": 0.20, "ibc": 0.08, "tde": 0.02}
 TEMPLATES_WITH_T0 = ("ia", "ii", "ibc", "iin")
 NULL_WEIGHT = 0.1  # "none of the above" always keeps this share of every forecast
+LLM_SHARE = 0.5  # in a team bet the model's own forecast carries half the weight, the physics the other half
+ADOPTED = 0.5  # prior of a model that won its sealed test on this object, level with all the classes together
 DAYS = (1, 2, 3, 4, 5)
 BANDS = ("ztfg", "ztfr")
 RULE = ("Every ZTF g or r measurement taken after this bet was sealed, up to one day past its last forecast, "
@@ -59,13 +61,17 @@ def _summary(f, as_of: float) -> dict:
     peak = f.params.get("t0") if f.model in TEMPLATES_WITH_T0 else f.params.get("t_peak")
     if peak is not None:
         out["peak_day"] = round(peak - as_of, 1)
-    b = budget(f)
-    if b:
-        out |= {"peak_abs_mag": b["peak_abs_mag"], "nickel_msun": b["nickel"]}
     return out
 
 
-def physics(view: dict, ebv: float, days: tuple = DAYS) -> dict | None:
+def _adopt(adopted: dict, ph):
+    try:
+        return dsl.fit_spec({"components": adopted["components"]}, ph, "adopted")
+    except ValueError:
+        return None
+
+
+def physics(view: dict, ebv: float, days: tuple = DAYS, adopted: dict | None = None) -> dict | None:
     ph = phot(view)
     if len(ph) < 5:
         return None
@@ -73,12 +79,11 @@ def physics(view: dict, ebv: float, days: tuple = DAYS) -> dict | None:
     t = np.array([t0 + d for d in days for _ in BANDS])
     band = np.array([b for _ in days for b in BANDS])
     fits, killed, preds = {}, {}, {}
-    for kind in HYPOTHESES:
-        f = fit(kind, ph, ebv)
-        b = budget(f) if f else None
-        if b and not b["possible"]:
-            killed[kind] = f"needs {b['nickel']} solar masses of nickel in {b['ejecta']} of ejecta"
-            continue
+    # with no measured redshift the fit picks one freely, so how bright a class would be rules nothing out
+    candidates = {kind: fit(kind, ph, ebv) for kind in HYPOTHESES}
+    if adopted:
+        candidates["adopted"] = _adopt(adopted, ph)
+    for kind, f in candidates.items():
         if f is None:
             continue
         mu, sd = f.predict(t, band)
@@ -90,15 +95,41 @@ def physics(view: dict, ebv: float, days: tuple = DAYS) -> dict | None:
         return None
     bic = {k: f.chi2 + len(f.x) * math.log(len(ph)) for k, f in fits.items()}
     # the data's verdict times how common each class is among bright transients
-    raw = {k: PRIORS[k] * math.exp(-(v - min(bic.values())) / 2) for k, v in bic.items()}
+    raw = {k: PRIORS.get(k, ADOPTED) * math.exp(-(v - min(bic.values())) / 2) for k, v in bic.items()}
     total = sum(raw.values())
     weights = {k: (1 - NULL_WEIGHT) * v / total for k, v in raw.items() if v / total > 1e-3}
     weights["null"] = NULL_WEIGHT
     preds = {k: preds[k] for k in weights if k != "null"} | {"null": fit("null", ph).predict(t, band)}
     # every hypothesis still standing gets a voice, however small its weight
-    return {"ph": ph, "t": t, "band": band, "preds": preds, "weights": weights, "killed": killed,
-            "summaries": {k: _summary(f, t0) | {"weight": round((1 - NULL_WEIGHT) * raw[k] / total, 4)}
-                          for k, f in fits.items()}}
+    summaries = {k: _summary(f, t0) | {"weight": round((1 - NULL_WEIGHT) * raw[k] / total, 4)} for k, f in fits.items()}
+    if "adopted" in summaries:
+        summaries["adopted"]["model"] = adopted["name"]
+    return {"ph": ph, "t": t, "band": band, "preds": preds, "weights": weights, "killed": killed, "summaries": summaries}
+
+
+def llm_grid(points: dict, view: dict, t: np.ndarray, band: np.ndarray) -> list[tuple[float, float]]:
+    dets = [r for r in view["photometry"] if r["kind"] == "det" and r["flux"] > 0]
+    out = []
+    for when, b in zip(t, band):
+        day = int(round(when - view["as_of"]))
+        if (b, day) in points:
+            out.append(points[(b, day)])
+            continue
+        # a point the model left out falls back on persistence, with wide doubt
+        own = [r for r in dets if r["band"] == b] or dets
+        mu = max(own, key=lambda r: r["mjd"])["flux"]
+        out.append((mu, 0.5 * abs(mu) + 1))
+    return out
+
+
+def _classes(weights: dict, alone: dict) -> dict:
+    # what SIRA believes the object is: half the physics, half the model's own guess
+    mine = dict.fromkeys(("ia", "ii", "ibc", "tde", "other"), 0.0)
+    for k, v in weights.items():
+        mine[k if k in mine else "other"] += v
+    total = sum(alone.values())
+    return {k: round((1 - LLM_SHARE) * v + LLM_SHARE * (alone.get(k, 0.0) / total if total else v), 4)
+            for k, v in mine.items()}
 
 
 def seen(view: dict) -> list[list]:
@@ -120,19 +151,28 @@ def chance(parts: list, reference: float, direction: str) -> float:
     return min(max(float(above if direction == "above" else 1 - above), 0.001), 0.999)
 
 
-def assemble(phys: dict, weights: dict, view: dict) -> dict:
+def assemble(phys: dict, weights: dict, view: dict, mind: dict | None = None) -> dict:
+    # mind is the model's own forecast (B2); given one, every point pools it with the physics
     t, band, preds, t0 = phys["t"], phys["band"], phys["preds"], view["as_of"]
     total = sum(weights.values())
     weights = {k: v / total for k, v in weights.items() if k in preds}
     err = float(np.median(phys["ph"].err))
+    own = llm_grid(mind["points"], view, t, band) if mind else None
+    share = LLM_SHARE if own else 0.0
     forecasts = []
     for i in range(len(t)):
-        parts = [[k, round(weights[k], 4), round(float(preds[k][0][i]), 2), round(float(preds[k][1][i]), 2)]
-                 for k in weights]
+        theory = [[k, round(weights[k], 4), round(float(preds[k][0][i]), 2), round(float(preds[k][1][i]), 2)]
+                  for k in weights]
+        parts = [[k, round(w * (1 - share), 4), mu, sd] for k, w, mu, sd in theory]
+        if own:
+            parts.append(["llm", share, round(float(own[i][0]), 2), round(float(own[i][1]), 2)])
+        # information is about the hypotheses, which the model's own forecast is not
         forecasts.append({"mjd": round(float(t[i]), 4), "band": str(band[i]), "parts": parts,
-                          "eig": round(eig(parts, err), 3)})
+                          "eig": round(eig(theory, err), 3)})
     # B0, climatology, is sealed beside SIRA and graded by the same rule
-    rival = [{"mjd": f["mjd"], "band": f["band"], "parts": p} for f, p in zip(forecasts, baselines.b0(view, t, band))]
+    rivals = {"b0": [{"mjd": f["mjd"], "band": f["band"], "parts": p} for f, p in zip(forecasts, baselines.b0(view, t, band))]}
+    if own:
+        rivals["b2"] = [{"mjd": f["mjd"], "band": f["band"], "parts": [["llm", 1.0, *f["parts"][-1][2:]]]} for f in forecasts]
     r = [x for x in view["photometry"] if x["kind"] == "det" and x["band"] == "ztfr" and x["flux"] > 0]
     question = None
     if r:
@@ -141,13 +181,16 @@ def assemble(phys: dict, weights: dict, view: dict) -> dict:
         question = {"text": "Brighter in r three days from now than at its last r detection?", "band": "ztfr",
                     "mjd": at["mjd"], "reference": round(last, 2), "direction": "above",
                     "p_yes": round(chance(at["parts"], last, "above"), 3)}
-    return {"n_points": len(phys["ph"]), "weights": {k: round(v, 4) for k, v in weights.items()},
-            "killed": phys["killed"], "forecasts": forecasts, "question": question,
-            "decision": decide(forecasts, weights, t0), "baselines": {"b0": rival}}
+    out = {"n_points": len(phys["ph"]), "weights": {k: round(v, 4) for k, v in weights.items()},
+           "killed": phys["killed"], "forecasts": forecasts, "question": question,
+           "decision": decide(forecasts, weights, t0), "baselines": rivals}
+    if own:
+        out |= {"classes": _classes(weights, mind["classes"]), "b2_classes": mind["classes"]}
+    return out
 
 
-def forecast(view: dict, ebv: float) -> dict | None:
-    phys = physics(view, ebv)
+def forecast(view: dict, ebv: float, adopted: dict | None = None) -> dict | None:
+    phys = physics(view, ebv, adopted=adopted)
     return assemble(phys, phys["weights"], view) if phys else None
 
 
@@ -239,7 +282,7 @@ def resolve(ledger: Ledger, c, now: float, look=None, seals: dict | None = None,
 
 
 def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> dict:
-    from .leverrier import judge, watch
+    from .leverrier import adopted, judge, watch
 
     c, ledger, now = client(), Ledger(root), now_mjd()
     resolved = resolve(ledger, c, now)
@@ -259,7 +302,7 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
         for oid in candidates[:n]:
             try:
                 obj = observe(c, oid, now)
-                result = forecast(as_of(obj, now), catalogs.mw_ebv(c, obj["ra"], obj["dec"]))
+                result = forecast(as_of(obj, now), catalogs.mw_ebv(c, obj["ra"], obj["dec"]), adopted(ledger.entries(), oid))
                 if result:
                     result["seen"] = seen(as_of(obj, now))
             except Exception as e:
@@ -273,6 +316,7 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
     else:
         from concurrent.futures import ThreadPoolExecutor
 
+        from . import agents
         from . import team as lab
         from .llm import LLM
 
@@ -295,9 +339,11 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
                     skipped.append(f"{oid}: night budget spent")
                     continue
                 view = views[oid]
+                # the model's own forecast starts at once, beside the team, on the same blind case
+                alone = pool.submit(agents.llm_only, llm, lab.case_of(view), DAYS, BANDS)
                 try:
                     result, events = lab.investigate(llm, view, catalogs.mw_ebv(c, view["ra"], view["dec"]), pool, seniors,
-                                                     readings.get(oid))
+                                                     readings.get(oid), adopted(ledger.entries(), oid), alone)
                 except Exception as e:
                     skipped.append(f"{oid}: {type(e).__name__}")
                     continue

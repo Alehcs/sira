@@ -28,6 +28,7 @@ HYPOTHESES = {
     "ii": "a type II supernova, a hydrogen-rich massive star that collapsed",
     "ibc": "a type Ib/c supernova, a massive star stripped of its envelope",
     "tde": "a tidal disruption event, a star torn apart by a massive black hole",
+    "adopted": "the model this lab proposed for this very object, which then won a sealed test",
     "null": "none of the hypotheses above",
 }
 LENSES = ("instrument", "physics", "memory")
@@ -102,9 +103,10 @@ def skeptic(llm: LLM, lens: str, case: dict, phys: dict) -> tuple[dict, dict]:
                        "single-night spikes, flux jumping between nights faster than any explosion, detections "
                        "scattered around zero, or a light curve from a single night. "
                        'JSON: {"artifact": true or false, "confidence": number from 0 to 1, "why": "one sentence"}'),
-        "physics": ("You are the physics skeptic. Using only the numbers given (peak absolute magnitude, nickel mass, "
-                    "fitted redshift, colour, rise and decline), say which hypotheses are physically implausible and "
-                    "why. Be strict but fair; lack of data is not implausibility. "
+        "physics": ("You are the physics skeptic. Using only the numbers given (fitted redshift, colour, rise and "
+                    "decline), say which hypotheses are physically implausible and why. There is no measured distance, "
+                    "so the fitted redshift is loose and brightness alone rules nothing out. Be strict but fair; lack "
+                    "of data is not implausibility. "
                     'JSON: {"implausible": [{"hypothesis": "name", "why": "one sentence"}]}'),
         "memory": ("You are the memory skeptic. Do you recognise this specific event from what you have read? If you "
                    "truly remember it, name it and what you remember; if not, say so plainly. "

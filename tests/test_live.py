@@ -98,3 +98,35 @@ def test_without_keys_the_team_falls_back_to_physics(tmp_path, monkeypatch):
     monkeypatch.setattr(live, "upgrade", lambda root: None)
     result = live.run(tmp_path, team=True)
     assert result["bets"] == 0 and any("no API keys" in s for s in result["skipped"])
+
+
+def test_a_type_ia_is_not_ruled_out_by_brightness_without_a_distance():
+    # far too bright for its redshift, which the light curve alone cannot tell
+    m = sncosmo.Model(source="salt3")
+    m.set(z=0.04, t0=61337.75, x1=0.0, c=0.0)
+    m.set_source_peakabsmag(-21.5, "bessellb", "ab", cosmo=Planck18)
+    obj, _ = sn_object()
+    for r in obj["photometry"]:
+        r["flux"] = float(m.bandflux(r["band"], r["mjd"], zp=23.9, zpsys="ab"))
+        r["flux_err"] = 0.03 * r["flux"] + 2
+    result = live.forecast(as_of(obj, 61340.75), 0.02)
+    assert "ia" not in result["killed"] and result["weights"]["ia"] > 0.5
+
+
+def test_a_team_bet_pools_the_physics_with_the_models_own_forecast():
+    obj, _ = sn_object()
+    view = as_of(obj, 61340.75)
+    phys = live.physics(view, 0.02)
+    mind = {"classes": {"ia": 0.8, "other": 0.2}, "points": {("ztfr", 1): (123.0, 5.0)}}
+    alone, pooled = live.assemble(phys, phys["weights"], view), live.assemble(phys, phys["weights"], view, mind)
+    for a, b in zip(alone["forecasts"], pooled["forecasts"]):
+        assert b["parts"][-1][:2] == ["llm", live.LLM_SHARE] and b["eig"] == a["eig"]
+        assert sum(p[1] for p in b["parts"]) == pytest.approx(1, abs=1e-3)
+    day1 = next(f for f in pooled["forecasts"] if f["band"] == "ztfr" and f["mjd"] == pytest.approx(61341.75))
+    assert day1["parts"][-1][2:] == [123.0, 5.0]
+    q = pooled["question"]
+    at = next(f for f in pooled["forecasts"] if f["mjd"] == q["mjd"] and f["band"] == q["band"])
+    assert q["p_yes"] == round(live.chance(at["parts"], q["reference"], "above"), 3)
+    assert [f["parts"] for f in pooled["baselines"]["b2"]] == [[["llm", 1.0, *f["parts"][-1][2:]]] for f in pooled["forecasts"]]
+    assert sum(pooled["classes"].values()) == pytest.approx(1, abs=1e-3) and pooled["classes"]["ia"] >= 0.4
+    assert "b2" not in alone["baselines"] and "classes" not in alone

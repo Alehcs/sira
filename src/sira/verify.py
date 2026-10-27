@@ -88,7 +88,7 @@ def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: flo
         p = e["payload"]
         mine = [o["payload"] for o in outcomes if o["payload"]["bet"] == p["bet"] and o["seq"] < e["seq"]]
         if e["kind"] == "surprise":
-            redo = leverrier.surprised([o["pit"] for o in mine if o.get("pit") is not None])
+            redo = leverrier.surprised(leverrier.pits(mine, p.get("forecast")))
             if not redo["surprised"] or redo["misses"] != p.get("misses"):
                 problems.append(f"surprise {e['seq']}: the sealed outcomes do not show it")
         else:

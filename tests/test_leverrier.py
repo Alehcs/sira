@@ -141,3 +141,54 @@ def test_a_surprise_without_failing_outcomes_is_caught(tmp_path, sealed_by_time)
     book.anchor(None)
     book.append("surprise", {"bet": "b1", "object": "x", "n": 5, "misses": 5, "p_value": 1e-9, "surprised": True})
     assert any("do not show it" in p for p in verify.verify(tmp_path)["problems"])
+
+
+def test_a_proven_model_joins_later_bets_on_its_object():
+    from sira import live
+    from sira.firewall import as_of
+    lens = {"components": [{"type": "lens"}, {"type": "constant"}]}
+    leap = {"bet": "x-leap", "object": "ZTFlens", "model": "leverrier", "proposals": [
+        {"name": "lens", "bic": 30.0} | lens, {"name": "drift", "bic": 300.0, "components": [{"type": "trend"}]},
+        {"name": "broken", "bic": None, "components": []}]}
+    entries = [{"kind": "bet", "payload": leap},
+               {"kind": "verdict", "payload": {"bet": "x-leap", "object": "ZTFlens", "verdict": "vulcan"}}]
+    assert leverrier.adopted(entries, "ZTFlens") is None
+    entries[-1]["payload"]["verdict"] = "neptune"
+    assert leverrier.adopted(entries, "ZTFlens") == {"name": "lens"} | lens
+    assert leverrier.adopted(entries, "other") is None
+    view = as_of(lens_object(), 61365.0)
+    phys = live.physics(view, 0.1, adopted=leverrier.adopted(entries, "ZTFlens"))
+    assert max(phys["weights"], key=phys["weights"].get) == "adopted" and phys["summaries"]["adopted"]["model"] == "lens"
+
+
+def test_a_pooled_bet_is_surprised_by_its_physics(tmp_path, monkeypatch, sealed_by_time):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from sira import live, verify
+    from sira.ledger import Ledger
+
+    obj = lens_object()
+    monkeypatch.setattr(live, "observe", lambda c, oid, now: obj)
+    monkeypatch.setattr(leverrier.catalogs, "mw_ebv", lambda c, ra, dec: 0.1)
+    truth = {(r["mjd"], r["band"]): r["flux"] for r in obj["photometry"]}
+    days = [61341.0 + d for d in range(5)]
+    # the pooled forecast tracks the sky while its physics half misses it
+    pooled = [{"mjd": d, "band": b, "parts": [["llm", 1.0, truth[(d, b)], 0.1 * truth[(d, b)] + 2]]}
+              for d in days for b in ("ztfg", "ztfr")]
+    physics_half = [{"mjd": d, "band": b, "parts": [["ia", 1.0, 10.0, 1.0]]} for d in days for b in ("ztfg", "ztfr")]
+    book = Ledger(tmp_path)
+    book.append("bet", {"bet": "b1", "object": "ZTFlens", "made_at": 61340.74, "weights": {"ia": 1.0},
+                        "forecasts": pooled, "baselines": {"b1": physics_half}})
+    sealed_by_time["iso"] = iso(61340.75)
+    book.anchor(None)
+    live.resolve(book, None, 61346.0)
+    llm = reply({"Le Verrier": {"name": "unseen lens", "idea": "a lens", "predicts": "a peak", "components": [{"type": "lens"}]}})
+    with ThreadPoolExecutor(3) as pool:
+        new, _ = leverrier.watch(book, None, llm, 61346.0, pool, "s")
+    surprise = next(e for e in new if e["kind"] == "surprise")["payload"]
+    assert surprise["forecast"] == "b1" and surprise["surprised"]
+    sealed_by_time["iso"] = iso(61346.02)
+    book.anchor(None)
+    assert verify.verify(tmp_path)["passes"]
+    book.append("surprise", {k: v for k, v in surprise.items() if k != "forecast"})
+    assert any("do not show it" in p for p in verify.verify(tmp_path)["problems"])
