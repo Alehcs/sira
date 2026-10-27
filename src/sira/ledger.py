@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
+import numpy as np
 from astropy.time import Time
 
 from .snapshot import code_version
@@ -41,6 +42,9 @@ def _number(x) -> str:
 
 
 def jcs(v) -> str:
+    if isinstance(v, np.generic):
+        # numpy scalars print as np.float64(...); hash the plain number the file will hold
+        v = v.item()
     if v is None or isinstance(v, bool):
         return json.dumps(v)
     if isinstance(v, (int, float)):
@@ -90,6 +94,8 @@ class Ledger:
         entries = self.entries()
         entry = {"v": FORMAT, "seq": len(entries), "time": now or utcnow(), "kind": kind, "payload": payload,
                  "prev": entries[-1]["hash"] if entries else GENESIS}
+        # plain JSON values only, so the file holds exactly what was hashed
+        entry = json.loads(jcs(entry))
         entry["hash"] = digest(entry)
         self.root.mkdir(parents=True, exist_ok=True)
         with self.path.open("a") as f:

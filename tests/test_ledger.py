@@ -42,6 +42,16 @@ def test_numbers_hash_the_way_javascript_writes_them():
     assert jcs({"b": [True, None], "a": "é"}) == '{"a":"é","b":[true,null]}'
     with pytest.raises(ValueError):
         jcs(float("nan"))
+    import numpy as np
+    assert jcs({"f": np.float64(11.47), "i": np.int64(3), "b": np.bool_(True)}) == '{"b":true,"f":11.47,"i":3}'
+
+
+def test_numpy_values_keep_the_chain_whole(tmp_path):
+    import numpy as np
+    book = Ledger(tmp_path)
+    book.append("x", {"flux": np.float64(11.47), "n": np.int64(2)})
+    book.append("x", {"flux": np.float32(0.25)})
+    assert verify(tmp_path)["passes"]
 
 
 def test_format_one_entries_still_verify(tmp_path):
