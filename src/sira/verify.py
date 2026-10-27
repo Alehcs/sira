@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from . import live
+from . import leverrier, live
 from .ledger import GENESIS, Ledger, check_rfc3161, digest, mjd, ots_state
 
 HOUR = 1 / 24
@@ -83,13 +83,26 @@ def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: flo
         redo = live.settle(bet[which], mine)
         if not all(_close(v, p.get(k)) for k, v in redo.items()):
             problems.append(f"answer {a['seq']}: does not follow from the sealed question and the scored measurements")
+    # a surprise must follow from the outcomes sealed before it, a verdict from the scores of its bet
+    for e in (e for e in entries if e["kind"] in ("surprise", "verdict")):
+        p = e["payload"]
+        mine = [o["payload"] for o in outcomes if o["payload"]["bet"] == p["bet"] and o["seq"] < e["seq"]]
+        if e["kind"] == "surprise":
+            redo = leverrier.surprised([o["pit"] for o in mine if o.get("pit") is not None])
+            if not redo["surprised"] or redo["misses"] != p.get("misses"):
+                problems.append(f"surprise {e['seq']}: the sealed outcomes do not show it")
+        else:
+            redo = leverrier.tally(mine)
+            if redo["verdict"] != p.get("verdict") or not _close(redo["log10_e"], p.get("log10_e")):
+                problems.append(f"verdict {e['seq']}: does not follow from the scores of its bet")
     if online:
         problems += _online(c, bets, outcomes, now if now is not None else live.now_mjd())
     n_sealed = sum(b["_seal"] is not None for b in bets.values())
     return {"entries": len(entries), "head": f"{entries[-1]['seq']}:{entries[-1]['hash']}" if entries else None,
             "anchors": len(sealed), "bets": len(bets), "bets_sealed": n_sealed, "outcomes": len(outcomes),
-            "answers": len(answers), "ots": ots, "online": online, "problems": problems,
-            "passes": not problems and n_sealed == len(bets)}
+            "answers": len(answers), "surprises": sum(e["kind"] == "surprise" for e in entries),
+            "verdicts": sum(e["kind"] == "verdict" for e in entries), "ots": ots, "online": online,
+            "problems": problems, "passes": not problems and n_sealed == len(bets)}
 
 
 def _online(c, bets: dict, outcomes: list[dict], now: float) -> list[str]:

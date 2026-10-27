@@ -101,6 +101,19 @@ def physics(view: dict, ebv: float, days: tuple = DAYS) -> dict | None:
                           for k, f in fits.items()}}
 
 
+def seen(view: dict) -> list[list]:
+    # what the lab had in hand, kept so any night can be replayed exactly as it was
+    out = []
+    for r in view["photometry"]:
+        if r["band"] not in BANDS:
+            continue
+        if r["kind"] == "det":
+            out.append([round(r["mjd"], 5), r["band"], "det", round(r["flux"], 2), round(r["flux_err"], 2)])
+        else:
+            out.append([round(r["mjd"], 5), r["band"], "limit", round(photometry.flux(r["mag"], 0)[0], 2), None])
+    return out
+
+
 def chance(parts: list, reference: float, direction: str) -> float:
     w = sum(p[1] for p in parts)
     above = sum(p[1] * stats.norm.sf(reference, p[2], max(p[3], 1e-6)) for p in parts) / w
@@ -224,8 +237,11 @@ def resolve(ledger: Ledger, c, now: float) -> list[dict]:
 
 
 def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> dict:
+    from .leverrier import judge, watch
+
     c, ledger, now = client(), Ledger(root), now_mjd()
     resolved = resolve(ledger, c, now)
+    verdicts, leaps = judge(ledger, now), []
     recent = {e["payload"]["object"] for e in ledger.entries()
               if e["kind"] == "bet" and e["payload"]["made_at"] > now - RECENT}
     candidates = [o for o in active(c, now, 50) if o not in recent]
@@ -242,6 +258,8 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
             try:
                 obj = observe(c, oid, now)
                 result = forecast(as_of(obj, now), catalogs.mw_ebv(c, obj["ra"], obj["dec"]))
+                if result:
+                    result["seen"] = seen(as_of(obj, now))
             except Exception as e:
                 skipped.append(f"{oid}: {type(e).__name__}")
                 continue
@@ -263,6 +281,8 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
             except Exception as e:
                 skipped.append(f"{oid}: {type(e).__name__}")
         with ThreadPoolExecutor(8) as pool:
+            leaps, cost = watch(ledger, c, llm, now, pool, stamp)
+            spent += cost
             readings, events = lab.eyes(llm, c, views, pool)
             picked, more = lab.triage(llm, views, n, pool, readings)
             for e in events + more:
@@ -286,8 +306,10 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
                     skipped.append(f"{oid}: the team passed")
                     continue
                 made.append(ledger.append("bet", {"bet": f"{oid}-{stamp}", "object": oid, "model": "v1",
-                                                  "cost_usd": result["team"]["cost_usd"]} | head | result))
+                                                  "cost_usd": result["team"]["cost_usd"]} | head | result
+                                          | {"seen": seen(view)}))
     anchor = ledger.anchor(c)
     upgrade(root)
     return {"resolved": len(resolved), "bets": len(made), "skipped": skipped, "spent_usd": round(spent, 4),
-            "anchor": anchor["payload"] if anchor else None}
+            "verdicts": len(verdicts), "surprises": sum(e["kind"] == "surprise" for e in leaps),
+            "leap_bets": sum(e["kind"] == "bet" for e in leaps), "anchor": anchor["payload"] if anchor else None}

@@ -137,3 +137,95 @@ def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report) -> dict
                        "log10_e": best["against_old"]["log10_e"],
                        "margin_log10_e": round(best["against_old"]["log10_e"] - runner, 2) if runner is not None else None}
     return out
+
+
+LIVE_PER_NIGHT = 3  # live surprises studied per night, three Wonder calls each
+LEAP_DAYS = tuple(range(1, 11))  # a leap bet looks ten days ahead, so the sky can judge it within the week
+LEAP_RULE = ("A Le Verrier bet: the proposal and the lab's usual hypotheses, both fitted on the data up to the seal, "
+             "are scored on every later ZTF g or r measurement; the log e-value is the summed score difference.")
+
+
+def tally(outcomes: list[dict]) -> dict:
+    log_e = sum(o["log_score"] - o["baselines"]["old"]["log_score"] for o in outcomes)
+    word = "neptune" if log_e >= DECISIVE else "vulcan" if log_e <= -DECISIVE else "abstain"
+    return {"n": len(outcomes), "log10_e": round(log_e / math.log(10), 3), "verdict": word}
+
+
+def judge(ledger, now: float) -> list[dict]:
+    # e-values stay valid when watched every night, so a verdict is sealed as soon as it is decisive
+    entries, new = ledger.entries(), []
+    judged = {e["payload"]["bet"] for e in entries if e["kind"] == "verdict"}
+    for bet in (e["payload"] for e in entries if e["kind"] == "bet" and e["payload"].get("model") == "leverrier"):
+        if bet["bet"] in judged:
+            continue
+        mine = [e["payload"] for e in entries if e["kind"] == "outcome" and e["payload"]["bet"] == bet["bet"]]
+        result = tally(mine)
+        if result["verdict"] != "abstain" or now > max(f["mjd"] for f in bet["forecasts"]) + 3:
+            new.append(ledger.append("verdict", {"bet": bet["bet"], "object": bet["object"]} | result))
+    return new
+
+
+def watch(ledger, c, llm, now: float, pool, stamp: str, limit: int = LIVE_PER_NIGHT) -> tuple[list[dict], float]:
+    from .live import observe, seen
+
+    entries = ledger.entries()
+    flagged = {e["payload"]["bet"] for e in entries if e["kind"] == "surprise"}
+    bets = {e["payload"]["bet"]: e["payload"] for e in entries if e["kind"] == "bet"}
+    outcomes = {}
+    for e in entries:
+        if e["kind"] == "outcome" and e["payload"].get("pit") is not None:
+            outcomes.setdefault(e["payload"]["bet"], []).append(e["payload"])
+    new, spent, leaps = [], 0.0, 0
+    for bet_id, mine in outcomes.items():
+        bet = bets.get(bet_id)
+        # a leap bet is judged by its e-value, never re-examined
+        if leaps >= limit or bet is None or bet.get("model") == "leverrier" or bet_id in flagged:
+            continue
+        s = surprised([o["pit"] for o in mine])
+        if not s["surprised"]:
+            continue
+        leaps += 1
+        new.append(ledger.append("surprise", {"bet": bet_id, "object": bet["object"]} | s))
+        view = as_of(observe(c, bet["object"], now), now)
+        ebv = catalogs.mw_ebv(c, view["ra"], view["dec"])
+        old = physics(view, ebv, days=LEAP_DAYS)
+        if not old:
+            continue
+        misses = []
+        for o in mine:
+            mean, spread = scoring.mix_moments(_at(bet["forecasts"], o["mjd"], o["band"]))
+            misses.append({"day": round(o["mjd"] - now, 2), "band": o["band"][-1], "observed": o["flux"],
+                           "forecast": round(mean, 1), "spread": round(spread, 1)})
+        case_now = blind(view)
+        results = list(pool.map(lambda leap: propose(llm, leap, case_now, bet.get("weights", {}), misses), list(LEAPS)))
+        ph = phot(view)
+        null, fitted = fit("null", ph), []
+        for proposal, event in results:
+            new.append(ledger.append("event", event | {"object": bet["object"]}))
+            spent += event["cost_usd"]
+            try:
+                f = dsl.fit_spec({"components": proposal["components"]}, ph, proposal["name"] or proposal["leap"])
+            except ValueError:
+                f = None
+            proposal["bic"] = round(f.chi2 + len(f.x) * math.log(len(ph)), 2) if f else None
+            if f:
+                fitted.append((proposal, f))
+        if not fitted:
+            continue
+        # chosen on the past alone, by BIC; the future only judges
+        proposal, f = min(fitted, key=lambda pf: pf[0]["bic"])
+        t = np.array([now + d for d in LEAP_DAYS for _ in BANDS])
+        band = np.array([b for _ in LEAP_DAYS for b in BANDS])
+        (mu, sd), (nm, ns) = f.predict(t, band), null.predict(t, band)
+        if not (np.all(np.isfinite(mu)) and np.all(np.isfinite(sd))):
+            continue
+        grid = [{"mjd": round(float(t[i]), 4), "band": str(band[i]),
+                 "parts": [["new", 1 - NULL_SHARE, round(float(mu[i]), 2), round(float(sd[i]), 2)],
+                           ["null", NULL_SHARE, round(float(nm[i]), 2), round(float(ns[i]), 2)]]} for i in range(len(t))]
+        new.append(ledger.append("bet", {
+            "bet": f"{bet['object']}-leap-{stamp}", "object": bet["object"], "model": "leverrier", "role": "leverrier",
+            "made_at": round(now, 5), "rule": LEAP_RULE, "parent": bet_id, "chosen": proposal["name"],
+            "forecasts": grid, "baselines": {"old": assemble(old, old["weights"], view)["forecasts"]},
+            "proposals": [p for p, _ in results], "seen": seen(view),
+            "cost_usd": round(sum(e["cost_usd"] for _, e in results), 5)}))
+    return new, spent

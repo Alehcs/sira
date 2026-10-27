@@ -116,6 +116,13 @@ def leverrier(args) -> None:
     print(json.dumps({k: v for k, v in report.items() if k != "events"}, indent=2, default=str))
 
 
+def moments(args) -> None:
+    from .highlights import highlights
+
+    for m in highlights(Path(args.ledger), args.top):
+        print(f"[{m['kind']}] {m['time']} {m['object']}: {m['text']}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -163,6 +170,10 @@ def main() -> None:
     leap.add_argument("--gap", type=int, default=10)
     leap.add_argument("--window", type=int, default=40)
     leap.set_defaults(run=leverrier)
+    best = sub.add_parser("highlights", help="list the ledger's best moments, for the video and posts")
+    best.add_argument("--ledger", default="ledger")
+    best.add_argument("--top", type=int, default=20)
+    best.set_defaults(run=moments)
     args = parser.parse_args()
     args.run(args)
 
