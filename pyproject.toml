@@ -11,6 +11,7 @@ dependencies = [
     "iminuit>=2.33.0",
     "numpy>=1.26",
     "openai>=1.50",
+    "opentimestamps-client>=0.7.2",
     "pillow>=10.0",
     "python-dotenv>=1.0",
     "scipy>=1.18.1",
