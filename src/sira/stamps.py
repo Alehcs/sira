@@ -34,3 +34,13 @@ def side_by_side(pngs: list[bytes], gap: int = 8) -> bytes:
     out = io.BytesIO()
     sheet.save(out, format="PNG")
     return out.getvalue()
+
+
+def zoom(png: bytes, factor: int = 3) -> bytes:
+    pic = Image.open(io.BytesIO(png))
+    w, h = pic.size
+    dx, dy = w // (2 * factor), h // (2 * factor)
+    crop = pic.crop((w // 2 - dx, h // 2 - dy, w // 2 + dx, h // 2 + dy)).resize((w, h), Image.NEAREST)
+    out = io.BytesIO()
+    crop.save(out, format="PNG")
+    return out.getvalue()

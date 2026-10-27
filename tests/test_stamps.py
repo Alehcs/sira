@@ -5,7 +5,7 @@ import numpy as np
 from astropy.io import fits
 from PIL import Image
 
-from sira.stamps import side_by_side, to_png
+from sira.stamps import side_by_side, to_png, zoom
 
 
 def fits_bytes(data, compress=False):
@@ -35,3 +35,11 @@ def test_side_by_side_keeps_panels_apart():
     sheet = Image.open(io.BytesIO(side_by_side([panel] * 3)))
     assert sheet.size == (3 * 252 + 2 * 8, 252)
     assert sheet.getpixel((252, 10)) == 255
+
+
+def test_zoom_magnifies_the_centre():
+    data = np.zeros((63, 63))
+    data[31, 31] = 100
+    big = Image.open(io.BytesIO(zoom(to_png(fits_bytes(data)))))
+    assert big.size == (252, 252)
+    assert big.getpixel((126, 126)) == 255 and big.getpixel((10, 10)) == 0
