@@ -78,6 +78,22 @@ def accept(args) -> None:
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
 
 
+def live(args) -> None:
+    from .live import run
+
+    print(json.dumps(run(Path(args.ledger), args.n), indent=2))
+
+
+def verify(args) -> None:
+    from .fetch import client
+    from .ledger import verify as check
+
+    result = check(Path(args.ledger), client())
+    print(json.dumps(result, indent=2))
+    if not result["passes"]:
+        raise SystemExit(1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -104,6 +120,13 @@ def main() -> None:
     check.add_argument("test", choices=["at1", "at2", "at3"])
     check.add_argument("--root", default="data/snapshot")
     check.set_defaults(run=accept)
+    night = sub.add_parser("live", help="score open bets, place new ones and anchor the ledger")
+    night.add_argument("--ledger", default="ledger")
+    night.add_argument("-n", type=int, default=15)
+    night.set_defaults(run=live)
+    proof = sub.add_parser("verify", help="check the ledger chain, its receipts and that bets were sealed in time")
+    proof.add_argument("--ledger", default="ledger")
+    proof.set_defaults(run=verify)
     args = parser.parse_args()
     args.run(args)
 

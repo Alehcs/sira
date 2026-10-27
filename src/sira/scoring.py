@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import ArrayLike
-from scipy import stats
+from scipy import special, stats
 
 
 def spread(sigma: ArrayLike, err: ArrayLike) -> np.ndarray:
@@ -58,3 +58,30 @@ def score(rows: list[dict]) -> dict:
         "coverage_90": _mean(coverage(y, mu, sd, 0.9)),
         "uniformity": uniformity(pits),
     }
+
+
+def _parts(parts: list) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    # a mixture forecast is a list of [name, weight, mu, sigma]
+    w, mu, sd = (np.array([p[i] for p in parts], dtype=float) for i in (1, 2, 3))
+    return w / w.sum(), mu, sd
+
+
+def mix_log_score(y: float, err: float, parts: list) -> float:
+    w, mu, sd = _parts(parts)
+    return float(special.logsumexp(np.log(w) + stats.norm.logpdf(y, mu, spread(sd, err))))
+
+
+def mix_log_score_limit(f_lim: float, parts: list) -> float:
+    w, mu, sd = _parts(parts)
+    return float(special.logsumexp(np.log(w) + stats.norm.logcdf(f_lim, mu, spread(sd, f_lim / 5))))
+
+
+def mix_pit(y: float, err: float, parts: list) -> float:
+    w, mu, sd = _parts(parts)
+    return float(np.sum(w * stats.norm.cdf(y, mu, spread(sd, err))))
+
+
+def mix_moments(parts: list) -> tuple[float, float]:
+    w, mu, sd = _parts(parts)
+    mean = float(np.sum(w * mu))
+    return mean, float(np.sqrt(max(np.sum(w * (sd ** 2 + mu ** 2)) - mean ** 2, 0)))
