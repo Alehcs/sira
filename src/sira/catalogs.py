@@ -16,6 +16,15 @@ def _num(text: str | None) -> float | None:
     return float(m.group(1)) if m else None
 
 
+def _deg(text: str | None, hours: bool = False) -> float | None:
+    try:
+        d, m, sec = (abs(float(x)) for x in (text or "").split(":"))
+    except ValueError:
+        return None
+    value = (d + m / 60 + sec / 3600) * (15 if hours else 1)
+    return -value if text.strip().startswith("-") else value
+
+
 def parse_bts(text: str) -> list[dict]:
     lines = [line for line in text.splitlines() if line.strip()]
     out = []
@@ -30,6 +39,9 @@ def parse_bts(text: str) -> list[dict]:
             "redshift": _num(r.get("redshift")),
             # BTS peakt is JD - 2458000
             "peak_mjd": peak + 57999.5,
+            "peak_mag": _num(r.get("peakmag")),
+            "ra": _deg(r.get("RA"), hours=True),
+            "dec": _deg(r.get("Dec")),
             "av": _num(r.get("A_V")),
         })
     return out
@@ -43,7 +55,8 @@ def parse_mulens(text: str) -> list[dict]:
             continue
         seen.add(oid)
         # catalog times are HJD - 2450000
-        out.append({"oid": oid, "t0_mjd": _num(r["t_0"]) + 49999.5, "tE": _num(r["t_E"]), "u0": abs(_num(r["u_0"]))})
+        out.append({"oid": oid, "t0_mjd": _num(r["t_0"]) + 49999.5, "tE": _num(r["t_E"]), "u0": abs(_num(r["u_0"])),
+                    "ra": _num(r.get("RaDeg")), "dec": _num(r.get("DecDeg"))})
     return out
 
 

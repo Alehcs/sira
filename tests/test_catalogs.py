@@ -21,6 +21,13 @@ def test_bts_parses_and_skips_missing_peak():
     r = rows[0]
     assert (r["oid"], r["type"], r["redshift"]) == ("ZTF25aaaaaaa", "SN Ia", 0.05)
     assert r["peak_mjd"] == pytest.approx(2900.5 + 57999.5)
+    assert (r["ra"], r["dec"], r["peak_mag"]) == (pytest.approx(15.0), pytest.approx(10.0), 18.1)
+
+
+def test_negative_declinations_keep_their_sign():
+    from sira.catalogs import _deg
+    assert _deg("-04:30:00") == pytest.approx(-4.5)
+    assert _deg("-00:30:00") == pytest.approx(-0.5)
 
 
 def test_mulens_keeps_alert_ids_once():
@@ -28,3 +35,4 @@ def test_mulens_keeps_alert_ids_once():
     assert [r["oid"] for r in rows] == ["ZTF20abwxmep"]
     assert rows[0]["t0_mjd"] == pytest.approx(9092.74 + 49999.5)
     assert rows[0]["u0"] == pytest.approx(0.48)
+    assert (rows[0]["ra"], rows[0]["dec"]) == (12.9, 60.6)

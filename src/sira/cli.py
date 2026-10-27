@@ -50,6 +50,21 @@ def check_reader(args) -> None:
         raise SystemExit(f"incomplete run: {result['errors']} reads failed, see {out}")
 
 
+def probe(args) -> None:
+    from . import catalogs
+    from .fetch import client
+    from .probe import run
+
+    with client(verify=False) as bts_client:  # BTS serves a self-signed certificate
+        bts_rows = catalogs.bts(bts_client)
+    with client() as c:
+        result = run(bts_rows, catalogs.microlensing(c), args.model)
+    out = Path("var") / f"probe-{args.model}.json"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(json.dumps(result, indent=1))
+    print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -69,6 +84,9 @@ def main() -> None:
     reader.add_argument("--root", default="data/snapshot")
     reader.add_argument("--workers", type=int, default=8)
     reader.set_defaults(run=check_reader)
+    memory = sub.add_parser("probe", help="measure what a model remembers about known transients")
+    memory.add_argument("--model", choices=["spark", "wonder"], default="spark")
+    memory.set_defaults(run=probe)
     args = parser.parse_args()
     args.run(args)
 
