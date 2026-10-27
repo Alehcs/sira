@@ -16,6 +16,7 @@ ROLES = {
     "director": ("meta", SPARK, "xhigh"),
     "senior": ("meta", WONDER, "max"),
     "forecaster": ("meta", SPARK, "minimal"),
+    "leverrier": ("meta", WONDER, "high"),
 }
 LAB = ("You work in SIRA, a lab of AI astronomers that bets in public on how cosmic transients will evolve and "
        "lets the sky grade every bet. You never see names, survey IDs, dates or exact positions: times are days "

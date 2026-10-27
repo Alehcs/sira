@@ -102,6 +102,20 @@ def climate(args) -> None:
     print(json.dumps(table, indent=2))
 
 
+def leverrier(args) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+
+    from .leverrier import case
+    from .llm import LLM
+
+    with ThreadPoolExecutor(3) as pool:
+        report = case(Path(args.root), args.oid, LLM(), args.gap, args.window, pool)
+    out = Path("var") / f"leverrier-{args.oid}.json"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(json.dumps(report, indent=1, default=str))
+    print(json.dumps({k: v for k, v in report.items() if k != "events"}, indent=2, default=str))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
@@ -143,6 +157,12 @@ def main() -> None:
     clim = sub.add_parser("climatology", help="rebuild the B0 table from the snapshot's dev half")
     clim.add_argument("--root", default="data/snapshot")
     clim.set_defaults(run=climate)
+    leap = sub.add_parser("leverrier", help="replay a case: bet without the answer's hypothesis, call Le Verrier on surprise")
+    leap.add_argument("oid")
+    leap.add_argument("--root", default="data/snapshot")
+    leap.add_argument("--gap", type=int, default=10)
+    leap.add_argument("--window", type=int, default=40)
+    leap.set_defaults(run=leverrier)
     args = parser.parse_args()
     args.run(args)
 

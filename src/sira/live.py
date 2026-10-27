@@ -65,13 +65,13 @@ def _summary(f, as_of: float) -> dict:
     return out
 
 
-def physics(view: dict, ebv: float) -> dict | None:
+def physics(view: dict, ebv: float, days: tuple = DAYS) -> dict | None:
     ph = phot(view)
     if len(ph) < 5:
         return None
     t0 = view["as_of"]
-    t = np.array([t0 + d for d in DAYS for _ in BANDS])
-    band = np.array([b for _ in DAYS for b in BANDS])
+    t = np.array([t0 + d for d in days for _ in BANDS])
+    band = np.array([b for _ in days for b in BANDS])
     fits, killed, preds = {}, {}, {}
     for kind in HYPOTHESES:
         f = fit(kind, ph, ebv)
