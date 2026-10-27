@@ -17,6 +17,8 @@ RARE = ("TDE", "SLSN", "SN Ibn", "SN Icn", "SN Ia-CSM", "SN Iax", "SN Ia-91bg")
 LIMITS = {"ia": 60, "cc": 40, "rare": 30, "rubin": 10, "bogus": 50}
 
 _local = threading.local()
+# Legacy Survey rate-limits hard, so keep host cutouts to two at a time
+_host_slots = threading.Semaphore(2)
 
 
 def _client():
@@ -78,7 +80,8 @@ def _write(path: Path, data: bytes) -> str:
 
 
 def _host(c, ra: float, dec: float) -> bytes:
-    return get(c, LEGACY, {"ra": ra, "dec": dec, "layer": "ls-dr10", "pixscale": 0.262, "size": 128}).content
+    with _host_slots:
+        return get(c, LEGACY, {"ra": ra, "dec": dec, "layer": "ls-dr10", "pixscale": 0.262, "size": 128}).content
 
 
 def ztf_object(c, case: dict, out: Path) -> tuple[dict, dict]:
@@ -96,14 +99,16 @@ def ztf_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     ra = sum(d["ra"] for d in dets) / len(dets)
     dec = sum(d["dec"] for d in dets) / len(dets)
     host = f"stamps/{oid}/host.jpg"
-    files[host] = _write(out / host, _host(c, ra, dec))
+    image, _ = _safe(_host, c, ra, dec)
+    if image:
+        files[host] = _write(out / host, image)
     obj = {
         "oid": oid, "survey": "ztf", "ra": ra, "dec": dec, "photometry": rows,
         "first_stamps": {"candid": str(first["candid"]), "mjd": first["mjd"],
                          "available_at": first["mjd"] + photometry.LATENCY,
                          "files": [f"stamps/{oid}/first_{k}.png" for k in KINDS]},
         # Legacy DR10 imaging ends in 2021, so later events can't be in it
-        "host": {"file": host, "predates_event": first["mjd"] > 59580},
+        "host": {"file": host if image else None, "predates_event": first["mjd"] > 59580},
     }
     return obj, files
 

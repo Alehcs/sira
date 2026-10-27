@@ -34,3 +34,19 @@ def test_objects_never_carry_the_answer(tmp_path, monkeypatch):
     assert "SN Ia" not in text and "redshift" not in text and "SN2025" not in text
     assert obj["host"]["predates_event"] is True
     assert len(files) == 4
+
+
+def test_missing_host_image_keeps_the_object(tmp_path, monkeypatch):
+    lc = {"detections": [{"mjd": 60790.0, "fid": 1, "magpsf": 19.0, "sigmapsf": 0.1, "isdiffpos": 1,
+                          "candid": 9, "has_stamp": True, "ra": 10.0, "dec": 5.0}], "non_detections": []}
+    monkeypatch.setattr(snapshot.alerce, "lightcurve", lambda c, oid: lc)
+    monkeypatch.setattr(snapshot.alerce, "stamp", lambda c, oid, candid, kind: b"")
+    monkeypatch.setattr(snapshot.stamps, "to_png", lambda data: b"png")
+
+    def blocked(c, ra, dec):
+        raise RuntimeError("429")
+
+    monkeypatch.setattr(snapshot, "_host", blocked)
+    obj, files = snapshot.ztf_object(None, snapshot.pick(BTS_ROWS, [])[0], tmp_path)
+    assert obj["host"]["file"] is None
+    assert len(files) == 3
