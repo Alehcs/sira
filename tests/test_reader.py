@@ -45,7 +45,7 @@ def test_metrics_count_unanswered_as_mistakes():
     m = reader.metrics(rows)
     assert m["balanced_accuracy"] == 0.5
     assert m["unanswered"] == 2
-    assert m["auc"] == 1.0
+    assert m["auc"] == 0.875
     assert not m["passes_gate"]
 
 
@@ -121,3 +121,23 @@ def test_confident_answer_is_read_once():
     llm = FakeLLM(lambda msgs: '{"label": "bogus", "p_real": 0.05}')
     r = reader.read(llm, "spark-open", b"png", [], "system")
     assert len(llm.calls) == 1 and r["label"] == "bogus" and r["usd"] > 0
+
+
+def test_failed_calls_get_a_second_try(snapshot_dir):
+    calls = {"n": 0}
+
+    def flaky(msgs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise RuntimeError("429")
+        return '{"label": "bogus", "p_real": 0.05}'
+
+    result = reader.check(snapshot_dir, "t", "valset", workers=1, llm=FakeLLM(flaky))
+    assert result["errors"] == 0 and result["unanswered"] == 0
+
+
+def test_run_refuses_to_start_without_budget(snapshot_dir):
+    llm = FakeLLM(lambda msgs: "{}")
+    llm.meter = SimpleNamespace(left=lambda provider: 0.01)
+    with pytest.raises(reader.BudgetExceeded):
+        reader.check(snapshot_dir, "t", "valset", llm=llm)

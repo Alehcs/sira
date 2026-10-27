@@ -71,3 +71,16 @@ def test_common_scale_uses_the_science_stretch_for_both():
     assert t == stamps._png(stamps._stretch(tpl, *stamps.ZSCALE.get_limits(sci)))
     _, own, _ = matched(fits_bytes(sci), fits_bytes(tpl), fits_bytes(np.zeros((63, 63))), common=False)
     assert own != t
+
+
+def test_masked_pixels_do_not_rescale_the_image():
+    sci = blob(1000, 100, 5, 1)
+    masked = sci.copy()
+    masked[:20, :20] = np.nan
+    masked[40:, 50:] = -3.4e38
+    clean, _, _ = matched(fits_bytes(sci), fits_bytes(sci), fits_bytes(np.zeros((63, 63))))
+    dirty, _, d = matched(fits_bytes(masked), fits_bytes(sci), fits_bytes(masked - 100))
+    a, b = (np.asarray(Image.open(io.BytesIO(x)), dtype=int) for x in (clean, dirty))
+    # the old stretch shifted these pixels by up to 102 grey levels; zscale sampling alone moves a few
+    assert np.abs(a[100:140, 100:140] - b[100:140, 100:140]).max() <= 12
+    assert pixel(dirty, (10, 240)) == 0 and pixel(d, (10, 240)) == 127

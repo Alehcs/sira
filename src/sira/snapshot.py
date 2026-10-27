@@ -143,9 +143,11 @@ def rubin_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     return obj, files
 
 
-def first_stamps(c, oid: str, out: Path, folder: str) -> tuple[list[str], dict]:
+def first_stamps(c, oid: str, out: Path, folder: str, after: float | None = None) -> tuple[list[str], dict]:
     lc = alerce.lightcurve(c, oid)
-    dets = [d for d in lc.get("detections", []) if d.get("has_stamp")]
+    dets = [d for d in lc.get("detections", []) if d.get("has_stamp") and (after is None or d["mjd"] >= after)]
+    if not dets:
+        raise ValueError("no detection with stamps in the window")
     first = min(dets, key=lambda d: d["mjd"])
     files, paths = {}, [f"{folder}/{oid}_{kind}.png" for kind in KINDS]
     for kind, rel in zip(KINDS, paths):
@@ -153,9 +155,11 @@ def first_stamps(c, oid: str, out: Path, folder: str) -> tuple[list[str], dict]:
     return paths, files
 
 
-def _stamp_set(pool, oids: list[str], out: Path, folder: str, label: str, failures: list, checksums: dict) -> list[dict]:
-    found = []
-    for oid, (result, err) in zip(oids, pool.map(lambda o: _safe(first_stamps, _client(), o, out, folder), oids)):
+def _stamp_set(pool, oids: list[str], out: Path, folder: str, label: str, failures: list, checksums: dict,
+               after: dict | None = None) -> list[dict]:
+    after, found = after or {}, []
+    fetch = lambda o: _safe(first_stamps, _client(), o, out, folder, after.get(o))
+    for oid, (result, err) in zip(oids, pool.map(fetch, oids)):
         if err:
             failures.append({"oid": oid, "error": err})
             continue
@@ -165,12 +169,14 @@ def _stamp_set(pool, oids: list[str], out: Path, folder: str, label: str, failur
     return found
 
 
-def holdout_real(bts_rows: list[dict], taken: set, n: int) -> dict[str, list[str]]:
+def holdout_real(bts_rows: list[dict], taken: set, n: int) -> dict[str, dict[str, float]]:
     year = lambda r: mjd_to_date(r["peak_mjd"]).year
     groups = {"ia": [r for r in bts_rows if r["type"] == "SN Ia" and year(r) == 2024
                      and r["redshift"] and 0.02 <= r["redshift"] <= 0.12],
               "cc": [r for r in bts_rows if r["type"] in CC_TYPES and year(r) == 2024]}
-    return {g: [r["oid"] for r in _shuffled(rows) if r["oid"] not in taken][: n // 2] for g, rows in groups.items()}
+    pick = lambda rows: [r for r in _shuffled(rows) if r["oid"] not in taken][: n // 2]
+    # stamps must show the supernova itself, not an older alert at the same position
+    return {g: {r["oid"]: r["peak_mjd"] - 100 for r in pick(rows)} for g, rows in groups.items()}
 
 
 def code_version() -> str | None:
@@ -234,8 +240,8 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
                 for o in objects if o["category"] in ("ia", "cc")]
         valset = real[: limits["bogus"]] + _stamp_set(pool, bogus, out, "valset/bogus", "bogus", failures, checksums)
         examples = real[limits["bogus"]:] + _stamp_set(pool, spare, out, "examples/bogus", "bogus", failures, checksums)
-        holdout = [e | {"group": g} for g, oids in held_real.items()
-                   for e in _stamp_set(pool, oids, out, "holdout/real", "real", failures, checksums)]
+        holdout = [e | {"group": g} for g, windows in held_real.items()
+                   for e in _stamp_set(pool, list(windows), out, "holdout/real", "real", failures, checksums, windows)]
         holdout += [e | {"group": "bogus"} for e in _stamp_set(pool, held, out, "holdout/bogus", "bogus", failures, checksums)]
 
     # truth stays in its own file: the agents never read it, only the scorer does

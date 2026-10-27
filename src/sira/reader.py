@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from .config import SPARK_OPEN
-from .costs import price
+from .costs import BudgetExceeded, price
 from .llm import LLM, SPARK, usage_of
 from .snapshot import code_version
 from .stamps import matched, side_by_side, zoom
@@ -187,7 +187,8 @@ def metrics(rows: list[dict], seed: int = 0) -> dict:
     rng = np.random.default_rng(seed)
     pos, neg = np.flatnonzero(real), np.flatnonzero(~real)
     boots = [(hit[rng.choice(pos, len(pos))].mean() + hit[rng.choice(neg, len(neg))].mean()) / 2 for _ in range(2000)]
-    scored = [r for r in rows if r["p_real"] is not None]
+    # unanswered reads rank as a coin flip, so dropping them never flatters the AUC
+    scored = [r | {"p_real": 0.5} if r["p_real"] is None else r for r in rows]
     bacc = (hit[real].mean() + hit[~real].mean()) / 2
     return {
         "n": len(rows), "real": int(real.sum()), "bogus": int((~real).sum()),
@@ -217,7 +218,11 @@ def load_cases(root: Path, cases: str) -> list[dict]:
 def check(root: Path, protocol: str = "v1", cases: str = "valset", model: str = "spark-open", few_shot: bool = True,
           workers: int = 8, llm: LLM | None = None, votes: int = 3, **kwargs) -> dict:
     root, llm, proto = Path(root), llm or LLM(), PROTOCOLS[protocol]
-    rows_in = load_cases(root, cases)
+    # fixed shuffle, so a run cut short never loses one class only
+    rows_in = sorted(load_cases(root, cases), key=lambda c: hashlib.sha256(c["oid"].encode()).hexdigest())
+    meter, provider = getattr(llm, "meter", None), MODELS[model][0]
+    if meter and meter.left(provider) < 0.02 * len(rows_in):
+        raise BudgetExceeded(f"{provider}: about ${0.02 * len(rows_in):.2f} needed, ${meter.left(provider):.2f} left")
     examples = shots(root, proto) if few_shot else []
 
     def one(case):
@@ -230,6 +235,10 @@ def check(root: Path, protocol: str = "v1", cases: str = "valset", model: str = 
 
     with ThreadPoolExecutor(workers) as pool:
         rows = [{"oid": c["oid"], "truth": c["label"]} | r for c, r in zip(rows_in, pool.map(one, rows_in))]
+    # calls that failed outright get one more try, one at a time
+    for i, case in enumerate(rows_in):
+        if rows[i]["votes"] == 0:
+            rows[i] = {"oid": case["oid"], "truth": case["label"]} | one(case)
     usd = sum(r["usd"] for r in rows)
     single = metrics([r | {"label": None if r["p_first"] is None else ("real" if r["p_first"] >= 0.5 else "bogus")}
                       for r in rows])
@@ -237,5 +246,5 @@ def check(root: Path, protocol: str = "v1", cases: str = "valset", model: str = 
             "code": code_version(), "cases_sha256": hashlib.sha256(json.dumps(rows_in).encode()).hexdigest(),
             **metrics(rows),
             "single_read": {k: single[k] for k in ("balanced_accuracy", "real_recall", "bogus_recall")},
-            "revoted": sum(r["votes"] > 1 for r in rows),
+            "revoted": sum(r["votes"] > 1 for r in rows), "errors": sum(r["votes"] == 0 for r in rows),
             "usd": round(usd, 4), "usd_per_read": round(usd / len(rows), 5), "rows": rows}

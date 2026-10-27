@@ -13,10 +13,24 @@ def unzip(data: bytes) -> bytes:
     return gzip.decompress(data) if data[:2] == b"\x1f\x8b" else data
 
 
-def load(data: bytes) -> np.ndarray:
+def _read(data: bytes) -> np.ndarray:
     with fits.open(io.BytesIO(unzip(data))) as hdul:
-        img = next(h.data for h in hdul if h.data is not None)
-    return np.nan_to_num(np.asarray(img, dtype=float))
+        return np.asarray(next(h.data for h in hdul if h.data is not None), dtype=float)
+
+
+def load(data: bytes) -> np.ndarray:
+    return np.nan_to_num(_read(data))
+
+
+def _split(data: bytes) -> tuple[np.ndarray, np.ndarray]:
+    img = _read(data)
+    # ZTF marks masked pixels with NaN or -3.4e38
+    good = np.isfinite(img) & (np.abs(img) < 1e30)
+    return np.where(good, img, 0.0), good
+
+
+def _limits(img: np.ndarray, good: np.ndarray) -> tuple[float, float]:
+    return ZSCALE.get_limits(img[good]) if good.sum() > 10 else (0.0, 1.0)
 
 
 def _stretch(img: np.ndarray, lo: float, hi: float) -> np.ndarray:
@@ -39,16 +53,18 @@ def to_png(data: bytes, upscale: int = 4) -> bytes:
 
 
 def matched(science: bytes, template: bytes, difference: bytes, common: bool = True, upscale: int = 4) -> list[bytes]:
-    sci, tpl, dif = load(science), load(template), load(difference)
-    lo, hi = ZSCALE.get_limits(sci)
+    (sci, s_ok), (tpl, t_ok), (dif, d_ok) = _split(science), _split(template), _split(difference)
+    # masked pixels stay out of every stretch and get a fixed shade, so a mask never rescales the image
+    lo, hi = _limits(sci, s_ok)
     # ZTF cutouts already share sky level and flux scale, so the science stretch serves the template too
-    t_lo, t_hi = (lo, hi) if common else ZSCALE.get_limits(tpl)
+    t_lo, t_hi = (lo, hi) if common else _limits(tpl, t_ok)
     # difference centred on its background: grey is no change, white brighter, black fainter
-    mid = np.median(dif)
-    d_lo, d_hi = ZSCALE.get_limits(dif)
+    mid = float(np.median(dif[d_ok])) if d_ok.any() else 0.0
+    d_lo, d_hi = _limits(dif, d_ok)
     half = max(d_hi - mid, mid - d_lo) or 1.0
-    return [_png(_stretch(sci, lo, hi), upscale), _png(_stretch(tpl, t_lo, t_hi), upscale),
-            _png(0.5 + 0.5 * (dif - mid) / half, upscale)]
+    return [_png(np.where(s_ok, _stretch(sci, lo, hi), 0.0), upscale),
+            _png(np.where(t_ok, _stretch(tpl, t_lo, t_hi), 0.0), upscale),
+            _png(np.where(d_ok, 0.5 + 0.5 * (dif - mid) / half, 0.5), upscale)]
 
 
 def side_by_side(pngs: list[bytes], gap: int = 8) -> bytes:

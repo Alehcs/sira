@@ -78,6 +78,10 @@ class CostMeter:
             f.write(json.dumps(row) + "\n")
         return usd
 
+    def left(self, provider: str) -> float:
+        caps, today = self.caps[provider], datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        return min(caps.total - self.spent(provider), caps.daily - self.spent(provider, today))
+
     def summary(self) -> dict[str, dict[str, float]]:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         return {

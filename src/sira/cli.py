@@ -46,6 +46,8 @@ def check_reader(args) -> None:
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(result, indent=1))
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}, indent=2))
+    if result["errors"]:
+        raise SystemExit(f"incomplete run: {result['errors']} reads failed, see {out}")
 
 
 def main() -> None:
