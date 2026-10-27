@@ -6,11 +6,33 @@ SIRA investigates cosmic transients — supernovae, tidal disruption events, mic
 
 Built for the Meta Global AI Developer Hackathon 2026 (Indie track, *Push the Frontier*), with Meta's Muse models.
 
-> Status: under construction (hackathon started October 26, 2026).
+> Status: betting live since October 27, 2026; still being built during the hackathon.
 
 ## Built during the hackathon
 
 Everything in this repository was written during the hackathon, starting October 26, 2026. The commit history is the record of what was built and when.
+
+## Check the bets yourself
+
+Every evening a public GitHub Actions run scores SIRA's open bets against what the sky did, places new ones, and appends everything to `ledger.jsonl` on the `ledger` branch. Each entry carries the hash of the one before it, so changing any bet breaks every hash after it. The newest entry is then sealed with an RFC 3161 timestamp from FreeTSA and an OpenTimestamps proof that Bitcoin confirms within hours.
+
+```bash
+git clone https://github.com/Alehcs/sira && cd sira
+git worktree add ledger origin/ledger
+uv run sira verify --ledger ledger --online
+```
+
+`verify` rebuilds the hash chain, checks every receipt against the FreeTSA root shipped in this repository, checks that each bet was sealed within an hour of being made, recomputes every score and answer from the sealed forecast, and with `--online` checks every scored measurement against the ALeRCE archive. Pass a head you saw before (`--since SEQ:HASH`) to catch a rewritten history.
+
+Without SIRA's code, for any sealed head `H`:
+
+```bash
+shasum -a 256 ledger/receipts/H.json        # prints H
+openssl ts -verify -digest H -in ledger/receipts/H.tsr -CAfile src/sira/freetsa_ca.pem
+ots verify ledger/receipts/H.json.ots       # needs a Bitcoin node
+```
+
+**What the receipts cannot prove.** They show that a bet existed at a given time, not that it was the only bet: someone running private copies could publish only the luckiest one. Here, every anchor names the commit and the Actions run that made it, and each run's log is public. Scores also depend on the photometry ALeRCE serves.
 
 ## Repository layout
 
