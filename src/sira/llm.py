@@ -29,7 +29,8 @@ class LLM:
         if provider not in self.clients:
             if not KEYS[provider]:
                 raise RuntimeError(f"missing API key for {provider}")
-            self.clients[provider] = OpenAI(base_url=URLS[provider], api_key=KEYS[provider])
+            # Baseten answers 429 when too many requests run at once, so back off and retry
+            self.clients[provider] = OpenAI(base_url=URLS[provider], api_key=KEYS[provider], max_retries=6)
         return self.clients[provider]
 
     def chat(self, provider: str, model: str, messages: list[dict], tag: str = "", **kwargs):
