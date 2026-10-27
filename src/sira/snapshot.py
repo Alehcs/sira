@@ -14,7 +14,7 @@ LEGACY = "https://www.legacysurvey.org/viewer/cutout.jpg"
 KINDS = ("science", "template", "difference")
 CC_TYPES = {"SN II", "SN IIP", "SN IIb", "SN IIn", "SN Ib", "SN Ic", "SN Ib/c", "SN Ic-BL"}
 RARE = ("TDE", "SLSN", "SN Ibn", "SN Icn", "SN Ia-CSM", "SN Iax", "SN Ia-91bg")
-LIMITS = {"ia": 60, "cc": 40, "rare": 30, "rubin": 10, "bogus": 50}
+LIMITS = {"ia": 60, "cc": 40, "rare": 30, "rubin": 10, "bogus": 50, "examples": 20}
 
 _local = threading.local()
 # Legacy Survey rate-limits hard, so keep host cutouts to two at a time
@@ -138,20 +138,33 @@ def rubin_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     return obj, files
 
 
-def bogus_stamps(c, oid: str, out: Path) -> tuple[list[str], dict]:
+def bogus_stamps(c, oid: str, out: Path, folder: str = "valset/bogus") -> tuple[list[str], dict]:
     lc = alerce.lightcurve(c, oid)
     dets = [d for d in lc.get("detections", []) if d.get("has_stamp")]
     first = min(dets, key=lambda d: d["mjd"])
     files = {}
     for kind in KINDS:
-        rel = f"valset/bogus/{oid}_{kind}.png"
+        rel = f"{folder}/{oid}_{kind}.png"
         files[rel] = _write(out / rel, stamps.to_png(alerce.stamp(c, oid, str(first["candid"]), kind)))
     return list(files), files
 
 
+def _bogus_set(pool, oids: list[str], out: Path, folder: str, failures: list, checksums: dict) -> list[dict]:
+    found = []
+    for oid, (result, err) in zip(oids, pool.map(lambda o: _safe(bogus_stamps, _client(), o, out, folder), oids)):
+        if err:
+            failures.append({"oid": oid, "error": err})
+            continue
+        paths, files = result
+        checksums.update(files)
+        found.append({"label": "bogus", "oid": oid, "files": paths})
+    return found
+
+
 def _git_sha() -> str | None:
+    git = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout.strip()
     try:
-        return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        return git("rev-parse", "HEAD") + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
     except Exception:
         return None
 
@@ -174,10 +187,12 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
         cases += found or []
         if err:
             failures.append({"oid": "rubin-cases", "error": err})
-    bogus = [i["oid"] for i in alerce.objects(c, {"classifier": "stamp_classifier", "class": "bogus",
-                                                     "probability": 0.9, "page_size": limits["bogus"],
-                                                     "order_by": "probability", "order_mode": "DESC"})]
-    log(f"fetching {len(cases)} objects and {len(bogus)} bogus stamps")
+    query = {"classifier": "stamp_classifier", "class": "bogus", "probability": 0.9,
+             "page_size": limits["bogus"], "order_by": "probability", "order_mode": "DESC"}
+    bogus = [i["oid"] for i in alerce.objects(c, query)]
+    # the next page feeds the reader's few-shot examples and never overlaps the valset
+    spare = [i["oid"] for i in alerce.objects(c, query | {"page": 2}) if i["oid"] not in bogus][: limits["examples"]]
+    log(f"fetching {len(cases)} objects, {len(bogus)} bogus stamps and {len(spare)} spare ones")
 
     def run(case):
         fn = rubin_object if case["survey"] == "rubin" else ztf_object
@@ -197,19 +212,15 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
             if i % 25 == 0:
                 log(f"{i}/{len(cases)} objects")
 
-        valset = [{"label": "real", "oid": o["oid"], "files": [f"stamps/{o['oid']}/first_{k}.png" for k in KINDS]}
-                  for o in objects if o["category"] in ("ia", "cc")][: limits["bogus"]]
-        for oid, (result, err) in zip(bogus, pool.map(lambda o: _safe(bogus_stamps, _client(), o, out), bogus)):
-            if err:
-                failures.append({"oid": oid, "error": err})
-                continue
-            paths, files = result
-            checksums.update(files)
-            valset.append({"label": "bogus", "oid": oid, "files": paths})
+        real = [{"label": "real", "oid": o["oid"], "files": [f"stamps/{o['oid']}/first_{k}.png" for k in KINDS]}
+                for o in objects if o["category"] in ("ia", "cc")]
+        valset = real[: limits["bogus"]] + _bogus_set(pool, bogus, out, "valset/bogus", failures, checksums)
+        examples = real[limits["bogus"]:] + _bogus_set(pool, spare, out, "examples/bogus", failures, checksums)
 
     # truth stays in its own file: the agents never read it, only the scorer does
     checksums["truth.json"] = _write(out / "truth.json", json.dumps(truth, indent=1).encode())
     checksums["valset.json"] = _write(out / "valset.json", json.dumps(valset, indent=1).encode())
+    checksums["examples.json"] = _write(out / "examples.json", json.dumps(examples, indent=1).encode())
     manifest = {
         "version": 1,
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -217,6 +228,7 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
         "counts": dict(Counter(o["category"] for o in objects)),
         "splits": dict(Counter(o["split"] for o in objects)),
         "valset": dict(Counter(v["label"] for v in valset)),
+        "examples": dict(Counter(e["label"] for e in examples)),
         "objects": objects,
         "failures": failures,
         "checksums": checksums,
