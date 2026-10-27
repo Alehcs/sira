@@ -1,5 +1,4 @@
 import math
-from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +8,7 @@ from scipy import stats
 from . import alerce, catalogs, photometry, scoring
 from .fetch import client
 from .firewall import as_of
-from .ledger import Ledger, mjd, upgrade
+from .ledger import Ledger, mjd, upgrade, utcnow
 from .models import budget, fit, phot
 
 HYPOTHESES = ("ia", "ii", "ibc", "tde")
@@ -18,7 +17,8 @@ DAYS = (1, 2, 3, 4, 5)
 BANDS = ("ztfg", "ztfr")
 RULE = ("Every ZTF g or r measurement taken after this bet was sealed, up to one day past its last forecast, "
         "is scored against the forecast, interpolated linearly between days. The question is settled by the first "
-        "r measurement within a day of its time.")
+        "r measurement within a day of its time; a limit above the reference leaves it void.")
+RECENT = 20 / 24  # an object bet on within this many days waits for the next night
 
 
 def now_mjd() -> float:
@@ -69,6 +69,13 @@ def forecast(view: dict, ebv: float) -> dict | None:
     t = np.array([t0 + d for d in DAYS for _ in BANDS])
     band = np.array([b for _ in DAYS for b in BANDS])
     preds = {k: f.predict(t, band) for k, f in parts.items()}
+    for k, (mu, sd) in list(preds.items()):
+        if k != "null" and not (np.all(np.isfinite(mu)) and np.all(np.isfinite(sd))):
+            killed[k], _ = "its forecast was not finite", preds.pop(k)
+    kept = sum(weights[k] for k in preds if k != "null")
+    if not kept:
+        return None
+    weights = {k: (weights[k] * (1 - NULL_WEIGHT) / kept if k != "null" else NULL_WEIGHT) for k in preds}
     forecasts = [{"mjd": round(float(t[i]), 4), "band": str(band[i]),
                   "parts": [[k, round(weights[k], 4), round(float(mu[i]), 2), round(float(sd[i]), 2)]
                             for k, (mu, sd) in preds.items()]} for i in range(len(t))]
@@ -78,6 +85,7 @@ def forecast(view: dict, ebv: float) -> dict | None:
         last = max(r, key=lambda x: x["mjd"])["flux"]
         at = min((f for f in forecasts if f["band"] == "ztfr"), key=lambda f: abs(f["mjd"] - (t0 + 3)))
         p = sum(w * stats.norm.sf(last, mu, max(sd, 1e-6)) for _, w, mu, sd in at["parts"]) / sum(weights.values())
+        p = min(max(p, 0.001), 0.999)
         question = {"text": "Brighter in r three days from now than at its last r detection?", "band": "ztfr",
                     "mjd": at["mjd"], "reference": round(last, 2), "p_yes": round(float(p), 3)}
     return {"n_points": len(ph), "weights": {k: round(v, 4) for k, v in weights.items()},
@@ -106,6 +114,28 @@ def _seals(entries: list[dict]) -> dict[str, float]:
     return out
 
 
+def measure(parts: list, kind: str, value: float, err: float = 0.0) -> dict:
+    if kind == "det":
+        mean, sd = scoring.mix_moments(parts)
+        return {"flux": value, "flux_err": err, "log_score": round(scoring.mix_log_score(value, err, parts), 4),
+                "pit": round(scoring.mix_pit(value, err, parts), 4),
+                "crps": round(float(scoring.crps(value, mean, scoring.spread(sd, err))), 3)}
+    return {"limit": value, "log_score": round(scoring.mix_log_score_limit(value, parts), 4)}
+
+
+def settle(question: dict, outcomes: list[dict]) -> dict:
+    near = [o for o in outcomes if o["band"] == question["band"] and abs(o["mjd"] - question["mjd"]) <= 1]
+    first = min(near, key=lambda o: o["mjd"]) if near else None
+    if first and first["kind"] == "det":
+        yes = first["flux"] > question["reference"]
+    elif first and first["limit"] < question["reference"]:
+        yes = False  # a limit below the reference rules out brighter
+    else:
+        return {"void": True}
+    p = question["p_yes"]
+    return {"mjd": first["mjd"], "yes": bool(yes), "p_yes": p, "log_score": round(math.log(p if yes else 1 - p), 4)}
+
+
 def resolve(ledger: Ledger, c, now: float) -> list[dict]:
     entries = ledger.entries()
     seals = _seals(entries)
@@ -124,39 +154,28 @@ def resolve(ledger: Ledger, c, now: float) -> list[dict]:
             if (bet["bet"], r["mjd"], r["band"]) in done:
                 continue
             parts = _at(bet["forecasts"], r["mjd"], r["band"])
+            # rounded first, so anyone can recompute the score from the ledger alone
             if r["kind"] == "det":
-                mean, sd = scoring.mix_moments(parts)
-                score = {"flux": round(r["flux"], 2), "flux_err": round(r["flux_err"], 2),
-                         "log_score": round(scoring.mix_log_score(r["flux"], r["flux_err"], parts), 4),
-                         "pit": round(scoring.mix_pit(r["flux"], r["flux_err"], parts), 4),
-                         "crps": round(float(scoring.crps(r["flux"], mean, scoring.spread(sd, r["flux_err"]))), 3)}
+                score = measure(parts, "det", round(r["flux"], 2), round(r["flux_err"], 2))
             else:
-                f_lim = photometry.flux(r["mag"], 0)[0]
-                score = {"limit": round(f_lim, 2), "log_score": round(scoring.mix_log_score_limit(f_lim, parts), 4)}
+                score = measure(parts, "limit", round(photometry.flux(r["mag"], 0)[0], 2))
             new.append(ledger.append("outcome", {"bet": bet["bet"], "object": bet["object"], "mjd": r["mjd"],
                                                  "band": r["band"], "kind": r["kind"]} | score))
         q = bet.get("question")
-        if q and bet["bet"] not in answered:
-            near = [r for r in rows if r["band"] == q["band"] and abs(r["mjd"] - q["mjd"]) <= 1]
-            first = min(near, key=lambda r: r["mjd"]) if near else None
-            if first and first["kind"] == "det":
-                answer = first["flux"] > q["reference"]
-            elif first and photometry.flux(first["mag"], 0)[0] < q["reference"]:
-                answer = False  # a limit below the reference rules out brighter
-            else:
-                continue
-            new.append(ledger.append("answer", {"bet": bet["bet"], "object": bet["object"], "mjd": first["mjd"],
-                                                "yes": bool(answer), "p_yes": q["p_yes"],
-                                                "log_score": round(math.log(q["p_yes"] if answer else 1 - q["p_yes"]), 4)}))
+        if q and bet["bet"] not in answered and now > q["mjd"] + 1.5:
+            mine = [e["payload"] for e in ledger.entries() if e["kind"] == "outcome" and e["payload"]["bet"] == bet["bet"]]
+            new.append(ledger.append("answer", {"bet": bet["bet"], "object": bet["object"]} | settle(q, mine)))
     return new
 
 
 def run(root: Path, n: int = 15) -> dict:
     c, ledger, now = client(), Ledger(root), now_mjd()
     resolved = resolve(ledger, c, now)
+    recent = {e["payload"]["object"] for e in ledger.entries()
+              if e["kind"] == "bet" and e["payload"]["made_at"] > now - RECENT}
     made, skipped = [], []
-    day = (date(1858, 11, 17) + timedelta(days=now)).isoformat()
-    for oid in active(c, now, n):
+    stamp = utcnow()[:16].replace("-", "").replace(":", "")
+    for oid in [o for o in active(c, now, 50) if o not in recent][:n]:
         try:
             obj = observe(c, oid, now)
             result = forecast(as_of(obj, now), catalogs.mw_ebv(c, obj["ra"], obj["dec"]))
@@ -166,7 +185,7 @@ def run(root: Path, n: int = 15) -> dict:
         if result is None:
             skipped.append(f"{oid}: too little data")
             continue
-        made.append(ledger.append("bet", {"bet": f"{oid}-{day}", "object": oid, "made_at": round(now, 5),
+        made.append(ledger.append("bet", {"bet": f"{oid}-{stamp}", "object": oid, "made_at": round(now, 5),
                                           "model": "v0", "role": "forecaster", "cost_usd": 0.0, "rule": RULE}
                                   | result))
     anchor = ledger.anchor(c)

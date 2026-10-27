@@ -86,9 +86,9 @@ def live(args) -> None:
 
 def verify(args) -> None:
     from .fetch import client
-    from .ledger import verify as check
+    from .verify import verify as check
 
-    result = check(Path(args.ledger), client())
+    result = check(Path(args.ledger), client(), online=args.online, known=tuple(args.since))
     print(json.dumps(result, indent=2))
     if not result["passes"]:
         raise SystemExit(1)
@@ -126,6 +126,9 @@ def main() -> None:
     night.set_defaults(run=live)
     proof = sub.add_parser("verify", help="check the ledger chain, its receipts and that bets were sealed in time")
     proof.add_argument("--ledger", default="ledger")
+    proof.add_argument("--online", action="store_true", help="also check every scored measurement against ALeRCE")
+    proof.add_argument("--since", nargs="*", default=[], metavar="SEQ:HASH",
+                       help="heads seen before, which must still be in the ledger")
     proof.set_defaults(run=verify)
     args = parser.parse_args()
     args.run(args)

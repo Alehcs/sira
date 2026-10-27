@@ -19,6 +19,8 @@ def _wave(band) -> np.ndarray:
 
 def _tde(p: np.ndarray, t: np.ndarray, lam: np.ndarray) -> np.ndarray:
     t_peak, sigma, t0, amp, temp = p
+    # error propagation nudges parameters across their bounds; keep the timescales positive
+    sigma, t0 = max(sigma, 1e-3), max(t0, 1e-3)
     dt = t - t_peak
     # Gaussian rise, then the fallback decline; each factor is 1 on the other side of the peak
     shape = np.exp(-0.5 * (np.minimum(dt, 0) / sigma) ** 2) * (1 + np.maximum(dt, 0) / t0) ** (-5 / 3)

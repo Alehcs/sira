@@ -4,6 +4,7 @@ import sncosmo
 from astropy.cosmology import Planck18
 
 from sira import ledger, live
+from sira import verify as verify_module
 from sira.firewall import as_of
 from sira.ledger import Ledger
 from sira.models import ALPHA, BETA, M_B
@@ -42,19 +43,37 @@ def test_forecasts_are_interpolated_between_days():
 
 def test_only_measurements_after_the_seal_are_scored(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "rfc3161", lambda c, h: b"r")
-    monkeypatch.setattr(ledger, "check_rfc3161", lambda c, path, h: (True, SEALED_AT))
+    monkeypatch.setattr(ledger, "check_rfc3161", lambda path, h: (True, SEALED_AT))
+    monkeypatch.setattr(verify_module, "check_rfc3161", lambda path, h: (True, SEALED_AT))
     monkeypatch.setattr(ledger, "OTS", "true")
     obj, m = sn_object()
     book = Ledger(tmp_path)
-    book.append("bet", {"bet": "b1", "object": obj["oid"]} | live.forecast(as_of(obj, 61340.75), 0.02))
+    book.append("bet", {"bet": "b1", "object": obj["oid"], "made_at": 61340.74}
+                | live.forecast(as_of(obj, 61340.75), 0.02))
     book.anchor(None)
     later = [{"mjd": t, "band": "ztfr", "kind": "det", "flux": float(m.bandflux("ztfr", t, zp=23.9, zpsys="ab")),
               "flux_err": 3.0, "mag": 19.0, "available_at": t + 0.5} for t in (61340.70, 61342.0, 61343.8)]
     monkeypatch.setattr(live, "observe", lambda c, oid, now: {"photometry": later})
-    new = live.resolve(book, None, 61345.0)
+    new = live.resolve(book, None, 61346.0)
     outcomes = [e for e in new if e["kind"] == "outcome"]
     assert [o["payload"]["mjd"] for o in outcomes] == [61342.0, 61343.8]
     assert all(np.isfinite(o["payload"]["log_score"]) and 0 <= o["payload"]["pit"] <= 1 for o in outcomes)
     assert [e["kind"] for e in new].count("answer") == 1
-    assert live.resolve(book, None, 61345.0) == []
-    assert ledger.verify(tmp_path, None)["passes"]
+    assert live.resolve(book, None, 61346.0) == []
+    assert verify_module.verify(tmp_path)["passes"]
+
+
+def test_a_hypothesis_with_a_broken_forecast_is_dropped(monkeypatch):
+    obj, _ = sn_object()
+    real = live.fit
+
+    def broken(kind, ph, ebv=0.0):
+        f = real(kind, ph, ebv)
+        if f is not None and kind == "ii":
+            f.flux = lambda p, t, band: np.full(len(t), np.nan)
+        return f
+
+    monkeypatch.setattr(live, "fit", broken)
+    result = live.forecast(as_of(obj, 61340.75), 0.02)
+    assert "ii" not in result["weights"] and sum(result["weights"].values()) == pytest.approx(1, abs=1e-3)
+    assert all(np.isfinite(x) for f in result["forecasts"] for part in f["parts"] for x in part[1:])
