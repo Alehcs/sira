@@ -36,6 +36,7 @@ Decide whether the candidate at the centre is real or bogus.
 Answer with JSON only: {"label": "real" or "bogus", "p_real": probability from 0 to 1 that it is real, "why": one short sentence}."""
 
 # few-shot examples from the snapshot's examples set: oid -> (p_real shown, what it shows)
+# Spark Open on Baseten takes at most 8 images per request: six examples plus the query
 EXAMPLES = {
     "ZTF25acfgotd": (0.9, "Clean positive point source at the centre of the difference, offset from a galaxy seen in the template."),
     "ZTF22ablmbim": (0.1, "A one or two pixel spike, much sharper than a star, with nothing in the template: a cosmic ray or hot pixel."),
