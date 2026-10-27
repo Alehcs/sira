@@ -2,7 +2,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 21 * * *"  # 18:00 in Chile, hours before night falls at Palomar
+    - cron: "13 21 * * *"  # 18:13 in Chile, before night falls at Palomar; GitHub delays runs set on the hour
   workflow_dispatch:
 
 permissions:
