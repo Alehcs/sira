@@ -3,25 +3,67 @@ import io
 
 import numpy as np
 from astropy.io import fits
+from astropy.stats import mad_std
 from astropy.visualization import ZScaleInterval
 from PIL import Image
 
+ZSCALE = ZScaleInterval(contrast=0.25)
 
-def to_png(data: bytes, upscale: int = 4) -> bytes:
-    if data[:2] == b"\x1f\x8b":
-        data = gzip.decompress(data)
-    with fits.open(io.BytesIO(data)) as hdul:
+
+def unzip(data: bytes) -> bytes:
+    return gzip.decompress(data) if data[:2] == b"\x1f\x8b" else data
+
+
+def load(data: bytes) -> np.ndarray:
+    with fits.open(io.BytesIO(unzip(data))) as hdul:
         img = next(h.data for h in hdul if h.data is not None)
-    img = np.nan_to_num(np.asarray(img, dtype=float))
-    # same scaling for every stamp, so styling never hints at the answer
-    lo, hi = ZScaleInterval(contrast=0.25).get_limits(img)
-    scaled = np.clip((img - lo) / ((hi - lo) or 1.0), 0, 1)
-    pic = Image.fromarray(np.flipud((scaled * 255).astype(np.uint8)))
+    return np.nan_to_num(np.asarray(img, dtype=float))
+
+
+def _stretch(img: np.ndarray, lo: float, hi: float) -> np.ndarray:
+    return (img - lo) / ((hi - lo) or 1.0)
+
+
+def _png(scaled: np.ndarray, upscale: int = 4) -> bytes:
+    pic = Image.fromarray(np.flipud((np.clip(scaled, 0, 1) * 255).astype(np.uint8)))
     if upscale > 1:
         pic = pic.resize((pic.width * upscale, pic.height * upscale), Image.NEAREST)
     out = io.BytesIO()
     pic.save(out, format="PNG")
     return out.getvalue()
+
+
+def to_png(data: bytes, upscale: int = 4) -> bytes:
+    img = load(data)
+    # same scaling for every stamp, so styling never hints at the answer
+    return _png(_stretch(img, *ZSCALE.get_limits(img)), upscale)
+
+
+def flux_ratio(science: np.ndarray, template: np.ndarray, nsigma: float = 5) -> float | None:
+    above = template - np.median(template)
+    bright = above > nsigma * mad_std(template)
+    if bright.sum() < 20:
+        return None
+    return float((science - np.median(science))[bright].sum() / above[bright].sum())
+
+
+def matched(science: bytes, template: bytes, difference: bytes, common: bool = True, upscale: int = 4) -> list[bytes]:
+    sci, tpl, dif = load(science), load(template), load(difference)
+    lo, hi = ZSCALE.get_limits(sci)
+    if common:
+        # template moved to the science flux scale, so an unchanged star looks the same in both
+        ratio = flux_ratio(sci, tpl)
+        if ratio is None or ratio <= 0:
+            ratio = mad_std(sci) / (mad_std(tpl) or 1.0)
+        tpl, t_lo, t_hi = np.median(sci) + ratio * (tpl - np.median(tpl)), lo, hi
+    else:
+        t_lo, t_hi = ZSCALE.get_limits(tpl)
+    # difference centred on its background: grey is no change, white brighter, black fainter
+    mid = np.median(dif)
+    d_lo, d_hi = ZSCALE.get_limits(dif)
+    half = max(d_hi - mid, mid - d_lo) or 1.0
+    return [_png(_stretch(sci, lo, hi), upscale), _png(_stretch(tpl, t_lo, t_hi), upscale),
+            _png(0.5 + 0.5 * (dif - mid) / half, upscale)]
 
 
 def side_by_side(pngs: list[bytes], gap: int = 8) -> bytes:

@@ -2,10 +2,11 @@ import gzip
 import io
 
 import numpy as np
+import pytest
 from astropy.io import fits
 from PIL import Image
 
-from sira.stamps import side_by_side, to_png, zoom
+from sira.stamps import flux_ratio, matched, side_by_side, to_png, zoom
 
 
 def fits_bytes(data, compress=False):
@@ -43,3 +44,32 @@ def test_zoom_magnifies_the_centre():
     big = Image.open(io.BytesIO(zoom(to_png(fits_bytes(data)))))
     assert big.size == (252, 252)
     assert big.getpixel((126, 126)) == 255 and big.getpixel((10, 10)) == 0
+
+
+def blob(amp, sky, noise, seed):
+    y, x = np.mgrid[:63, :63]
+    rng = np.random.default_rng(seed)
+    return sky + amp * np.exp(-((x - 31) ** 2 + (y - 31) ** 2) / 8) + rng.normal(0, noise, (63, 63))
+
+
+def pixel(png, xy=(126, 126)):
+    return Image.open(io.BytesIO(png)).getpixel(xy)
+
+
+def test_difference_is_centred_on_grey():
+    dif = np.random.default_rng(0).normal(0, 1, (63, 63))
+    dif[31, 31], dif[10, 10] = 50, -50
+    _, _, d = matched(fits_bytes(blob(0, 100, 1, 1)), fits_bytes(blob(0, 100, 1, 2)), fits_bytes(dif))
+    # stamps are flipped vertically for display, so row 10 lands at the bottom
+    assert pixel(d) == 255 and pixel(d, (42, 210)) == 0
+    assert abs(np.median(np.asarray(Image.open(io.BytesIO(d)))) - 127) <= 3
+
+
+def test_flux_ratio_survives_noise():
+    assert flux_ratio(blob(1000, 100, 5, 1), blob(250, 20, 1, 2)) == pytest.approx(4, rel=0.05)
+
+
+def test_common_scale_makes_an_unchanged_star_match():
+    sci, tpl = blob(1000, 100, 0, 1), blob(250, 20, 0, 2)  # same star, flux scale four times smaller
+    s, t, _ = matched(fits_bytes(sci), fits_bytes(tpl), fits_bytes(np.zeros((63, 63))))
+    assert s == t
