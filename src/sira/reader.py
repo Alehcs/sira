@@ -221,8 +221,9 @@ def check(root: Path, protocol: str = "v1", cases: str = "valset", model: str = 
     # fixed shuffle, so a run cut short never loses one class only
     rows_in = sorted(load_cases(root, cases), key=lambda c: hashlib.sha256(c["oid"].encode()).hexdigest())
     meter, provider = getattr(llm, "meter", None), MODELS[model][0]
-    if meter and meter.left(provider) < 0.02 * len(rows_in):
-        raise BudgetExceeded(f"{provider}: about ${0.02 * len(rows_in):.2f} needed, ${meter.left(provider):.2f} left")
+    # reads cost about $0.01 with votes, so ask for half again as much before starting
+    if meter and meter.left(provider) < 0.015 * len(rows_in):
+        raise BudgetExceeded(f"{provider}: about ${0.015 * len(rows_in):.2f} needed, ${meter.left(provider):.2f} left")
     examples = shots(root, proto) if few_shot else []
 
     def one(case):
