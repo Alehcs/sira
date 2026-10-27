@@ -74,12 +74,13 @@ def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: flo
     answers = [e for e in entries if e["kind"] == "answer"]
     for a in answers:
         p, bet = a["payload"], bets.get(a["payload"]["bet"])
-        if bet is None or not bet.get("question"):
+        which = p.get("which", "question")
+        if bet is None or not bet.get(which):
             problems.append(f"answer {a['seq']}: no sealed question to answer")
             continue
         mine = [o["payload"] for o in outcomes if o["payload"]["bet"] == p["bet"] and o["seq"] < a["seq"]
                 and o["payload"]["mjd"] > (bet["_seal"] or float("inf"))]
-        redo = live.settle(bet["question"], mine)
+        redo = live.settle(bet[which], mine)
         if not all(_close(v, p.get(k)) for k, v in redo.items()):
             problems.append(f"answer {a['seq']}: does not follow from the sealed question and the scored measurements")
     if online:

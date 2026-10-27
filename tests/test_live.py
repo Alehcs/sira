@@ -87,3 +87,14 @@ def test_a_hypothesis_with_a_broken_forecast_is_dropped(monkeypatch):
     result = live.forecast(as_of(obj, 61340.75), 0.02)
     assert "ii" not in result["weights"] and sum(result["weights"].values()) == pytest.approx(1, abs=1e-3)
     assert all(np.isfinite(x) for f in result["forecasts"] for part in f["parts"] for x in part[1:])
+
+
+def test_without_keys_the_team_falls_back_to_physics(tmp_path, monkeypatch):
+    from sira import config
+    monkeypatch.setattr(config, "KEYS", {"meta": "", "baseten": ""})
+    monkeypatch.setattr(live, "client", lambda: None)
+    monkeypatch.setattr(live, "active", lambda c, now, n: [])
+    monkeypatch.setattr(ledger.Ledger, "anchor", lambda self, c: None)
+    monkeypatch.setattr(live, "upgrade", lambda root: None)
+    result = live.run(tmp_path, team=True)
+    assert result["bets"] == 0 and any("no API keys" in s for s in result["skipped"])

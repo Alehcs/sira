@@ -81,7 +81,7 @@ def accept(args) -> None:
 def live(args) -> None:
     from .live import run
 
-    print(json.dumps(run(Path(args.ledger), args.n), indent=2))
+    print(json.dumps(run(Path(args.ledger), args.n, team=args.team, night_usd=args.night_usd), indent=2))
 
 
 def verify(args) -> None:
@@ -131,6 +131,8 @@ def main() -> None:
     night = sub.add_parser("live", help="score open bets, place new ones and anchor the ledger")
     night.add_argument("--ledger", default="ledger")
     night.add_argument("-n", type=int, default=15)
+    night.add_argument("--team", action="store_true", help="let the Muse agent team triage, argue and choose bets")
+    night.add_argument("--night-usd", type=float, default=4.0, help="stop investigating once the team spent this")
     night.set_defaults(run=live)
     proof = sub.add_parser("verify", help="check the ledger chain, its receipts and that bets were sealed in time")
     proof.add_argument("--ledger", default="ledger")
