@@ -28,7 +28,7 @@ def smoke(_args) -> None:
 def snapshot(args) -> None:
     from .snapshot import build
 
-    m = build(args.out, workers=args.workers, rubin=not args.no_rubin)
+    m = build(args.out, workers=args.workers, rubin=not args.no_rubin, log=lambda s: print(s, flush=True))
     print(json.dumps({k: m[k] for k in ("counts", "splits", "valset")}, indent=2))
     print(f"failures: {len(m['failures'])}")
 

@@ -164,7 +164,7 @@ def _safe(fn, *args):
 
 
 def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS, log=print) -> dict:
-    out = Path(out)
+    out, code = Path(out), _git_sha()
     failures, checksums, objects, truth = [], {}, [], {}
     c = client()
     with client(verify=False) as bts_client:  # BTS serves a self-signed certificate
@@ -213,7 +213,7 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
     manifest = {
         "version": 1,
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "code": _git_sha(),
+        "code": code,
         "counts": dict(Counter(o["category"] for o in objects)),
         "splits": dict(Counter(o["split"] for o in objects)),
         "valset": dict(Counter(v["label"] for v in valset)),
