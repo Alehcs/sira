@@ -24,15 +24,19 @@ jobs:
         run: |
           git fetch origin ledger
           git worktree add ledger origin/ledger
+      - name: Verify the ledger before adding to it
+        run: uv run sira verify --ledger ledger
       - name: Score open bets, place new ones, anchor
         run: uv run sira live --ledger ledger
-      - name: Verify the whole ledger
-        run: uv run sira verify --ledger ledger
+      - name: Verify again, against the archive
+        run: uv run sira verify --ledger ledger --online
       - name: Publish
+        # sealed bets go public even when a check fails, so the failure is public too
+        if: always()
         working-directory: ledger
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ledger.jsonl receipts
+          git add -A ledger.jsonl receipts 2>/dev/null || exit 0
           git commit -m "Ledger for $(date -u +%F)" || exit 0
           git push origin HEAD:ledger
