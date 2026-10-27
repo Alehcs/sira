@@ -263,8 +263,9 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
             except Exception as e:
                 skipped.append(f"{oid}: {type(e).__name__}")
         with ThreadPoolExecutor(8) as pool:
-            picked, events = lab.triage(llm, views, n, pool)
-            for e in events:
+            readings, events = lab.eyes(llm, c, views, pool)
+            picked, more = lab.triage(llm, views, n, pool, readings)
+            for e in events + more:
                 ledger.append("event", e)
                 spent += e["cost_usd"]
             for oid in picked:
@@ -273,7 +274,8 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
                     continue
                 view = views[oid]
                 try:
-                    result, events = lab.investigate(llm, view, catalogs.mw_ebv(c, view["ra"], view["dec"]), pool, seniors)
+                    result, events = lab.investigate(llm, view, catalogs.mw_ebv(c, view["ra"], view["dec"]), pool, seniors,
+                                                     readings.get(oid))
                 except Exception as e:
                     skipped.append(f"{oid}: {type(e).__name__}")
                     continue

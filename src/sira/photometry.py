@@ -25,7 +25,7 @@ def from_alerce(lc: dict) -> list[dict]:
             "mjd": d["mjd"], "band": BANDS[d["fid"]], "kind": "det",
             "mag": d["magpsf"], "mag_err": err,
             "flux": -f if _negative(d.get("isdiffpos")) else f, "flux_err": fe,
-            "candid": str(d.get("candid")), "available_at": d["mjd"] + LATENCY,
+            "candid": str(d.get("candid")), "stamp": bool(d.get("has_stamp")), "available_at": d["mjd"] + LATENCY,
         })
     for n in lc.get("non_detections", []):
         if n.get("diffmaglim") is None or n.get("fid") not in BANDS:

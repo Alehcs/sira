@@ -13,11 +13,14 @@ from .config import SPARK_OPEN
 from .costs import BudgetExceeded, price
 from .llm import LLM, SPARK, usage_of
 from .snapshot import code_version
-from .stamps import matched, side_by_side, zoom
+from .stamps import matched, side_by_side, to_png, zoom
 
 # provider, model and default arguments for each reader under test
 MODELS = {"spark-open": ("baseten", SPARK_OPEN, {}), "spark": ("meta", SPARK, {"reasoning_effort": "low"})}
 GATE = 0.85
+# the v2 examples ship with the code, so the reader works where the snapshot does not exist
+PACKAGED = Path(__file__).parent / "examples"
+KINDS = ("science", "template", "difference")
 # first answers inside this band get two more opinions
 UNSURE = (0.2, 0.8)
 
@@ -137,12 +140,22 @@ def parse(text: str | None) -> dict:
     return {"label": label, "p_real": p_real, "why": str(data.get("why", ""))[:300]}
 
 
+def draw(fits: list[bytes], render: str) -> bytes:
+    pngs = [to_png(f) for f in fits] if render == "zscale" else matched(*fits, common=render == "matched")
+    return side_by_side(pngs + [zoom(pngs[-1])])
+
+
 def triplet(root: Path, files: list[str], render: str = "zscale") -> bytes:
     if render == "zscale":
         pngs = [(root / f).read_bytes() for f in files]
-    else:
-        pngs = matched(*[(root / f).with_suffix(".fits").read_bytes() for f in files], common=render == "matched")
-    return side_by_side(pngs + [zoom(pngs[-1])])
+        return side_by_side(pngs + [zoom(pngs[-1])])
+    return draw([(root / f).with_suffix(".fits").read_bytes() for f in files], render)
+
+
+def packaged_shots(protocol: "Protocol") -> list[tuple[bytes, str, float, str]]:
+    labels = json.loads((PACKAGED / "labels.json").read_text())
+    return [(draw([(PACKAGED / f"{oid}_{k}.fits.gz").read_bytes() for k in KINDS], protocol.render), labels[oid], p, why)
+            for oid, (p, why) in protocol.examples.items()]
 
 
 def shots(root: Path, protocol: Protocol) -> list[tuple[bytes, str, float, str]]:

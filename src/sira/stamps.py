@@ -1,8 +1,10 @@
 import gzip
 import io
+import warnings
 
 import numpy as np
 from astropy.io import fits
+from astropy.io.fits.verify import VerifyWarning
 from astropy.visualization import ZScaleInterval
 from PIL import Image
 
@@ -14,8 +16,11 @@ def unzip(data: bytes) -> bytes:
 
 
 def _read(data: bytes) -> np.ndarray:
-    with fits.open(io.BytesIO(unzip(data))) as hdul:
-        return np.asarray(next(h.data for h in hdul if h.data is not None), dtype=float)
+    # ZTF stamp headers are slightly off-standard; the pixels are fine
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", VerifyWarning)
+        with fits.open(io.BytesIO(unzip(data))) as hdul:
+            return np.asarray(next(h.data for h in hdul if h.data is not None), dtype=float)
 
 
 def load(data: bytes) -> np.ndarray:

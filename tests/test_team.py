@@ -14,7 +14,7 @@ NOW = 61340.75
 
 def reply(answers):
     def chat(provider, model, messages, tag="", **kwargs):
-        task = messages[-1]["content"]
+        task = json.dumps(messages)
         text = next((json.dumps(a) for key, a in answers.items() if key in task), "{}")
         usage = SimpleNamespace(prompt_tokens=100, completion_tokens=50, prompt_tokens_details=None,
                                 completion_tokens_details=None)
@@ -98,3 +98,30 @@ def test_the_forecasters_words_are_checked_against_the_number():
     good, _ = agents.forecaster(reply({"forecaster": {"text": "It is very likely to fade."}}), {"case": "c"}, q)
     bad, _ = agents.forecaster(reply({"forecaster": {"text": "It is unlikely to fade."}}), {"case": "c"}, q)
     assert good["words_match"] and not bad["words_match"]
+
+
+def test_the_packaged_reader_examples_fit_spark_open():
+    from sira import reader
+    shots = reader.packaged_shots(reader.PROTOCOLS["v2"])
+    assert len(shots) == 7 and {s[1] for s in shots} == {"real", "bogus"}
+
+
+def test_the_reader_looks_before_the_lookouts(monkeypatch):
+    from pathlib import Path
+    from sira import reader
+    sample = [(reader.PACKAGED / f"ZTF25acfgotd_{k}.fits.gz").read_bytes() for k in reader.KINDS]
+    monkeypatch.setattr(team.alerce, "stamp", lambda c, oid, candid, kind: sample[reader.KINDS.index(kind)])
+    obj, _ = sn_object()
+    for r in obj["photometry"]:
+        r["candid"] = "1"
+    llm = reply(ANSWERS | {"vetting candidate detections": {"label": "real", "p_real": 0.9, "why": "clean point source"}})
+    with ThreadPoolExecutor(4) as pool:
+        readings, events = team.eyes(llm, None, {"a": as_of(obj, NOW)}, pool)
+    assert readings["a"]["label"] == "real" and events[0]["role"] == "reader" and events[0]["object"] == "a"
+
+
+def test_random_audits_send_plain_bets_to_the_senior(monkeypatch):
+    monkeypatch.setattr(team, "AUDIT", 1.0)
+    answers = ANSWERS | {"senior reviewer": {"favoured": "ia", "missing": None, "question": "q1", "factors": {}, "why": "ok"}}
+    bet, events = run(answers, [1])
+    assert bet["director"]["audit"] and "senior" in [e["role"] for e in events]

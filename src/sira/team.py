@@ -1,5 +1,8 @@
-from . import agents
-from .firewall import blind
+import hashlib
+
+from . import agents, alerce, reader
+from .config import SPARK_OPEN
+from .firewall import blind, case_id
 from .live import assemble, chance, physics
 
 SENIOR_PER_NIGHT = 3  # Wonder at max effort is costly; the director may call it this often
@@ -7,6 +10,7 @@ DOUBT = (0.35, 0.65)  # a lookout this unsure gets two more opinions
 ARTIFACT = 0.7  # an instrument skeptic this sure keeps the object off the ledger
 DOUBTED = 0.3  # a physics skeptic's objection scales a hypothesis by this much
 REMEMBERED = 0.5
+AUDIT = 0.1  # this share of plain bets goes to the senior anyway, so escalation is measured without bias
 
 
 def case_of(view: dict) -> dict:
@@ -15,8 +19,34 @@ def case_of(view: dict) -> dict:
     return case
 
 
-def triage(llm, views: dict, n: int, pool) -> tuple[list[str], list[dict]]:
-    cases = {oid: case_of(v) for oid, v in views.items()}
+def eyes(llm, c, views: dict, pool) -> tuple[dict, list[dict]]:
+    # the reader that passed G1 looks at each candidate's first stamps before the lookouts decide
+    proto = reader.PROTOCOLS["v2"]
+    shots = reader.packaged_shots(proto)
+
+    def look(oid):
+        dets = [r for r in views[oid]["photometry"] if r["kind"] == "det" and r.get("stamp", True) and r.get("candid")]
+        if not dets:
+            return oid, None, None
+        first = min(dets, key=lambda r: r["mjd"])
+        try:
+            fits = [alerce.stamp(c, oid, first["candid"], k) for k in reader.KINDS]
+            out = reader.read(llm, "spark-open", reader.draw(fits, proto.render), shots, proto.system, "agent:reader")
+        except Exception as e:
+            return oid, None, {"role": "reader", "case": case_id(oid), "cost_usd": 0.0, "decision": "could not read",
+                               "error": type(e).__name__}
+        reading = {"label": out["label"], "p_real": out["p_real"], "why": out["why"][:200]}
+        return oid, reading, {"role": "reader", "case": case_id(oid), "model": SPARK_OPEN, "effort": None,
+                              "cost_usd": out["usd"], "seconds": out["seconds"], "votes": out["votes"],
+                              "decision": f"{out['label']} ({out['p_real']})", "why": reading["why"]}
+
+    results = list(pool.map(look, views))
+    return ({oid: r for oid, r, _ in results if r}, [e | {"object": oid} for oid, _, e in results if e])
+
+
+def triage(llm, views: dict, n: int, pool, readings: dict | None = None) -> tuple[list[str], list[dict]]:
+    readings = readings or {}
+    cases = {oid: case_of(v) | ({"stamp_reader": readings[oid]} if oid in readings else {}) for oid, v in views.items()}
     first = dict(zip(cases, pool.map(lambda oid: agents.lookout(llm, cases[oid]), cases)))
     events, score = [], {}
     for oid, (out, event) in first.items():
@@ -50,11 +80,11 @@ def _questions(sira: dict, theories: list[dict], now: float) -> list[dict]:
     return out
 
 
-def investigate(llm, view: dict, ebv: float, pool, seniors: list) -> tuple[dict | None, list[dict]]:
+def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict | None = None) -> tuple[dict | None, list[dict]]:
     phys = physics(view, ebv)
     if not phys:
         return None, []
-    case, now = case_of(view), view["as_of"]
+    case, now = case_of(view) | ({"stamp_reader": reading} if reading else {}), view["as_of"]
     top = sorted(phys["summaries"], key=lambda k: -phys["summaries"][k]["weight"])[:3]
     jobs = [("t", k) for k in top] + [("s", lens) for lens in agents.LENSES]
     results = list(pool.map(lambda j: agents.theorist(llm, j[1], case, phys) if j[0] == "t"
@@ -80,7 +110,9 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list) -> tuple[dict 
              "senior_reviews_left": seniors[0]}
     choice, event = agents.director(llm, case, state)
     events.append(event)
-    if choice["action"] == "escalate" and seniors[0] > 0:
+    draw = int(hashlib.sha256(f"audit:{case['case']}:{int(now)}".encode()).hexdigest(), 16) % 1000
+    audit = choice["action"] == "bet" and draw < AUDIT * 1000
+    if (choice["action"] == "escalate" or audit) and seniors[0] > 0:
         seniors[0] -= 1
         review, event = agents.director(llm, case, state, senior=True)
         events.append(event)
@@ -90,7 +122,7 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list) -> tuple[dict 
         sira = assemble(phys, weights, view)
         questions = _questions(sira, theories, now)
         choice = choice | {"question": review["question"] if review["question"] in {q["id"] for q in questions}
-                           else choice["question"], "senior": review}
+                           else choice["question"], "senior": review, "audit": audit}
     picked = next(q for q in questions if q["id"] == choice["question"])
     words, event = agents.forecaster(llm, case, picked)
     events.append(event)
