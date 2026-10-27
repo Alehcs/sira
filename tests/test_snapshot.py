@@ -33,7 +33,7 @@ def test_objects_never_carry_the_answer(tmp_path, monkeypatch):
     text = str(obj)
     assert "SN Ia" not in text and "redshift" not in text and "SN2025" not in text
     assert obj["host"]["predates_event"] is True
-    assert len(files) == 4
+    assert len(files) == 7
 
 
 def test_missing_host_image_keeps_the_object(tmp_path, monkeypatch):
@@ -49,4 +49,4 @@ def test_missing_host_image_keeps_the_object(tmp_path, monkeypatch):
     monkeypatch.setattr(snapshot, "_host", blocked)
     obj, files = snapshot.ztf_object(None, snapshot.pick(BTS_ROWS, [])[0], tmp_path)
     assert obj["host"]["file"] is None
-    assert len(files) == 3
+    assert len(files) == 6

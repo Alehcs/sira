@@ -14,7 +14,7 @@ LEGACY = "https://www.legacysurvey.org/viewer/cutout.jpg"
 KINDS = ("science", "template", "difference")
 CC_TYPES = {"SN II", "SN IIP", "SN IIb", "SN IIn", "SN Ib", "SN Ic", "SN Ib/c", "SN Ic-BL"}
 RARE = ("TDE", "SLSN", "SN Ibn", "SN Icn", "SN Ia-CSM", "SN Iax", "SN Ia-91bg")
-LIMITS = {"ia": 60, "cc": 40, "rare": 30, "rubin": 10, "bogus": 50, "examples": 20}
+LIMITS = {"ia": 60, "cc": 40, "rare": 30, "rubin": 10, "bogus": 50, "examples": 50, "holdout": 80}
 
 _local = threading.local()
 # Legacy Survey rate-limits hard, so keep host cutouts to two at a time
@@ -79,6 +79,12 @@ def _write(path: Path, data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _stamp(out: Path, rel: str, data: bytes, files: dict) -> None:
+    # the raw FITS sits next to each PNG, so stamps can be rendered again another way
+    files[rel] = _write(out / rel, stamps.to_png(data))
+    files[rel[:-4] + ".fits"] = _write(out / (rel[:-4] + ".fits"), stamps.unzip(data))
+
+
 def _host(c, ra: float, dec: float) -> bytes:
     with _host_slots:
         return get(c, LEGACY, {"ra": ra, "dec": dec, "layer": "ls-dr10", "pixscale": 0.262, "size": 128}).content
@@ -94,8 +100,7 @@ def ztf_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     first = min(dets, key=lambda d: d["mjd"])
     files = {}
     for kind in KINDS:
-        rel = f"stamps/{oid}/first_{kind}.png"
-        files[rel] = _write(out / rel, stamps.to_png(alerce.stamp(c, oid, str(first["candid"]), kind)))
+        _stamp(out, f"stamps/{oid}/first_{kind}.png", alerce.stamp(c, oid, str(first["candid"]), kind), files)
     ra = sum(d["ra"] for d in dets) / len(dets)
     dec = sum(d["dec"] for d in dets) / len(dets)
     host = f"stamps/{oid}/host.jpg"
@@ -123,7 +128,7 @@ def rubin_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     try:
         for kind in ("Science", "Template", "Difference"):
             rel = f"stamps/{oid}/first_{kind.lower()}.png"
-            files[rel] = _write(out / rel, stamps.to_png(fink.cutout(c, first["source_id"], kind)))
+            _stamp(out, rel, fink.cutout(c, first["source_id"], kind), files)
             stamp_files.append(rel)
     except Exception:
         stamp_files = []
@@ -138,27 +143,34 @@ def rubin_object(c, case: dict, out: Path) -> tuple[dict, dict]:
     return obj, files
 
 
-def bogus_stamps(c, oid: str, out: Path, folder: str = "valset/bogus") -> tuple[list[str], dict]:
+def first_stamps(c, oid: str, out: Path, folder: str) -> tuple[list[str], dict]:
     lc = alerce.lightcurve(c, oid)
     dets = [d for d in lc.get("detections", []) if d.get("has_stamp")]
     first = min(dets, key=lambda d: d["mjd"])
-    files = {}
-    for kind in KINDS:
-        rel = f"{folder}/{oid}_{kind}.png"
-        files[rel] = _write(out / rel, stamps.to_png(alerce.stamp(c, oid, str(first["candid"]), kind)))
-    return list(files), files
+    files, paths = {}, [f"{folder}/{oid}_{kind}.png" for kind in KINDS]
+    for kind, rel in zip(KINDS, paths):
+        _stamp(out, rel, alerce.stamp(c, oid, str(first["candid"]), kind), files)
+    return paths, files
 
 
-def _bogus_set(pool, oids: list[str], out: Path, folder: str, failures: list, checksums: dict) -> list[dict]:
+def _stamp_set(pool, oids: list[str], out: Path, folder: str, label: str, failures: list, checksums: dict) -> list[dict]:
     found = []
-    for oid, (result, err) in zip(oids, pool.map(lambda o: _safe(bogus_stamps, _client(), o, out, folder), oids)):
+    for oid, (result, err) in zip(oids, pool.map(lambda o: _safe(first_stamps, _client(), o, out, folder), oids)):
         if err:
             failures.append({"oid": oid, "error": err})
             continue
         paths, files = result
         checksums.update(files)
-        found.append({"label": "bogus", "oid": oid, "files": paths})
+        found.append({"label": label, "oid": oid, "files": paths})
     return found
+
+
+def holdout_real(bts_rows: list[dict], taken: set, n: int) -> dict[str, list[str]]:
+    year = lambda r: mjd_to_date(r["peak_mjd"]).year
+    groups = {"ia": [r for r in bts_rows if r["type"] == "SN Ia" and year(r) == 2024
+                     and r["redshift"] and 0.02 <= r["redshift"] <= 0.12],
+              "cc": [r for r in bts_rows if r["type"] in CC_TYPES and year(r) == 2024]}
+    return {g: [r["oid"] for r in _shuffled(rows) if r["oid"] not in taken][: n // 2] for g, rows in groups.items()}
 
 
 def code_version() -> str | None:
@@ -181,7 +193,8 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
     failures, checksums, objects, truth = [], {}, [], {}
     c = client()
     with client(verify=False) as bts_client:  # BTS serves a self-signed certificate
-        cases = pick(catalogs.bts(bts_client), catalogs.microlensing(c), limits)
+        bts_rows = catalogs.bts(bts_client)
+    cases = pick(bts_rows, catalogs.microlensing(c), limits)
     if rubin:
         found, err = _safe(rubin_cases, c, limits["rubin"])
         cases += found or []
@@ -190,9 +203,14 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
     query = {"classifier": "stamp_classifier", "class": "bogus", "probability": 0.9,
              "page_size": limits["bogus"], "order_by": "probability", "order_mode": "DESC"}
     bogus = [i["oid"] for i in alerce.objects(c, query)]
-    # the next page feeds the reader's few-shot examples and never overlaps the valset
+    # page 2 feeds the reader's examples, pages 3-4 a holdout no protocol has seen; none overlap
     spare = [i["oid"] for i in alerce.objects(c, query | {"page": 2}) if i["oid"] not in bogus][: limits["examples"]]
-    log(f"fetching {len(cases)} objects, {len(bogus)} bogus stamps and {len(spare)} spare ones")
+    seen = set(bogus) | set(spare)
+    held = [i["oid"] for p in (3, 4) for i in alerce.objects(c, query | {"page": p}) if i["oid"] not in seen]
+    held = list(dict.fromkeys(held))[: limits["holdout"]]
+    held_real = holdout_real(bts_rows, {case["oid"] for case in cases}, limits["holdout"])
+    log(f"fetching {len(cases)} objects, {len(bogus)} bogus, {len(spare)} spare and {len(held)} + "
+        f"{sum(map(len, held_real.values()))} holdout stamps")
 
     def run(case):
         fn = rubin_object if case["survey"] == "rubin" else ztf_object
@@ -214,13 +232,17 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
 
         real = [{"label": "real", "oid": o["oid"], "files": [f"stamps/{o['oid']}/first_{k}.png" for k in KINDS]}
                 for o in objects if o["category"] in ("ia", "cc")]
-        valset = real[: limits["bogus"]] + _bogus_set(pool, bogus, out, "valset/bogus", failures, checksums)
-        examples = real[limits["bogus"]:] + _bogus_set(pool, spare, out, "examples/bogus", failures, checksums)
+        valset = real[: limits["bogus"]] + _stamp_set(pool, bogus, out, "valset/bogus", "bogus", failures, checksums)
+        examples = real[limits["bogus"]:] + _stamp_set(pool, spare, out, "examples/bogus", "bogus", failures, checksums)
+        holdout = [e | {"group": g} for g, oids in held_real.items()
+                   for e in _stamp_set(pool, oids, out, "holdout/real", "real", failures, checksums)]
+        holdout += [e | {"group": "bogus"} for e in _stamp_set(pool, held, out, "holdout/bogus", "bogus", failures, checksums)]
 
     # truth stays in its own file: the agents never read it, only the scorer does
     checksums["truth.json"] = _write(out / "truth.json", json.dumps(truth, indent=1).encode())
     checksums["valset.json"] = _write(out / "valset.json", json.dumps(valset, indent=1).encode())
     checksums["examples.json"] = _write(out / "examples.json", json.dumps(examples, indent=1).encode())
+    checksums["holdout.json"] = _write(out / "holdout.json", json.dumps(holdout, indent=1).encode())
     manifest = {
         "version": 1,
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -229,6 +251,7 @@ def build(out: Path, workers: int = 8, rubin: bool = True, limits: dict = LIMITS
         "splits": dict(Counter(o["split"] for o in objects)),
         "valset": dict(Counter(v["label"] for v in valset)),
         "examples": dict(Counter(e["label"] for e in examples)),
+        "holdout": dict(Counter(h["group"] for h in holdout)),
         "objects": objects,
         "failures": failures,
         "checksums": checksums,
