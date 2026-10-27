@@ -1,5 +1,8 @@
+import decimal
 import hashlib
 import json
+import math
+import os
 import subprocess
 import sys
 import tempfile
@@ -9,18 +12,53 @@ from pathlib import Path
 import httpx
 from astropy.time import Time
 
-from .fetch import get
+from .snapshot import code_version
 
 GENESIS = "0" * 64
 TSA = "https://freetsa.org/tsr"
-TSA_CA = "https://freetsa.org/files/cacert.pem"
-# pinned, so a swapped certificate can never vouch for a forged receipt
-TSA_CA_SHA256 = "a6379e7cecc05faa3cbf076013d745e327bbbaa38c0b9af22469d4701d18aabc"
+# the authority's root ships with the code and is pinned whole, so no download can swap or extend it
+TSA_CA = Path(__file__).parent / "freetsa_ca.pem"
+TSA_CA_SHA256 = "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438"
 OTS = str(Path(sys.executable).parent / "ots")
+FORMAT = 2  # entries from format 2 on are hashed as RFC 8785 JSON, which any language can rebuild
+
+
+def _number(x) -> str:
+    if isinstance(x, int):
+        return str(x)
+    if not math.isfinite(x):
+        raise ValueError("NaN and infinity cannot be hashed")
+    if x == int(x) and abs(x) < 2 ** 53:
+        return str(int(x))
+    # Python's repr has the shortest round-trip digits, as ECMAScript does; only the layout differs
+    mantissa, _, exp = repr(x).partition("e")
+    if not exp:
+        return mantissa
+    e = int(exp)
+    if -7 < e < 21:
+        return format(decimal.Decimal(repr(x)), "f")
+    return mantissa + "e" + ("+" if e > 0 else "-") + str(abs(e))
+
+
+def jcs(v) -> str:
+    if v is None or isinstance(v, bool):
+        return json.dumps(v)
+    if isinstance(v, (int, float)):
+        return _number(v)
+    if isinstance(v, str):
+        return json.dumps(v, ensure_ascii=False)
+    if isinstance(v, (list, tuple)):
+        return "[" + ",".join(jcs(x) for x in v) + "]"
+    if isinstance(v, dict):
+        return "{" + ",".join(json.dumps(k, ensure_ascii=False) + ":" + jcs(v[k]) for k in sorted(v)) + "}"
+    raise TypeError(f"cannot hash a {type(v).__name__}")
 
 
 def canonical(entry: dict) -> bytes:
     body = {k: v for k, v in entry.items() if k != "hash"}
+    if body.get("v", 1) >= 2:
+        return jcs(body).encode("utf-8")
+    # format 1, kept so the first night's entries still verify
     return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
 
 
@@ -50,12 +88,12 @@ class Ledger:
 
     def append(self, kind: str, payload: dict, now: str | None = None) -> dict:
         entries = self.entries()
-        entry = {"seq": len(entries), "time": now or utcnow(), "kind": kind, "payload": payload,
+        entry = {"v": FORMAT, "seq": len(entries), "time": now or utcnow(), "kind": kind, "payload": payload,
                  "prev": entries[-1]["hash"] if entries else GENESIS}
         entry["hash"] = digest(entry)
         self.root.mkdir(parents=True, exist_ok=True)
         with self.path.open("a") as f:
-            f.write(json.dumps(entry, sort_keys=True, ensure_ascii=False) + "\n")
+            f.write(json.dumps(entry, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n")
         return entry
 
     def anchor(self, c: httpx.Client) -> dict | None:
@@ -69,13 +107,17 @@ class Ledger:
         doc.write_bytes(canonical(head))
         tsr = self.receipts / f"{head['hash']}.tsr"
         tsr.write_bytes(rfc3161(c, head["hash"]))
-        ok, when = check_rfc3161(c, tsr, head["hash"])
+        ok, when = check_rfc3161(tsr, head["hash"])
         if not ok:
             raise RuntimeError("the timestamp authority returned a receipt that does not verify")
         stamped = subprocess.run([OTS, "stamp", str(doc)], capture_output=True, text=True).returncode == 0
+        run = os.environ.get("GITHUB_RUN_ID")
+        repo = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ.get('GITHUB_REPOSITORY', '')}"
         return self.append("anchor", {"head": head["hash"], "seq": head["seq"], "tsa": TSA, "tsa_time": when,
                                       "rfc3161": f"receipts/{tsr.name}",
-                                      "ots": f"receipts/{doc.name}.ots" if stamped else None})
+                                      "ots": f"receipts/{doc.name}.ots" if stamped else None,
+                                      "code": os.environ.get("GITHUB_SHA") or code_version(),
+                                      "run": f"{repo}/actions/runs/{run}" if run else None})
 
 
 def rfc3161(c: httpx.Client, hex_digest: str) -> bytes:
@@ -88,24 +130,13 @@ def rfc3161(c: httpx.Client, hex_digest: str) -> bytes:
         return r.content
 
 
-def _tsa_ca(c: httpx.Client) -> bytes:
-    pem = get(c, TSA_CA).content
-    with tempfile.NamedTemporaryFile(suffix=".pem") as f:
-        f.write(pem)
-        f.flush()
-        out = subprocess.run(["openssl", "x509", "-in", f.name, "-noout", "-fingerprint", "-sha256"],
-                             capture_output=True, text=True).stdout
-    if out.split("=")[-1].strip().replace(":", "").lower() != TSA_CA_SHA256:
-        raise RuntimeError("the timestamp authority certificate does not match the pinned one")
-    return pem
-
-
-def check_rfc3161(c: httpx.Client, tsr: Path, hex_digest: str) -> tuple[bool, str | None]:
-    with tempfile.NamedTemporaryFile(suffix=".pem") as ca:
-        ca.write(_tsa_ca(c))
-        ca.flush()
-        ok = subprocess.run(["openssl", "ts", "-verify", "-digest", hex_digest, "-in", str(tsr), "-CAfile", ca.name],
-                            capture_output=True, text=True).returncode == 0
+def check_rfc3161(tsr: Path, hex_digest: str) -> tuple[bool, str | None]:
+    if hashlib.sha256(TSA_CA.read_bytes()).hexdigest() != TSA_CA_SHA256:
+        raise RuntimeError("the bundled timestamp authority certificate was altered")
+    if not tsr.exists():
+        return False, None
+    ok = subprocess.run(["openssl", "ts", "-verify", "-digest", hex_digest, "-in", str(tsr), "-CAfile", str(TSA_CA)],
+                        capture_output=True, text=True).returncode == 0
     text = subprocess.run(["openssl", "ts", "-reply", "-in", str(tsr), "-text"], capture_output=True, text=True).stdout
     line = next((l for l in text.splitlines() if l.startswith("Time stamp:")), None)
     when = None
@@ -115,53 +146,17 @@ def check_rfc3161(c: httpx.Client, tsr: Path, hex_digest: str) -> tuple[bool, st
     return ok, when
 
 
-def ots_state(path: Path) -> str:
+def ots_state(path: Path, hex_digest: str) -> str:
     if not path.exists():
         return "missing"
     info = subprocess.run([OTS, "info", str(path)], capture_output=True, text=True).stdout
+    # a proof only counts if it was made for this exact document
+    if f"File sha256 hash: {hex_digest}" not in info:
+        return "mismatch"
     return "bitcoin" if "BitcoinBlockHeaderAttestation" in info else "pending"
 
 
 def upgrade(root: Path) -> None:
     for proof in sorted((Path(root) / "receipts").glob("*.ots")):
-        if ots_state(proof) == "pending":
+        if ots_state(proof, proof.name.split(".")[0]) == "pending":
             subprocess.run([OTS, "upgrade", str(proof)], capture_output=True)
-
-
-def verify(root: Path, c: httpx.Client) -> dict:
-    root, problems = Path(root), []
-    entries = Ledger(root).entries()
-    prev = GENESIS
-    for i, e in enumerate(entries):
-        if e["seq"] != i or e["prev"] != prev or digest(e) != e["hash"]:
-            problems.append(f"entry {i} breaks the chain")
-        prev = e["hash"]
-    sealed, ots = {}, {"bitcoin": 0, "pending": 0, "missing": 0}
-    for a in (e for e in entries if e["kind"] == "anchor"):
-        p = a["payload"]
-        doc = root / "receipts" / f"{p['head']}.json"
-        if p["seq"] >= len(entries) or entries[p["seq"]]["hash"] != p["head"]:
-            problems.append(f"anchor {a['seq']} points at an entry that is not in the chain")
-            continue
-        if not doc.exists() or hashlib.sha256(doc.read_bytes()).hexdigest() != p["head"]:
-            problems.append(f"anchor {a['seq']}: stamped document missing or altered")
-        ok, when = check_rfc3161(c, root / p["rfc3161"], p["head"])
-        if not ok:
-            problems.append(f"anchor {a['seq']}: RFC 3161 receipt does not verify")
-            continue
-        sealed[p["seq"]] = when
-        ots[ots_state(root / p["ots"]) if p.get("ots") else "missing"] += 1
-    bets = {e["payload"]["bet"]: e for e in entries if e["kind"] == "bet"}
-    seal = {}
-    for bet_id, e in bets.items():
-        # a bet is sealed by the first anchor that covers it
-        times = [when for seq, when in sealed.items() if seq >= e["seq"]]
-        seal[bet_id] = min(times, key=mjd) if times else None
-    late = [o["seq"] for o in entries if o["kind"] == "outcome"
-            and (seal.get(o["payload"]["bet"]) is None or o["payload"]["mjd"] <= mjd(seal[o["payload"]["bet"]]))]
-    if late:
-        problems.append(f"outcomes measured before their bet was sealed: {late[:5]}")
-    n_sealed = sum(v is not None for v in seal.values())
-    return {"entries": len(entries), "anchors": len(sealed), "bets": len(bets), "bets_sealed": n_sealed,
-            "outcomes": sum(e["kind"] == "outcome" for e in entries), "ots": ots, "problems": problems,
-            "passes": not problems and n_sealed == len(bets)}
