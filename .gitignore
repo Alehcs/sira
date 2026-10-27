@@ -29,3 +29,6 @@ data/raw/
 
 # Local runtime state (cost log, caches)
 var/
+
+# Downloaded data snapshot (rebuild with: sira snapshot)
+data/snapshot/

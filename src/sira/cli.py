@@ -25,11 +25,24 @@ def smoke(_args) -> None:
     costs(None)
 
 
+def snapshot(args) -> None:
+    from .snapshot import build
+
+    m = build(args.out, workers=args.workers, rubin=not args.no_rubin)
+    print(json.dumps({k: m[k] for k in ("counts", "splits", "valset")}, indent=2))
+    print(f"failures: {len(m['failures'])}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="sira")
     sub = parser.add_subparsers(required=True)
     sub.add_parser("costs", help="show spend against caps").set_defaults(run=costs)
     sub.add_parser("smoke", help="one tiny call per model").set_defaults(run=smoke)
+    snap = sub.add_parser("snapshot", help="download the local data snapshot")
+    snap.add_argument("--out", default="data/snapshot")
+    snap.add_argument("--workers", type=int, default=8)
+    snap.add_argument("--no-rubin", action="store_true")
+    snap.set_defaults(run=snapshot)
     args = parser.parse_args()
     args.run(args)
 
