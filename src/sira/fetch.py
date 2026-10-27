@@ -9,7 +9,7 @@ import httpx
 
 CACHE = Path(os.getenv("SIRA_CACHE", "data/cache"))
 # seconds between requests to the same host, to stay polite with public services
-GAPS = {"api.alerce.online": 0.4, "avro.alerce.online": 0.4, "www.legacysurvey.org": 1.0}
+GAPS = {"api.alerce.online": 0.4, "avro.alerce.online": 0.4, "www.legacysurvey.org": 1.0, "irsa.ipac.caltech.edu": 0.3}
 
 _last: dict[str, float] = {}
 _lock = threading.Lock()

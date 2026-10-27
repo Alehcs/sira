@@ -8,6 +8,7 @@ from .fetch import get
 
 BTS = "https://sites.astro.caltech.edu/ztf/bts/explorer.php"
 MULENS = "https://zenodo.org/api/records/13829674/files/machine_readable_high_confidence.csv/content"
+DUST = "https://irsa.ipac.caltech.edu/cgi-bin/DUST/nph-dust"
 ALERT_ID = re.compile(r"^ZTF\d{2}[a-z]{7}$")
 
 
@@ -66,3 +67,12 @@ def bts(c: httpx.Client) -> list[dict]:
 
 def microlensing(c: httpx.Client) -> list[dict]:
     return parse_mulens(get(c, MULENS).text)
+
+
+def mw_ebv(c: httpx.Client, ra: float, dec: float) -> float:
+    # Milky Way reddening at a position (Schlafly & Finkbeiner 2011), public and blind to the class
+    text = get(c, DUST, {"locstr": f"{ra:.5f} {dec:+.5f} equ j2000", "regSize": "2.0"}).text
+    m = re.search(r"<refPixelValueSandF>\s*([\d.]+)", text)
+    if not m:
+        raise ValueError("no reddening in the IRSA reply")
+    return float(m.group(1))
