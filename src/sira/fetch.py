@@ -68,8 +68,10 @@ def _cached(method: str, url: str, body, call) -> httpx.Response:
     return r
 
 
-def get(c: httpx.Client, url: str, params=None) -> httpx.Response:
-    return _cached("GET", url, params, lambda: c.get(url, params=params))
+def get(c: httpx.Client, url: str, params=None, fresh: bool = False) -> httpx.Response:
+    call = lambda: c.get(url, params=params)
+    # live data must never come from the cache
+    return _retry(call, url) if fresh else _cached("GET", url, params, call)
 
 
 def post(c: httpx.Client, url: str, payload: dict) -> httpx.Response:

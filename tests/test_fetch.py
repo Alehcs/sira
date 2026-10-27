@@ -48,3 +48,11 @@ def test_failures_are_not_cached():
     with pytest.raises(httpx.HTTPStatusError):
         fetch.get(fake_client([404]), "https://example.org/e")
     assert fetch.get(fake_client([200]), "https://example.org/e").status_code == 200
+
+
+def test_fresh_reads_skip_the_cache():
+    seen = []
+    c = fake_client([200, 200], seen)
+    fetch.get(c, "https://example.org/f")
+    fetch.get(c, "https://example.org/f", fresh=True)
+    assert len(seen) == 2
