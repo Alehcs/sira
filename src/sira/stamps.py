@@ -22,3 +22,15 @@ def to_png(data: bytes, upscale: int = 4) -> bytes:
     out = io.BytesIO()
     pic.save(out, format="PNG")
     return out.getvalue()
+
+
+def side_by_side(pngs: list[bytes], gap: int = 8) -> bytes:
+    pics = [Image.open(io.BytesIO(p)) for p in pngs]
+    sheet = Image.new("L", (sum(p.width for p in pics) + gap * (len(pics) - 1), max(p.height for p in pics)), 255)
+    x = 0
+    for pic in pics:
+        sheet.paste(pic, (x, 0))
+        x += pic.width + gap
+    out = io.BytesIO()
+    sheet.save(out, format="PNG")
+    return out.getvalue()

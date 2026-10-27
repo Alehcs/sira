@@ -5,7 +5,7 @@ import numpy as np
 from astropy.io import fits
 from PIL import Image
 
-from sira.stamps import to_png
+from sira.stamps import side_by_side, to_png
 
 
 def fits_bytes(data, compress=False):
@@ -28,3 +28,10 @@ def test_gzip_and_nan_are_handled():
     data[0, 0] = np.nan
     png = to_png(fits_bytes(data, compress=True), upscale=1)
     assert Image.open(io.BytesIO(png)).size == (63, 63)
+
+
+def test_side_by_side_keeps_panels_apart():
+    panel = to_png(fits_bytes(np.zeros((63, 63))))
+    sheet = Image.open(io.BytesIO(side_by_side([panel] * 3)))
+    assert sheet.size == (3 * 252 + 2 * 8, 252)
+    assert sheet.getpixel((252, 10)) == 255
