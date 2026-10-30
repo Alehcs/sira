@@ -32,3 +32,6 @@ var/
 
 # Downloaded data snapshot (rebuild with: sira snapshot)
 data/snapshot/
+site/public/data/
+site/dist/
+.claude/

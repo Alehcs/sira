@@ -6,6 +6,16 @@ from .costs import CostMeter
 from .llm import LLM, SPARK, WONDER
 
 
+def site(args) -> None:
+    from .site import export, replays
+
+    if args.replays:
+        replays(Path("var"), Path(args.root), Path(args.out))
+        print(f"replays written to {args.out}")
+    else:
+        print(json.dumps(export(Path(args.ledger), Path(args.out))["record"], indent=2))
+
+
 def costs(_args) -> None:
     print(json.dumps(CostMeter().summary(), indent=2))
 
@@ -196,6 +206,12 @@ def main() -> None:
     rerun.add_argument("--workers", type=int, default=4)
     rerun.add_argument("--report-only", action="store_true")
     rerun.set_defaults(run=replay)
+    web = sub.add_parser("site", help="write the public site's data from the ledger, or from the saved replays")
+    web.add_argument("--ledger", default="ledger")
+    web.add_argument("--out", default="site/public/data")
+    web.add_argument("--replays", action="store_true", help="write the replay files from var/ instead, locally")
+    web.add_argument("--root", default="data/snapshot")
+    web.set_defaults(run=site)
     args = parser.parse_args()
     args.run(args)
 
