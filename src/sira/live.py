@@ -282,11 +282,13 @@ def resolve(ledger: Ledger, c, now: float, look=None, seals: dict | None = None,
 
 
 def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> dict:
+    from . import crowd
     from .leverrier import adopted, judge, watch
 
     c, ledger, now = client(), Ledger(root), now_mjd()
     resolved = resolve(ledger, c, now)
     verdicts, leaps = judge(ledger, now), []
+    rounds = crowd.night(ledger, c, now)
     recent = {e["payload"]["object"] for e in ledger.entries()
               if e["kind"] == "bet" and e["payload"]["made_at"] > now - RECENT}
     candidates = [o for o in active(c, now, 50) if o not in recent]
@@ -360,4 +362,5 @@ def run(root: Path, n: int = 15, team: bool = False, night_usd: float = 4.0) -> 
     upgrade(root)
     return {"resolved": len(resolved), "bets": len(made), "skipped": skipped, "spent_usd": round(spent, 4),
             "verdicts": len(verdicts), "surprises": sum(e["kind"] == "surprise" for e in leaps),
-            "leap_bets": sum(e["kind"] == "bet" for e in leaps), "anchor": anchor["payload"] if anchor else None}
+            "leap_bets": sum(e["kind"] == "bet" for e in leaps), "rounds": rounds,
+            "anchor": anchor["payload"] if anchor else None}

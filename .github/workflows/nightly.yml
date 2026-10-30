@@ -26,10 +26,13 @@ jobs:
           git worktree add ledger origin/ledger
       - name: Verify the ledger before adding to it
         run: uv run sira verify --ledger ledger
-      - name: Score open bets, place new ones, anchor
+      - name: Score open bets, close Beat SIRA rounds, place new bets, anchor
         env:
           MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
           BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+          SIRA_ENVELOPE_KEY: ${{ secrets.SIRA_ENVELOPE_KEY }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: uv run sira live --ledger ledger --team --night-usd 4
       - name: Verify again, against the archive
         run: uv run sira verify --ledger ledger --online

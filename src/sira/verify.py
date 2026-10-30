@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from . import leverrier, live
+from . import crowd, leverrier, live
 from .ledger import GENESIS, Ledger, check_rfc3161, digest, mjd, ots_state
 
 HOUR = 1 / 24
@@ -97,11 +97,14 @@ def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: flo
                 problems.append(f"verdict {e['seq']}: does not follow from the scores of its bet")
     if online:
         problems += _online(c, bets, outcomes, now if now is not None else live.now_mjd())
+    # Beat SIRA: sealed answers, the bell, the humans' bets and their scores
+    more, rounds = crowd.check(entries, sealed, online, c, now)
+    problems += more
     n_sealed = sum(b["_seal"] is not None for b in bets.values())
     return {"entries": len(entries), "head": f"{entries[-1]['seq']}:{entries[-1]['hash']}" if entries else None,
             "anchors": len(sealed), "bets": len(bets), "bets_sealed": n_sealed, "outcomes": len(outcomes),
             "answers": len(answers), "surprises": sum(e["kind"] == "surprise" for e in entries),
-            "verdicts": sum(e["kind"] == "verdict" for e in entries), "ots": ots, "online": online,
+            "verdicts": sum(e["kind"] == "verdict" for e in entries), **rounds, "ots": ots, "online": online,
             "problems": problems, "passes": not problems and n_sealed == len(bets)}
 
 
