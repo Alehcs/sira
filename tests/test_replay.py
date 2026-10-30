@@ -41,3 +41,16 @@ def test_a_season_replays_every_forecaster_on_the_same_data(season):
     assert summary["bets"] == result["checkpoints"] and summary["outcomes"] > 0
     assert all(summary[k]["log_score"] is not None for k in ("sira", "b0", "b1", "b2"))
     assert set(summary["sira_minus"]) == {"b0", "b1", "b2"} and summary["sira"]["class_log_loss"] is not None
+    assert set(summary["ablations"]) == {"no_llm", "no_team", "no_leverrier", "llm_25", "llm_75"}
+    assert summary["ablations"]["no_leverrier"]["sira_minus"] == 0  # nothing was adopted, so nothing changes
+
+
+def test_taking_a_piece_out_of_sira_keeps_the_weights_of_the_rest():
+    grid = lambda parts: [{"mjd": 61360.0, "band": "ztfr", "parts": parts}, {"mjd": 61362.0, "band": "ztfr", "parts": parts}]
+    sira = [["ia", 0.3, 100, 10], ["adopted", 0.2, 60, 10], ["llm", 0.5, 80, 20]]
+    bet = {"forecasts": grid(sira), "baselines": {"b1": grid([["ia", 0.9, 100, 10], ["null", 0.1, 50, 50]])}}
+    v = replay.variants(bet, {"mjd": 61361.0, "band": "ztfr"})
+    assert v["no_llm"] == sira[:2]
+    assert v["no_team"] == [["ia", pytest.approx(0.45), 100, 10], ["null", pytest.approx(0.05), 50, 50], ["llm", 0.5, 80, 20]]
+    assert v["no_leverrier"] == [["ia", pytest.approx(0.5), 100, 10], ["llm", 0.5, 80, 20]]
+    assert [p[1] for p in v["llm_75"]] == [pytest.approx(0.15), pytest.approx(0.1), 0.75]

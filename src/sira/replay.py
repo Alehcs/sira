@@ -13,12 +13,13 @@ from .fetch import client
 from .firewall import as_of
 from .ledger import Ledger
 from .leverrier import adopted, judge, watch
-from .live import BANDS, DAYS, assemble, physics, resolve, seen
+from .live import BANDS, DAYS, _at, assemble, measure, physics, resolve, seen
 from .probe import coarse
 from .snapshot import code_version
 
 CHECKS = 6  # checkpoints per case
 CLASSES = ("ia", "ii", "ibc", "tde", "other")
+SHARES = (0.25, 0.75)  # other weights for the model's own forecast, to see how much the even split matters
 
 
 def iso(mjd: float) -> str:
@@ -100,6 +101,24 @@ def run(root: Path, oids: list[str], out: Path, llm, workers: int = 4) -> list[d
         return list(pool.map(lambda oid: case(root, oid, out, llm), oids))
 
 
+def _pool(theory: list, llm: list, share: float) -> list:
+    total = sum(p[1] for p in theory)
+    return [[k, w * (1 - share) / total, mu, sd] for k, w, mu, sd in theory] + [[llm[0], share, *llm[2:]]]
+
+
+def variants(bet: dict, o: dict) -> dict[str, list]:
+    # SIRA's forecast with one piece of the lab taken out, for the same outcome
+    parts = _at(bet["forecasts"], o["mjd"], o["band"])
+    llm = next((p for p in parts if p[0] == "llm"), None)
+    if llm is None:
+        return {}
+    team = [p for p in parts if p[0] != "llm"]
+    plain = _at(bet["baselines"]["b1"], o["mjd"], o["band"])  # the fitted weights, before skeptics and senior
+    out = {"no_llm": team, "no_team": _pool(plain, llm, llm[1]),
+           "no_leverrier": _pool([p for p in team if p[0] != "adopted"], llm, llm[1])}
+    return out | {f"llm_{round(s * 100)}": _pool(team, llm, s) for s in SHARES}
+
+
 def _boot(diffs: dict[str, list[float]], seed: int = 0, draws: int = 2000) -> list[float]:
     # resample whole bets, since the scores within one bet move together
     groups = [np.array(v) for v in diffs.values() if v]
@@ -119,7 +138,7 @@ def report(root: Path, out: Path) -> dict:
     paired = {k: {} for k in names[1:]}
     loss = {"sira": [], "b1": [], "b2": []}
     counts, cost = {"bets": 0, "dropped": 0, "surprises": 0, "leap_bets": 0}, 0.0
-    verdicts = []
+    verdicts, ablated = [], {}
     for path in sorted(Path(out).glob("*/ledger.jsonl")):
         entries = Ledger(path.parent).entries()
         bets = {e["payload"]["bet"]: e["payload"] for e in entries if e["kind"] == "bet"}
@@ -152,6 +171,12 @@ def report(root: Path, out: Path) -> dict:
                         pits[name].append(score["pit"])
                 for k in names[1:]:
                     paired[k].setdefault(p["bet"], []).append(p["log_score"] - rivals[k]["log_score"])
+                args = (p["flux"], p["flux_err"]) if p["kind"] == "det" else (p["limit"],)
+                for name, parts in variants(bets[p["bet"]], p).items():
+                    score = measure(parts, p["kind"], *args)["log_score"]
+                    a = ablated.setdefault(name, {"scores": [], "diffs": {}})
+                    a["scores"].append(score)
+                    a["diffs"].setdefault(p["bet"], []).append(p["log_score"] - score)
     summary = {"code": code_version(), "cases": len(list(Path(out).glob("*/ledger.jsonl"))), "outcomes": len(logs["sira"]), **counts,
                "cost_usd": round(cost, 2), "verdicts": verdicts}
     for name in names:
@@ -163,4 +188,7 @@ def report(root: Path, out: Path) -> dict:
     summary["sira_minus"] = {k: {"log_score": round(float(np.mean(np.concatenate([np.array(v) for v in paired[k].values()]))), 3)
                                  if paired[k] else None, "ci95": _boot(paired[k]) if paired[k] else None}
                              for k in names[1:]}
+    summary["ablations"] = {k: {"log_score": round(float(np.mean(a["scores"])), 3),
+                                "sira_minus": round(float(np.mean([d for v in a["diffs"].values() for d in v])), 3),
+                                "ci95": _boot(a["diffs"])} for k, a in ablated.items()}
     return summary
