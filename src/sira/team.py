@@ -8,6 +8,7 @@ from .live import assemble, chance, physics
 SENIOR_PER_NIGHT = 3  # Wonder at max effort is costly; the director may call it this often
 DOUBT = (0.35, 0.65)  # a lookout this unsure gets two more opinions
 ARTIFACT = 0.7  # an instrument skeptic this sure keeps the object off the ledger
+NIGHTS = 3  # unless the source came back on this many nights, which a detector glitch does not
 DOUBTED = 0.3  # a physics skeptic's objection scales a hypothesis by this much
 REMEMBERED = 0.5
 AUDIT = 0.1  # this share of plain bets goes to the senior anyway, so escalation is measured without bias
@@ -106,7 +107,8 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
     lenses = {lens: r[0] for lens, r in zip(agents.LENSES, results[len(top):])}
     mind, events = _mind(alone)
     events += [r[1] for r in results]
-    if lenses["instrument"]["artifact"] and lenses["instrument"]["confidence"] >= ARTIFACT:
+    nights = len({int(r["mjd"]) for r in view["photometry"] if r["kind"] == "det"})
+    if lenses["instrument"]["artifact"] and lenses["instrument"]["confidence"] >= ARTIFACT and nights < NIGHTS:
         return None, events + [{"role": "lab", "case": case["case"], "cost_usd": 0.0,
                                 "decision": "dropped: the instrument skeptic calls it an artifact"}]
     weights = dict(phys["weights"])

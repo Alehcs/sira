@@ -34,10 +34,10 @@ ANSWERS = {
 }
 
 
-def run(answers, seniors=None):
+def run(answers, seniors=None, view=None):
     obj, _ = sn_object()
     with ThreadPoolExecutor(4) as pool:
-        return team.investigate(reply(answers), as_of(obj, NOW), 0.02, pool, seniors or [0])
+        return team.investigate(reply(answers), view or as_of(obj, NOW), 0.02, pool, seniors or [0])
 
 
 def test_the_team_argues_and_stakes_a_question():
@@ -49,10 +49,19 @@ def test_the_team_argues_and_stakes_a_question():
     assert all(np.isfinite(p[2]) for f in bet["forecasts"] for p in f["parts"])
 
 
-def test_an_artifact_never_reaches_the_ledger():
+def test_an_artifact_seen_on_two_nights_never_reaches_the_ledger():
     answers = ANSWERS | {"instrument skeptic": {"artifact": True, "confidence": 0.9, "why": "one-night spike"}}
-    bet, events = run(answers)
+    view = as_of(sn_object()[0], NOW)
+    last = [r for r in view["photometry"] if r["kind"] == "det"][-4:]
+    view["photometry"] = sorted(last + [r | {"mjd": r["mjd"] + 0.02} for r in last], key=lambda r: r["mjd"])
+    bet, events = run(answers, view=view)
     assert bet is None and events[-1]["decision"].startswith("dropped")
+
+
+def test_a_source_back_night_after_night_keeps_its_bet_and_the_doubt():
+    answers = ANSWERS | {"instrument skeptic": {"artifact": True, "confidence": 0.9, "why": "first stamp looks bogus"}}
+    bet, _ = run(answers)
+    assert bet is not None and bet["skeptics"]["instrument"]["artifact"]
 
 
 def test_a_physics_objection_lowers_a_hypothesis():
