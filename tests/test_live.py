@@ -51,7 +51,7 @@ def test_only_measurements_after_the_seal_are_scored(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "OTS", "true")
     obj, m = sn_object()
     book = Ledger(tmp_path)
-    book.append("bet", {"bet": "b1", "object": obj["oid"], "made_at": 61340.74}
+    book.append("bet", {"bet": "b1", "object": obj["oid"], "model": "v1", "made_at": 61340.74}
                 | live.forecast(as_of(obj, 61340.75), 0.02))
     book.anchor(None)
     later = [{"mjd": t, "band": "ztfr", "kind": "det", "flux": float(m.bandflux("ztfr", t, zp=23.9, zpsys="ab")),

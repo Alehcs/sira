@@ -21,7 +21,7 @@ def offline(monkeypatch):
 
 
 def bet(book, name="b1", made_at=MADE_AT, question=None):
-    payload = {"bet": name, "object": "ZTF26x", "made_at": made_at, "question": question,
+    payload = {"bet": name, "object": "ZTF26x", "model": "v1", "made_at": made_at, "question": question,
                "forecasts": [{"mjd": 61341.7, "band": "ztfr", "parts": [["ia", 0.9, 50.0, 5.0], ["null", 0.1, 60.0, 10.0]]},
                              {"mjd": 61342.7, "band": "ztfr", "parts": [["ia", 0.9, 45.0, 5.0], ["null", 0.1, 60.0, 11.0]]}]}
     return book.append("bet", payload, now="2026-10-27T16:48:00+00:00")
@@ -49,19 +49,27 @@ def test_numbers_hash_the_way_javascript_writes_them():
 def test_numpy_values_keep_the_chain_whole(tmp_path):
     import numpy as np
     book = Ledger(tmp_path)
-    book.append("x", {"flux": np.float64(11.47), "n": np.int64(2)})
-    book.append("x", {"flux": np.float32(0.25)})
+    book.append("event", {"role": "lab", "cost_usd": np.float64(11.47), "n": np.int64(2)})
+    book.append("event", {"role": "lab", "cost_usd": np.float32(0.25)})
     assert verify(tmp_path)["passes"]
 
 
 def test_format_one_entries_still_verify(tmp_path):
-    old = {"seq": 0, "time": "t", "kind": "x", "payload": {"f": 0.0}, "prev": GENESIS}
+    old = {"seq": 0, "time": "2026-10-27T16:00:00+00:00", "kind": "event", "payload": {"role": "lab", "cost_usd": 0.0},
+           "prev": GENESIS}
     old["hash"] = digest(old)
-    assert canonical(old) == b'{"kind":"x","payload":{"f":0.0},"prev":"' + GENESIS.encode() + b'","seq":0,"time":"t"}'
+    assert canonical(old) == (b'{"kind":"event","payload":{"cost_usd":0.0,"role":"lab"},"prev":"' + GENESIS.encode()
+                              + b'","seq":0,"time":"2026-10-27T16:00:00+00:00"}')
     (tmp_path / "ledger.jsonl").write_text(json.dumps(old) + "\n")
     book = Ledger(tmp_path)
-    book.append("x", {"f": 0.0})
+    book.append("event", {"role": "lab", "cost_usd": 0.0})
     assert verify(tmp_path)["passes"]
+
+
+def test_an_entry_outside_the_protocol_fails_and_says_where(tmp_path):
+    Ledger(tmp_path).append("bet", {"bet": "b1", "object": "ZTF26x", "model": "v1", "made_at": MADE_AT, "forecasts": []})
+    result = verify(tmp_path)
+    assert not result["passes"] and result["problems"][0].startswith("entry 0 does not follow the protocol at payload/forecasts")
 
 
 def test_chain_links_every_entry_to_the_one_before(tmp_path):

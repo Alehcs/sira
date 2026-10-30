@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Alehcs/sira/main/src/sira/ledger.schema.json",
+  "title": "SIRA ledger entry",
+  "description": "One line of ledger.jsonl. hash is the SHA-256 of the entry without its hash, written as RFC 8785 JSON; prev is the hash of the entry before it, 64 zeros for the first.",
+  "type": "object",
+  "required": ["seq", "time", "kind", "payload", "prev", "hash"],
+  "additionalProperties": false,
+  "properties": {
+    "v": {"const": 2, "description": "Format. Entries without it, from the first night, are hashed as sorted compact JSON."},
+    "seq": {"type": "integer", "minimum": 0},
+    "time": {"$ref": "#/$defs/time"},
+    "kind": {"enum": ["bet", "outcome", "answer", "anchor", "event", "surprise", "verdict",
+                      "round", "reveal", "crowd", "crowd_answer"]},
+    "payload": {"type": "object"},
+    "prev": {"$ref": "#/$defs/sha256"},
+    "hash": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "bet"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/bet"}}}},
+    {"if": {"properties": {"kind": {"const": "outcome"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/outcome"}}}},
+    {"if": {"properties": {"kind": {"const": "answer"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/answer"}}}},
+    {"if": {"properties": {"kind": {"const": "anchor"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/anchor"}}}},
+    {"if": {"properties": {"kind": {"const": "event"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/event"}}}},
+    {"if": {"properties": {"kind": {"const": "surprise"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/surprise"}}}},
+    {"if": {"properties": {"kind": {"const": "verdict"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/verdict"}}}},
+    {"if": {"properties": {"kind": {"const": "round"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/round"}}}},
+    {"if": {"properties": {"kind": {"const": "reveal"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/reveal"}}}},
+    {"if": {"properties": {"kind": {"const": "crowd"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/crowd"}}}},
+    {"if": {"properties": {"kind": {"const": "crowd_answer"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/crowd_answer"}}}}
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "time": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"},
+    "day": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "mjd": {"type": "number", "description": "Modified Julian Date, UTC"},
+    "probability": {"type": "number", "minimum": 0, "maximum": 1},
+    "log_probability": {"type": "number", "maximum": 0},
+    "part": {
+      "description": "One Gaussian of a mixture: [name, weight, mean, standard deviation], fluxes in microjansky",
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "prefixItems": [{"type": "string"}, {"type": "number", "minimum": 0}, {"type": "number"}, {"type": "number", "minimum": 0}]
+    },
+    "forecasts": {
+      "description": "The flux expected at each time and band, as a mixture; every later measurement is scored against it",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["mjd", "band", "parts"],
+        "properties": {
+          "mjd": {"$ref": "#/$defs/mjd"},
+          "band": {"type": "string"},
+          "parts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/part"}}
+        }
+      }
+    },
+    "seen": {
+      "description": "What the bettor had in hand: [mjd, band, det or limit, flux, error or null]",
+      "type": "array",
+      "items": {
+        "type": "array", "minItems": 5, "maxItems": 5,
+        "prefixItems": [{"type": "number"}, {"type": "string"}, {"enum": ["det", "limit"]}, {"type": "number"},
+                        {"type": ["number", "null"]}]
+      }
+    },
+    "question": {
+      "description": "A yes or no question about one future measurement, with the bettor's probability of yes",
+      "type": "object", "required": ["band", "mjd", "reference", "p_yes"],
+      "properties": {
+        "text": {"type": "string"},
+        "band": {"type": "string"},
+        "mjd": {"$ref": "#/$defs/mjd"},
+        "reference": {"type": "number"},
+        "direction": {"enum": ["above", "below"], "default": "above"},
+        "p_yes": {"$ref": "#/$defs/probability"}
+      }
+    },
+    "bet": {
+      "type": "object", "required": ["bet", "object", "model", "made_at", "forecasts"],
+      "properties": {
+        "bet": {"type": "string"},
+        "object": {"type": "string"},
+        "model": {"type": "string"},
+        "made_at": {"$ref": "#/$defs/mjd"},
+        "forecasts": {"$ref": "#/$defs/forecasts"},
+        "question": {"anyOf": [{"$ref": "#/$defs/question"}, {"type": "null"}]},
+        "risky": {"anyOf": [{"$ref": "#/$defs/question"}, {"type": "null"}]},
+        "baselines": {"type": "object", "additionalProperties": {"$ref": "#/$defs/forecasts"}},
+        "seen": {"$ref": "#/$defs/seen"},
+        "cost_usd": {"type": "number", "minimum": 0}
+      }
+    },
+    "score": {
+      "type": "object", "required": ["log_score"],
+      "properties": {
+        "log_score": {"type": "number"},
+        "pit": {"$ref": "#/$defs/probability"},
+        "crps": {"type": "number", "minimum": 0}
+      }
+    },
+    "outcome": {
+      "description": "One measurement made after the bet was sealed, scored against it and against each sealed baseline",
+      "type": "object", "required": ["bet", "object", "mjd", "band", "kind", "log_score"],
+      "allOf": [{"$ref": "#/$defs/score"}],
+      "properties": {
+        "bet": {"type": "string"},
+        "object": {"type": "string"},
+        "mjd": {"$ref": "#/$defs/mjd"},
+        "band": {"type": "string"},
+        "kind": {"enum": ["det", "limit"]},
+        "flux": {"type": "number"},
+        "flux_err": {"type": "number", "minimum": 0},
+        "limit": {"type": "number"},
+        "baselines": {"type": "object", "additionalProperties": {"$ref": "#/$defs/score"}}
+      },
+      "if": {"properties": {"kind": {"const": "det"}}},
+      "then": {"required": ["flux", "flux_err"]},
+      "else": {"required": ["limit"]}
+    },
+    "answer": {
+      "type": "object", "required": ["bet", "object"],
+      "properties": {
+        "bet": {"type": "string"},
+        "object": {"type": "string"},
+        "which": {"enum": ["question", "risky"], "default": "question"},
+        "void": {"const": true},
+        "yes": {"type": "boolean"},
+        "p_yes": {"$ref": "#/$defs/probability"},
+        "log_score": {"$ref": "#/$defs/log_probability"},
+        "mjd": {"$ref": "#/$defs/mjd"}
+      },
+      "if": {"required": ["void"]},
+      "else": {"required": ["yes", "p_yes", "log_score", "mjd"]}
+    },
+    "anchor": {
+      "description": "The head of the chain, stamped by an RFC 3161 authority and by OpenTimestamps",
+      "type": "object", "required": ["head", "seq", "tsa", "tsa_time", "rfc3161"],
+      "properties": {
+        "head": {"$ref": "#/$defs/sha256"},
+        "seq": {"type": "integer", "minimum": 0},
+        "tsa": {"type": "string"},
+        "tsa_time": {"$ref": "#/$defs/time"},
+        "rfc3161": {"type": "string", "pattern": "^receipts/[0-9a-f]{64}\\.tsr$"},
+        "ots": {"anyOf": [{"type": "string", "pattern": "^receipts/[0-9a-f]{64}\\.json\\.ots$"}, {"type": "null"}]},
+        "code": {"type": ["string", "null"]},
+        "run": {"type": ["string", "null"]}
+      }
+    },
+    "event": {
+      "description": "Who worked on what, with which model and at what cost",
+      "type": "object", "required": ["role", "cost_usd"],
+      "properties": {
+        "role": {"type": "string"},
+        "cost_usd": {"type": "number", "minimum": 0},
+        "model": {"type": ["string", "null"]},
+        "decision": {"type": "string"},
+        "object": {"type": "string"},
+        "seconds": {"type": "number", "minimum": 0}
+      }
+    },
+    "surprise": {
+      "type": "object", "required": ["bet", "object", "surprised", "misses", "n"],
+      "properties": {
+        "bet": {"type": "string"},
+        "object": {"type": "string"},
+        "surprised": {"type": "boolean"},
+        "misses": {"type": "integer", "minimum": 0},
+        "n": {"type": "integer", "minimum": 0},
+        "p_value": {"$ref": "#/$defs/probability"},
+        "forecast": {"type": "string"}
+      }
+    },
+    "verdict": {
+      "type": "object", "required": ["bet", "object", "verdict", "log10_e", "n"],
+      "properties": {
+        "bet": {"type": "string"},
+        "object": {"type": "string"},
+        "verdict": {"enum": ["neptune", "vulcan", "abstain"]},
+        "log10_e": {"type": "number"},
+        "n": {"type": "integer", "minimum": 0}
+      }
+    },
+    "round": {
+      "description": "Beat SIRA: the day's questions, with SIRA's answers sealed before anyone bets",
+      "type": "object", "required": ["round", "opens_at", "closes_at", "questions"],
+      "properties": {
+        "round": {"$ref": "#/$defs/day"},
+        "opens_at": {"$ref": "#/$defs/time"},
+        "closes_at": {"$ref": "#/$defs/time"},
+        "cost_usd": {"type": "number", "minimum": 0},
+        "questions": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "object", "text", "band", "mjd", "direction", "reference", "commit", "sealed"],
+            "properties": {
+              "id": {"type": "string"},
+              "object": {"type": "string"},
+              "text": {"type": "string"},
+              "band": {"type": "string"},
+              "mjd": {"$ref": "#/$defs/mjd"},
+              "direction": {"enum": ["above", "below"]},
+              "reference": {"type": "number"},
+              "seen": {"$ref": "#/$defs/seen"},
+              "commit": {"$ref": "#/$defs/sha256"},
+              "sealed": {"type": "string", "pattern": "^[A-Za-z0-9+/]+={0,2}$"}
+            }
+          }
+        }
+      }
+    },
+    "reveal": {
+      "description": "After the bell: each answer with the salt and key that open its commitment",
+      "type": "object", "required": ["round", "answers"],
+      "properties": {
+        "round": {"$ref": "#/$defs/day"},
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["id", "p_yes", "salt", "key"],
+            "properties": {
+              "id": {"type": "string"},
+              "p_yes": {"$ref": "#/$defs/probability"},
+              "salt": {"$ref": "#/$defs/sha256"},
+              "key": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "crowd": {
+      "description": "The players' bets placed between the opening and the bell, sealed together",
+      "type": "object", "required": ["round", "bets"],
+      "properties": {
+        "round": {"$ref": "#/$defs/day"},
+        "bets": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["question", "player", "handle", "p_yes", "made_at"],
+            "properties": {
+              "question": {"type": "string"},
+              "player": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+              "handle": {"type": "string", "pattern": "^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$"},
+              "p_yes": {"$ref": "#/$defs/probability"},
+              "made_at": {"$ref": "#/$defs/time"}
+            }
+          }
+        }
+      }
+    },
+    "crowd_answer": {
+      "type": "object", "required": ["question", "round"],
+      "properties": {
+        "question": {"type": "string"},
+        "round": {"$ref": "#/$defs/day"},
+        "void": {"const": true},
+        "yes": {"type": "boolean"},
+        "mjd": {"$ref": "#/$defs/mjd"},
+        "kind": {"enum": ["det", "limit"]},
+        "flux": {"type": "number"},
+        "scores": {
+          "type": "object", "required": ["sira", "crowd", "sira_crowd", "players"],
+          "properties": {
+            "sira": {"$ref": "#/$defs/log_probability"},
+            "crowd": {"anyOf": [{"$ref": "#/$defs/log_probability"}, {"type": "null"}]},
+            "sira_crowd": {"anyOf": [{"$ref": "#/$defs/log_probability"}, {"type": "null"}]},
+            "players": {"type": "object", "additionalProperties": {"$ref": "#/$defs/log_probability"}}
+          }
+        }
+      },
+      "if": {"required": ["void"]},
+      "else": {"required": ["yes", "mjd", "kind", "flux", "scores"]}
+    }
+  }
+}

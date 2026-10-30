@@ -99,7 +99,7 @@ def test_a_live_surprise_becomes_a_le_verrier_bet_and_a_verdict(tmp_path, monkey
     book = Ledger(tmp_path)
     grid = [{"mjd": 61341.0 + d, "band": b, "parts": [["ia", 0.9, 10.0, 1.0], ["null", 0.1, 10.0, 2.0]]}
             for d in range(5) for b in ("ztfg", "ztfr")]
-    book.append("bet", {"bet": "b1", "object": "ZTFlens", "made_at": 61340.74, "weights": {"ia": 0.9, "null": 0.1},
+    book.append("bet", {"bet": "b1", "object": "ZTFlens", "model": "v1", "made_at": 61340.74, "weights": {"ia": 0.9, "null": 0.1},
                         "forecasts": grid})
     sealed_by_time["iso"] = iso(61340.75)
     book.anchor(None)
@@ -135,7 +135,7 @@ def test_a_surprise_without_failing_outcomes_is_caught(tmp_path, sealed_by_time)
     from sira.ledger import Ledger
 
     book = Ledger(tmp_path)
-    book.append("bet", {"bet": "b1", "object": "x", "made_at": 61340.74, "forecasts": [
+    book.append("bet", {"bet": "b1", "object": "x", "model": "v1", "made_at": 61340.74, "forecasts": [
         {"mjd": 61341.0, "band": "ztfr", "parts": [["ia", 1.0, 10.0, 1.0]]}]})
     sealed_by_time["iso"] = iso(61340.75)
     book.anchor(None)
@@ -177,7 +177,7 @@ def test_a_pooled_bet_is_surprised_by_its_physics(tmp_path, monkeypatch, sealed_
               for d in days for b in ("ztfg", "ztfr")]
     physics_half = [{"mjd": d, "band": b, "parts": [["ia", 1.0, 10.0, 1.0]]} for d in days for b in ("ztfg", "ztfr")]
     book = Ledger(tmp_path)
-    book.append("bet", {"bet": "b1", "object": "ZTFlens", "made_at": 61340.74, "weights": {"ia": 1.0},
+    book.append("bet", {"bet": "b1", "object": "ZTFlens", "model": "v1", "made_at": 61340.74, "weights": {"ia": 1.0},
                         "forecasts": pooled, "baselines": {"b1": physics_half}})
     sealed_by_time["iso"] = iso(61340.75)
     book.anchor(None)

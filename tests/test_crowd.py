@@ -61,7 +61,7 @@ def lab(tmp_path, monkeypatch):
     monkeypatch.setattr(team, "investigate", investigate)
     book = Ledger(tmp_path)
     book.append("bet", {"bet": "ZTF26crowd-1", "object": "ZTF26crowd", "model": "v1", "made_at": OPEN_MJD - 0.41,
-                        "n_points": 24, "forecasts": []})
+                        "n_points": 24, "forecasts": [{"mjd": OPEN_MJD + 1, "band": "ztfr", "parts": [["ia", 1.0, 50.0, 5.0]]}]})
     book.anchor(None)
     return {"book": book, "clock": clock, "obj": obj, "root": tmp_path}
 

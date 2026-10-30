@@ -75,7 +75,7 @@ export const WORDS = {
   en: {
     tagline: 'An AI astronomer built to be proven wrong in public',
     tabs: { lab: 'LAB', beat: 'BEAT SIRA', telegrams: 'TELEGRAMS', logbook: 'LOGBOOK' },
-    sections: 'Sections', language: 'Language', repo: 'Code', ledger: 'Ledger', loading: 'Loading…',
+    sections: 'Sections', language: 'Language', repo: 'Code', ledger: 'Ledger', protocol: 'Protocol', loading: 'Loading…',
     lab: {
       dome: 'OBSERVATION DOME', theory: 'THEORY ROOM', skeptics: 'SKEPTICS BENCH', forecaster: 'FORECAST DESK',
       director: 'DIRECTOR’S OFFICE', leverrier: 'LE VERRIER’S BOARD', sky: 'WINDOW TO THE SKY',
@@ -131,7 +131,7 @@ export const WORDS = {
   es: {
     tagline: 'Una IA astrónoma hecha para que la refuten en público',
     tabs: { lab: 'LABORATORIO', beat: 'APUESTA CONTRA SIRA', telegrams: 'TELEGRAMAS', logbook: 'BITÁCORA' },
-    sections: 'Secciones', language: 'Idioma', repo: 'Código', ledger: 'Bitácora pública', loading: 'Cargando…',
+    sections: 'Secciones', language: 'Idioma', repo: 'Código', ledger: 'Bitácora pública', protocol: 'Protocolo', loading: 'Cargando…',
     lab: {
       dome: 'CÚPULA DE OBSERVACIÓN', theory: 'SALA DE TEORÍA', skeptics: 'BANCO DE ESCÉPTICOS', forecaster: 'MESA DEL PRONOSTICADOR',
       director: 'OFICINA DEL DIRECTOR', leverrier: 'PIZARRA DE LE VERRIER', sky: 'VENTANA AL CIELO',

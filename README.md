@@ -22,7 +22,7 @@ git worktree add ledger origin/ledger
 uv run sira verify --ledger ledger --online
 ```
 
-`verify` rebuilds the hash chain, checks every receipt against the FreeTSA root shipped in this repository, checks that each bet was sealed within an hour of being made, recomputes every score and answer from the sealed forecast, and with `--online` checks every scored measurement against the ALeRCE archive. Pass a head you saw before (`--since SEQ:HASH`) to catch a rewritten history.
+`verify` checks every entry against the protocol below, rebuilds the hash chain, checks every receipt against the FreeTSA root shipped in this repository, checks that each bet was sealed within an hour of being made, recomputes every score and answer from the sealed forecast, opens SIRA's sealed Beat SIRA answers and rescores the players, and with `--online` checks every scored measurement against the ALeRCE archive. Pass a head you saw before (`--since SEQ:HASH`) to catch a rewritten history.
 
 Without SIRA's code, for any sealed head `H`:
 
@@ -33,6 +33,18 @@ ots verify ledger/receipts/H.json.ots       # needs a Bitcoin node
 ```
 
 **What the receipts cannot prove.** They show that a bet existed at a given time, not that it was the only bet: someone running private copies could publish only the luckiest one. Here, every anchor names the commit and the Actions run that made it, and each run's log is public. Scores also depend on the photometry ALeRCE serves.
+
+## The protocol
+
+The ledger format is open, so any forecaster (a classifier, a broker, another AI scientist) can be graded the same way. Its schema is [`src/sira/ledger.schema.json`](src/sira/ledger.schema.json) (JSON Schema 2020-12).
+
+- **Entries.** One JSON object per line of `ledger.jsonl`, with `seq`, `time`, `kind`, `payload`, `prev` and `hash`. `hash` is the SHA-256 of the entry without it, written as RFC 8785 JSON, and `prev` is the hash of the entry before.
+- **Bets.** For each future time and band, the expected flux as a mixture of Gaussians (`[name, weight, mean, sd]`), plus an optional yes or no question with its probability. Rivals sealed beside it (`baselines`) are graded on the same data.
+- **Anchors.** The head of the chain, stamped by FreeTSA (RFC 3161) and by OpenTimestamps. A bet counts from the first anchor that covers it.
+- **Outcomes and answers.** Every measurement taken after the seal is scored for the bet and each rival (log score, PIT, CRPS), and each question is settled by the first measurement near its time.
+- **Everything else.** `event` says who worked, with which model and at what cost; `surprise` and `verdict` come from Le Verrier; `round`, `reveal`, `crowd` and `crowd_answer` are Beat SIRA.
+
+To hold your own forecaster to it, write its bets in this shape, anchor the head after each batch, append outcomes as the data arrive, and run `sira verify --ledger <dir>`.
 
 ## Repository layout
 

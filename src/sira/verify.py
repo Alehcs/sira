@@ -1,10 +1,15 @@
 import hashlib
+import json
 from pathlib import Path
+
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import best_match
 
 from . import crowd, leverrier, live
 from .ledger import GENESIS, Ledger, check_rfc3161, digest, mjd, ots_state
 
 HOUR = 1 / 24
+PROTOCOL = Draft202012Validator(json.loads((Path(__file__).parent / "ledger.schema.json").read_text()))
 
 
 def _close(a, b) -> bool:
@@ -16,6 +21,14 @@ def _close(a, b) -> bool:
 def verify(root: Path, c=None, online: bool = False, known: tuple = (), now: float | None = None) -> dict:
     root, problems = Path(root), []
     entries = Ledger(root).entries()
+    # an entry outside the protocol cannot be checked any further, so the ledger fails here
+    for i, e in enumerate(entries):
+        wrong = best_match(PROTOCOL.iter_errors(e))
+        if wrong:
+            where = "/".join(map(str, wrong.absolute_path)) or "top"
+            problems.append(f"entry {i} does not follow the protocol at {where}: {wrong.message}")
+    if problems:
+        return {"entries": len(entries), "problems": problems, "passes": False}
     prev = GENESIS
     for i, e in enumerate(entries):
         if e["seq"] != i or e["prev"] != prev or digest(e) != e["hash"]:

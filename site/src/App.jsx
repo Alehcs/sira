@@ -64,6 +64,7 @@ export default function App() {
       <footer>
         <a href="https://github.com/Alehcs/sira">{w.repo}</a>
         <a href="https://github.com/Alehcs/sira/tree/ledger">{w.ledger}</a>
+        <a href="https://github.com/Alehcs/sira#the-protocol">{w.protocol}</a>
       </footer>
     </div>
   );
