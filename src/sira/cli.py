@@ -94,6 +94,23 @@ def live(args) -> None:
     print(json.dumps(run(Path(args.ledger), args.n, team=args.team, night_usd=args.night_usd), indent=2))
 
 
+def challenge(args) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+    from datetime import datetime, timezone
+
+    from . import crowd
+    from .fetch import client
+    from .ledger import Ledger
+
+    book, now, c = Ledger(Path(args.ledger)), datetime.now(timezone.utc), client()
+    if args.publish:
+        result = crowd.publish_round(book, c, now)
+    else:
+        with ThreadPoolExecutor(8) as pool:
+            result = crowd.open_round(book, c, LLM(), now, pool, args.round_usd, dry=args.dry_run)
+    print(json.dumps(result, indent=2))
+
+
 def verify(args) -> None:
     from .fetch import client
     from .verify import verify as check
@@ -178,6 +195,12 @@ def main() -> None:
     night.add_argument("--team", action="store_true", help="let the Muse agent team triage, argue and choose bets")
     night.add_argument("--night-usd", type=float, default=4.0, help="stop investigating once the team spent this")
     night.set_defaults(run=live)
+    game = sub.add_parser("challenge", help="seal SIRA's answers to today's Beat SIRA questions, or open them to players")
+    game.add_argument("--ledger", default="ledger")
+    game.add_argument("--publish", action="store_true", help="put today's sealed questions in Supabase for players")
+    game.add_argument("--dry-run", action="store_true", help="pick and forecast only: no ledger, no Supabase")
+    game.add_argument("--round-usd", type=float, default=2.0, help="stop forecasting once the round spent this")
+    game.set_defaults(run=challenge)
     proof = sub.add_parser("verify", help="check the ledger chain, its receipts and that bets were sealed in time")
     proof.add_argument("--ledger", default="ledger")
     proof.add_argument("--online", action="store_true", help="also check every scored measurement against ALeRCE")

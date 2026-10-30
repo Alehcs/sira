@@ -1,0 +1,51 @@
+name: challenge
+
+on:
+  schedule:
+    - cron: "13 13 * * *"  # 10:13 in Chile; GitHub may start it hours late, and no round opens after 20:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ledger
+  cancel-in-progress: false
+
+jobs:
+  round:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - name: Check out the ledger branch
+        run: |
+          git fetch origin ledger
+          git worktree add ledger origin/ledger
+      - name: Verify the ledger before adding to it
+        run: uv run sira verify --ledger ledger
+      - name: Seal SIRA's answers to today's questions
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+          SIRA_ENVELOPE_KEY: ${{ secrets.SIRA_ENVELOPE_KEY }}
+        run: uv run sira challenge --ledger ledger
+      - name: Verify again
+        run: uv run sira verify --ledger ledger
+      - name: Publish the ledger
+        # the sealed answers go public before any player can see a question
+        if: always()
+        working-directory: ledger
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ledger.jsonl receipts 2>/dev/null || exit 0
+          git commit -m "Round for $(date -u +%F)" || exit 0
+          git push origin HEAD:ledger
+      - name: Open the questions to players
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: uv run sira challenge --ledger ledger --publish
