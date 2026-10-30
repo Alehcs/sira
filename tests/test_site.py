@@ -61,3 +61,20 @@ def test_beat_sira_ranks_everyone_by_their_mean_score():
     assert r["results"]["2026-10-30-2"] == {"void": True}
     assert [x["who"] for x in beat["board"]] == ["sira", "p2", "sira_crowd", "crowd", "p1"]
     assert next(x for x in beat["board"] if x["who"] == "p2")["handle"] == "leo"
+
+
+def test_candidates_are_what_the_lookouts_weighed_last_night():
+    look = lambda seq, oid, call, p, time: entry(seq, "event", {"role": "lookout", "object": oid, "decision": call,
+                                                                "priority": p, "cost_usd": 0.01}, time)
+    rows = [
+        look(0, "OLD", "investigate", 0.9, "2026-10-29T01:00:00+00:00"),
+        entry(1, "event", {"role": "reader", "object": "B", "decision": "real (0.93)", "cost_usd": 0.01}, "2026-10-30T01:00:00+00:00"),
+        look(2, "B", "investigate", 0.8, "2026-10-30T01:01:00+00:00"),
+        look(3, "C", "pass", 0.4, "2026-10-30T01:01:00+00:00"),
+        look(4, "C", "investigate", 0.6, "2026-10-30T01:02:00+00:00"),
+        look(5, "C", "pass", 0.5, "2026-10-30T01:02:00+00:00"),
+        entry(6, "bet", {"bet": "B-1", "object": "B"}, "2026-10-30T01:20:00+00:00"),
+    ]
+    got = site.candidates(rows)
+    assert got == [{"object": "B", "priority": 0.8, "picked": True, "reader": "real", "p_real": 0.93, "bet": True},
+                   {"object": "C", "priority": 0.5, "picked": False, "reader": None, "p_real": None, "bet": False}]

@@ -94,7 +94,8 @@ def _mind(alone) -> tuple[dict | None, list[dict]]:
 
 
 def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict | None = None,
-                adopted: dict | None = None, alone=None) -> tuple[dict | None, list[dict]]:
+                adopted: dict | None = None, alone=None, report=None) -> tuple[dict | None, list[dict]]:
+    tell = report or (lambda events: None)  # hears the events after each stage, for a visitor watching live
     phys = physics(view, ebv, adopted=adopted)
     if not phys:
         return None, _mind(alone)[1]
@@ -107,6 +108,7 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
     lenses = {lens: r[0] for lens, r in zip(agents.LENSES, results[len(top):])}
     mind, events = _mind(alone)
     events += [r[1] for r in results]
+    tell(events)
     nights = len({int(r["mjd"]) for r in view["photometry"] if r["kind"] == "det"})
     if lenses["instrument"]["artifact"] and lenses["instrument"]["confidence"] >= ARTIFACT and nights < NIGHTS:
         return None, events + [{"role": "lab", "case": case["case"], "cost_usd": 0.0,
@@ -126,12 +128,14 @@ def investigate(llm, view: dict, ebv: float, pool, seniors: list, reading: dict 
              "senior_reviews_left": seniors[0]}
     choice, event = agents.director(llm, case, state)
     events.append(event)
-    draw = int(hashlib.sha256(f"audit:{case['case']}:{int(now)}".encode()).hexdigest(), 16) % 1000
+    tell(events)
+    draw =int(hashlib.sha256(f"audit:{case['case']}:{int(now)}".encode()).hexdigest(), 16) % 1000
     audit = choice["action"] == "bet" and draw < AUDIT * 1000
     if (choice["action"] == "escalate" or audit) and seniors[0] > 0:
         seniors[0] -= 1
         review, event = agents.director(llm, case, state, senior=True)
         events.append(event)
+        tell(events)
         for k, factor in review["factors"].items():
             if k in weights:
                 weights[k] *= factor

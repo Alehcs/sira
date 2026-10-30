@@ -1,10 +1,12 @@
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 
 from .ledger import Ledger
 
 LEVEL = re.compile(r"(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?")
+READING = re.compile(r"^(real|bogus) \(([\d.]+)\)$")
 
 
 def _date(mjd: float) -> str:
@@ -119,13 +121,39 @@ def rounds(entries: list[dict]) -> dict:
     return {"rounds": sorted(by.values(), key=lambda r: r["round"], reverse=True), "board": board}
 
 
+def candidates(entries: list[dict], n: int = 24) -> list[dict]:
+    # what the lookouts weighed on the last night, so a visitor can send the lab after any of it
+    looks = [e for e in entries if e["kind"] == "event" and e["payload"].get("role") == "lookout" and e["payload"].get("object")]
+    if not looks:
+        return []
+    last = datetime.fromisoformat(looks[-1]["time"])
+    night = [e for e in entries if abs((datetime.fromisoformat(e["time"]) - last).total_seconds()) < 3 * 3600]
+    votes = {}
+    for e in night:
+        p = e["payload"]
+        if e["kind"] == "event" and p.get("role") == "lookout" and p.get("object"):
+            votes.setdefault(p["object"], []).append((p.get("decision") == "investigate", p.get("priority") or 0.0))
+    seen, bet = {}, set()
+    for e in night:
+        p = e["payload"]
+        m = READING.match(str(p.get("decision", ""))) if p.get("role") == "reader" else None
+        if e["kind"] == "event" and m:
+            seen[p.get("object")] = (m[1], float(m[2]))
+        elif e["kind"] == "bet":
+            bet.add(p["object"])
+    rows = [{"object": oid, "priority": round(_mean([v[1] for v in vs]), 2), "picked": 2 * sum(v[0] for v in vs) > len(vs),
+             "reader": seen.get(oid, (None, None))[0], "p_real": seen.get(oid, (None, None))[1], "bet": oid in bet}
+            for oid, vs in votes.items()]
+    return sorted(rows, key=lambda r: -r["priority"])[:n]
+
+
 def live(entries: list[dict]) -> dict:
     tele = telegrams(entries)
     anchors = [e for e in entries if e["kind"] == "anchor"]
     head = anchors[-1]["payload"] if anchors else {}
     return {"head": {"hash": head.get("head"), "tsa_time": head.get("tsa_time"), "run": head.get("run"), "seq": head.get("seq")},
             "entries": len(entries), "telegrams": tele, "record": record(entries, tele),
-            "surprises": surprises(entries), "beat": rounds(entries)}
+            "surprises": surprises(entries), "beat": rounds(entries), "candidates": candidates(entries)}
 
 
 def _lab(rows: list[dict], obj: dict) -> dict:

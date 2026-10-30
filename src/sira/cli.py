@@ -16,6 +16,12 @@ def site(args) -> None:
         print(json.dumps(export(Path(args.ledger), Path(args.out))["record"], indent=2))
 
 
+def investigate(args) -> None:
+    from .visits import run
+
+    print(json.dumps(run(args.object, int(args.id) if args.id else None), indent=1))
+
+
 def costs(_args) -> None:
     print(json.dumps(CostMeter().summary(), indent=2))
 
@@ -235,6 +241,10 @@ def main() -> None:
     web.add_argument("--replays", action="store_true", help="write the replay files from var/ instead, locally")
     web.add_argument("--root", default="data/snapshot")
     web.set_defaults(run=site)
+    visit = sub.add_parser("investigate", help="investigate one live object for a visitor of the site, outside the ledger")
+    visit.add_argument("object")
+    visit.add_argument("--id", help="the site's investigation to report to; without it the run only prints")
+    visit.set_defaults(run=investigate)
     args = parser.parse_args()
     args.run(args)
 

@@ -1,0 +1,38 @@
+name: investigate
+run-name: investigate ${{ inputs.object }}
+
+on:
+  # started by the site's investigate() database function, once its daily caps allow it
+  workflow_dispatch:
+    inputs:
+      object:
+        description: ZTF object to investigate
+        required: true
+      id:
+        description: the site's investigation row; leave empty for a run that only prints
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  investigate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Investigate
+        # inputs reach the shell only as environment variables, never pasted into the script
+        env:
+          OBJECT: ${{ inputs.object }}
+          ID: ${{ inputs.id }}
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: uv run sira investigate "$OBJECT" ${ID:+--id "$ID"}
