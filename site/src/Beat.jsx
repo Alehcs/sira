@@ -5,6 +5,7 @@ import { WORDS, format } from './words.js';
 
 const LEVEL = /^(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?$/;
 const toMjd = (iso) => new Date(iso).getTime() / 86400000 + 40587;
+const ALIAS = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$/; // the same rule the database keeps
 
 function fields(q) {
   const m = LEVEL.exec(q.text);
@@ -111,7 +112,7 @@ export default function Beat({ lang, live }) {
 
   const send = async () => {
     const handle = alias.trim();
-    if (handle.length < 2 || handle.length > 24) { setStatus('alias'); return; }
+    if (!ALIAS.test(handle)) { setStatus('alias'); return; }
     setStatus('sending');
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {

@@ -20,7 +20,7 @@ create table if not exists public.bets (
   id bigint generated always as identity primary key,
   question_id text not null references public.questions (id),
   user_id uuid not null default auth.uid(),
-  handle text not null check (char_length(handle) between 2 and 24),
+  handle text not null check (handle ~ '^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$'),
   p_yes numeric(3, 2) not null check (p_yes between 0.01 and 0.99),
   created_at timestamptz not null default now(),
   unique (question_id, user_id)
@@ -57,3 +57,7 @@ create policy "your own bet, and everyone's once closed" on public.bets
     user_id = (select auth.uid())
     or exists (select 1 from public.questions q where q.id = question_id and q.closes_at <= now())
   );
+
+-- a table made by an earlier run of this file gets the same rule on aliases
+alter table public.bets drop constraint if exists bets_handle_check;
+alter table public.bets add constraint bets_handle_check check (handle ~ '^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$');
