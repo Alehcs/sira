@@ -1,7 +1,7 @@
 /* the Archive: one row per object the lab weighed, grouped by night */
 .archead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-top: 6px; }
 .archead div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 26px; }
-.archead h1 { margin: 0; font: 600 36px/1.1 'STIX Two Text', serif; }
+.archead h1 { margin: 0; font: 600 42px/1.05 'STIX Two Text', serif; letter-spacing: 0.01em; }
 .archead p { margin: 0; font-size: 16.5px; }
 .archead .prov { font: 14px 'IBM Plex Mono', monospace; color: var(--muted); }
 .filters { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; padding-bottom: 20px; }
@@ -69,7 +69,7 @@
 .scores th { padding: 0 10px 8px 0; font-weight: 400; font-size: 13.5px; color: var(--muted); text-align: left; border-bottom: 1px solid var(--hairline); }
 .scores td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
 .scores .n { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
-.osect { margin: 30px 0 16px; font: 600 30px/1.2 'STIX Two Text', serif; }
+.osect { margin: 30px 0 16px; font: 600 24px/1.2 'STIX Two Text', serif; }
 .onights { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: 32px 44px; }
 .onights .thread { min-height: 560px; }
 .papers { display: flex; flex-direction: column; gap: 18px; }
@@ -94,7 +94,7 @@
   .papers .paper { max-width: none; }
 }
 @media (max-width: 700px) {
-  .archead h1 { font-size: 30px; }
+  .archead h1 { font-size: 31px; }
   .find { width: 100%; }
   .downloads { margin-left: 0; }
   .arow { grid-template-columns: minmax(0, 1fr); }
