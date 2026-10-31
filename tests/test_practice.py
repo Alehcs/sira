@@ -1,8 +1,11 @@
+import io
 import json
 import re
 from pathlib import Path
 
+import numpy as np
 import pytest
+from PIL import Image
 
 from sira import alerce, practice, reader
 from sira.firewall import case_id
@@ -166,3 +169,39 @@ def test_the_published_bank_names_nothing_before_the_reveal():
         leaks(q["ask"], words)
         assert set(q["answer"]) == {"yes", "sira", "log_score", "settled", "after", "class"}
         assert set(chunks((PUBLIC / q["ask"]["stamps"]).read_bytes())) <= {"IHDR", "IDAT", "IEND"}
+
+
+def jpg(shade: int | None) -> bytes:
+    # one shade, or a dark field with stars on it
+    px = np.full((128, 128, 3), 20 if shade is None else shade, dtype=np.uint8)
+    if shade is None:
+        px[::4, ::3] = 220
+    out = io.BytesIO()
+    Image.fromarray(px).save(out, "JPEG")
+    return out.getvalue()
+
+
+def test_a_missing_host_comes_from_dr10_then_pan_starrs_and_blanks_stay_out(tmp_path, monkeypatch):
+    asked, answers = [], {"ls-dr10": jpg(8), "ps1": jpg(None)}
+
+    class Reply:
+        def __init__(self, content):
+            self.content = content
+
+    def get(c, url, params):
+        asked.append(params["layer"])
+        return Reply(answers[params["layer"]])
+
+    monkeypatch.setattr(practice, "get", get)
+    late = {"ra": 1.0, "dec": 2.0, "photometry": [], "first_stamps": {"mjd": 60000.0}, "host": {"file": None, "predates_event": True}}
+    assert practice._host(object(), tmp_path, late) == answers["ps1"] and asked == ["ls-dr10", "ps1"]
+    # DR10 may hold an event from before 2022, so only Pan-STARRS is asked
+    asked.clear()
+    early = late | {"first_stamps": {"mjd": 59000.0}}
+    assert practice._host(object(), tmp_path, early) == answers["ps1"] and asked == ["ps1"]
+    # a burnt core is as blank as one shade
+    answers["ps1"] = jpg(252)
+    assert practice._host(object(), tmp_path, early) is None
+    # without a client nothing is fetched
+    asked.clear()
+    assert practice._host(None, tmp_path, late) is None and asked == []

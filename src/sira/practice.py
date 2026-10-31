@@ -1,16 +1,22 @@
 import hashlib
+import io
 import json
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
+
 from . import alerce, reader
+from .fetch import get
 from .gallery import flat, strip
 from .ledger import Ledger
-from .snapshot import split
+from .snapshot import LEGACY, split
 
 SKIP = {"ZTF19aavisrq"}  # the Lab tells its whole story
 TEXT = "Brighter in r three days from now than at its last r detection?"
 TRIES = 5  # early detections asked for stamps before an object is left out
 PATH = "replays/practice/"  # where the images sit, from the site's root
+DR10_ENDS = 59580  # Legacy DR10 imaging ends in 2021, so only later events are surely missing from it
 
 
 def _stamps(c, root: Path, obj: dict, before: float) -> list[bytes] | None:
@@ -25,6 +31,33 @@ def _stamps(c, root: Path, obj: dict, before: float) -> list[bytes] | None:
             return [alerce.stamp(c, obj["oid"], r["candid"], k) for k in reader.KINDS]
         except Exception:
             continue
+    return None
+
+
+def _blank(jpg: bytes) -> bool:
+    # one shade, or a saturated core burnt nearly white, shows nothing of the field
+    px = np.asarray(Image.open(io.BytesIO(jpg)).convert("L"), dtype=float)
+    return flat(jpg) or float(np.median(px)) > 245
+
+
+def _host(c, root: Path, obj: dict) -> bytes | None:
+    # the snapshot's colour image when it shows the field before the event, else Legacy DR10, else Pan-STARRS1 (2010 to 2014)
+    host = obj.get("host") or {}
+    if host.get("file") and host.get("predates_event"):
+        jpg = (root / host["file"]).read_bytes()
+        if not _blank(jpg):
+            return jpg
+    if c is None:
+        return None
+    first = (obj.get("first_stamps") or {}).get("mjd") or min(r["mjd"] for r in obj["photometry"])
+    for layer in ["ls-dr10"] * (first > DR10_ENDS) + ["ps1"]:
+        try:
+            # fetch.get keeps the viewer to one request a second
+            jpg = get(c, LEGACY, {"ra": obj["ra"], "dec": obj["dec"], "layer": layer, "pixscale": 0.262, "size": 128}).content
+        except Exception:
+            continue
+        if not _blank(jpg):
+            return jpg
     return None
 
 
@@ -78,10 +111,9 @@ def bank(replays: Path, root: Path, out: Path, c=None) -> dict:
                                       "stamps": stamps, "panel": panel},
                               "answer": {"yes": a["yes"], "sira": q["p_yes"], "log_score": a["log_score"],
                                          "settled": settled, "after": after, "class": truth[oid]["type"]}})
-        host = obj.get("host") or {}
-        jpg = (root / host["file"]).read_bytes() if host.get("file") and host.get("predates_event") else None
+        jpg = _host(c, root, obj)
         reveal.append({"group": group, "object": oid, "alerce": f"https://alerce.online/object/{oid}",
-                       "host": _save(folder, jpg, ".jpg") if jpg and not flat(jpg) else None})
+                       "host": _save(folder, jpg, ".jpg") if jpg else None})
     data = {"questions": questions, "reveal": reveal}
     (out / "practice.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
     return data
