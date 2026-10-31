@@ -29,12 +29,20 @@ export function format(lang) {
   const es = lang === 'es';
   const decimal = (s) => (es ? s.replace('.', ',') : s);
   const num = (v, digits = 1) => decimal(Number(v).toFixed(digits)).replace('-', '−');
+  // a no-break space keeps 46,7 % and US$ 0,01 on one line
   const pct = (p) => {
     const n = Math.round(p * 1000) / 10;
     const s = decimal(Number.isInteger(n) ? String(n) : n.toFixed(1));
-    return es ? `${s} %` : `${s}%`;
+    return es ? `${s} %` : `${s}%`;
   };
-  const money = (v) => (es ? `US$ ${decimal(v.toFixed(2))}` : `US$${v.toFixed(2)}`);
+  const money = (v) => (es ? `US$ ${decimal(v.toFixed(2))}` : `US$${v.toFixed(2)}`);
+  const sexagesimal = (v, digits) => {
+    const total = Number((Math.abs(v) * 3600).toFixed(digits));
+    const s = (total % 60).toFixed(digits);
+    return [Math.floor(total / 3600), String(Math.floor(total / 60) % 60).padStart(2, '0'), decimal(s.padStart(digits + 3, '0'))];
+  };
+  const ra = (deg) => { const [h, m, s] = sexagesimal(deg / 15, 2); return `${h}h${m}m${s}s`; };
+  const dec = (deg) => { const [d, m, s] = sexagesimal(deg, 1); return `${deg < 0 ? '−' : '+'}${d}°${m}′${s}″`; };
   const day = (iso) => {
     const d = new Date(iso);
     const m = MONTHS[lang][d.getUTCMonth()];
@@ -68,30 +76,41 @@ export function format(lang) {
       ? `¿Más brillante en ${q.band} en ${q.days} días que en su última detección en ${q.band} (${ref} μJy)?`
       : `Brighter in ${q.band} in ${q.days} days than at its last ${q.band} detection (${ref} μJy)?`;
   };
-  return { num, pct, money, day, short, stamp, chile, term, name, question };
+  return { num, pct, money, ra, dec, day, short, stamp, chile, term, name, question };
 }
 
 export const WORDS = {
   en: {
     tagline: 'An AI astronomer built to be proven wrong in public',
-    tabs: { lab: 'LAB', live: 'INVESTIGATE', beat: 'BEAT SIRA', telegrams: 'TELEGRAMS', logbook: 'LOGBOOK' },
-    sections: 'Sections', language: 'Language', repo: 'Code', ledger: 'Ledger', protocol: 'Protocol', loading: 'Loading…',
+    tabs: { lab: 'Lab', live: 'Investigate', beat: 'Beat SIRA', telegrams: 'Forecasts', logbook: 'Logbook' },
+    sections: 'Sections', language: 'Language', theme: 'Theme', themes: { dark: 'Dark', light: 'Light' },
+    repo: 'Code', ledger: 'Public ledger', protocol: 'Protocol', loading: 'Loading…',
+    credits: 'Images: Pan-STARRS1 via the Legacy Surveys viewer; Legacy Surveys / D. Lang (Perimeter Institute), CC BY 4.0; ZTF via ALeRCE.',
+    fig: { days: 'days', now: 'now' },
+    thread: { more: 'More below' },
     lab: {
-      dome: 'OBSERVATION DOME', theory: 'THEORY ROOM', skeptics: 'SKEPTICS BENCH', forecaster: 'FORECAST DESK',
-      director: 'DIRECTOR’S OFFICE', leverrier: 'LE VERRIER’S BOARD', sky: 'WINDOW TO THE SKY',
-      panels: ['science', 'reference', 'difference', 'zoom ×3'], real: (p) => `${p} real`,
+      names: { dome: 'Reader', theory: 'Theorists', skeptics: 'Skeptics', forecaster: 'Forecaster', director: 'Director', leverrier: 'Le Verrier', sky: 'The sky' },
+      marks: { dome: 'R', theory: 'T', skeptics: 'S', forecaster: 'F', director: 'D', leverrier: 'LV', sky: 'ZTF' },
+      panels: ['science', 'reference', 'difference', 'zoom ×3'],
       stampsAlt: (oid) => `First ZTF images of ${oid}: science, reference, difference and zoom`,
-      lenses: ['instrument', 'physics', 'memory'], asleep: 'Asleep',
+      skyAlt: (oid) => `Pan-STARRS1 field around ${oid}`, first: 'first detection',
       hyp: { ia: 'Type Ia supernova', ibc: 'Type Ibc supernova', ii: 'Type II supernova', tde: 'Tidal disruption', null: 'None of the above', adopted: 'Invisible lens' },
-      choices: ['WAIT', 'THINK', 'ESCALATE', 'ASK'], measurements: (n) => `${n} measurements`,
-      neptune: 'NEPTUNE ✓', abstain: 'ABSTAIN', secondIdea: 'Le Verrier’s 2nd idea',
-      timeMachine: 'TIME MACHINE', back: 'Back', next: 'Next', play: 'Play', pause: 'Pause', step: 'Step',
-      chartLabel: (oid) => `Light curve of ${oid} in r with the sealed forecasts`, brightness: 'brightness', now: 'now',
-      fan: { ia: 'Ia', lens: 'lens' }, log: 'LOG',
-      names: { dome: 'Reader', theory: 'Theorists', skeptics: 'Skeptics', forecaster: 'Forecaster', director: 'Director', leverrier: 'Le Verrier', sky: 'The Sky' },
+      lenses: { instrument: 'Instrument skeptic', physics: 'Physics skeptic', memory: 'Memory skeptic' },
+      realSource: 'sees a real source', artifact: 'calls it an artifact', doubts: (hs) => `doubts ${hs.join(', ')}`,
+      recognises: 'recognizes it', forgets: 'does not recognize it',
+      choices: { wait: 'Wait', think: 'Think', escalate: 'Escalate', ask: 'Ask' },
+      measurements: (n) => `${n} measurements`, outside: (a, b) => `${a} of ${b} outside the forecast`,
+      leaps: { hidden: 'Hidden component', new: 'New model', instrument: 'Instrument' }, chosen: 'Chosen and sealed',
+      answer: (yes) => `Answer: ${yes ? 'yes' : 'no'}`, score: 'log score',
+      verdicts: { neptune: 'Neptune', vulcan: 'Vulcan', abstain: 'Abstain' },
+      against: (h) => `${h} against the old hypotheses`, againstLens: (h) => `“${h}” against the adopted lens`,
+      inN: (n) => `in ${n} measurements`,
+      timeMachine: 'Time machine', back: 'Back', next: 'Next', play: 'Play', pause: 'Pause', step: 'Step',
+      stepOf: ['step', 'of'], thread: 'The team’s thread',
+      chartLabel: (oid) => `Light curve of ${oid} in g and r with the sealed forecasts`, fan: { ia: 'Ia', lens: 'lens' },
     },
     tele: {
-      title: 'TELEGRAMS', count: (n) => `${n} bets sealed`, tg: 'SIRA TELEGRAM',
+      title: 'Forecasts', count: (n) => `${n} bets sealed`, tg: 'SIRA TELEGRAM',
       object: 'Object', model: 'Model', question: 'Question', seal: 'Seal', answer: 'Answer',
       models: { v0: 'v0, physics only', v1: 'v1, Muse team' },
       waiting: (d) => `Waiting for the sky. Answer from ${d}.`, void: 'No measurement to answer it.',
@@ -158,24 +177,35 @@ export const WORDS = {
   },
   es: {
     tagline: 'Una IA astrónoma hecha para que la refuten en público',
-    tabs: { lab: 'LABORATORIO', live: 'INVESTIGAR', beat: 'APUESTA CONTRA SIRA', telegrams: 'TELEGRAMAS', logbook: 'BITÁCORA' },
-    sections: 'Secciones', language: 'Idioma', repo: 'Código', ledger: 'Bitácora pública', protocol: 'Protocolo', loading: 'Cargando…',
+    tabs: { lab: 'Laboratorio', live: 'Investigar', beat: 'Apuesta contra SIRA', telegrams: 'Pronósticos', logbook: 'Bitácora' },
+    sections: 'Secciones', language: 'Idioma', theme: 'Tema', themes: { dark: 'Oscuro', light: 'Claro' },
+    repo: 'Código', ledger: 'Registro público', protocol: 'Protocolo', loading: 'Cargando…',
+    credits: 'Imágenes: Pan-STARRS1 a través del visor de Legacy Surveys; Legacy Surveys / D. Lang (Perimeter Institute), CC BY 4.0; ZTF a través de ALeRCE.',
+    fig: { days: 'días', now: 'ahora' },
+    thread: { more: 'Más abajo' },
     lab: {
-      dome: 'CÚPULA DE OBSERVACIÓN', theory: 'SALA DE TEORÍA', skeptics: 'BANCO DE ESCÉPTICOS', forecaster: 'MESA DEL PRONOSTICADOR',
-      director: 'OFICINA DEL DIRECTOR', leverrier: 'PIZARRA DE LE VERRIER', sky: 'VENTANA AL CIELO',
-      panels: ['ciencia', 'referencia', 'diferencia', 'zoom ×3'], real: (p) => `${p} real`,
+      names: { dome: 'Lector', theory: 'Teóricos', skeptics: 'Escépticos', forecaster: 'Pronosticador', director: 'Director', leverrier: 'Le Verrier', sky: 'El cielo' },
+      marks: { dome: 'L', theory: 'T', skeptics: 'E', forecaster: 'P', director: 'D', leverrier: 'LV', sky: 'ZTF' },
+      panels: ['ciencia', 'referencia', 'diferencia', 'zoom ×3'],
       stampsAlt: (oid) => `Primeras imágenes de ZTF de ${oid}: ciencia, referencia, diferencia y zoom`,
-      lenses: ['instrumento', 'física', 'memoria'], asleep: 'Dormido',
+      skyAlt: (oid) => `Campo de Pan-STARRS1 alrededor de ${oid}`, first: 'primera detección',
       hyp: { ia: 'Supernova tipo Ia', ibc: 'Supernova tipo Ibc', ii: 'Supernova tipo II', tde: 'Disrupción por marea', null: 'Ninguna de las anteriores', adopted: 'Lente invisible' },
-      choices: ['ESPERAR', 'PENSAR', 'ESCALAR', 'PREGUNTAR'], measurements: (n) => `${n} mediciones`,
-      neptune: 'NEPTUNO ✓', abstain: 'ABSTENCIÓN', secondIdea: '2.ª idea de Le Verrier',
-      timeMachine: 'MÁQUINA DEL TIEMPO', back: 'Atrás', next: 'Siguiente', play: 'Reproducir', pause: 'Pausa', step: 'Paso',
-      chartLabel: (oid) => `Curva de luz de ${oid} en r con los pronósticos sellados`, brightness: 'brillo', now: 'ahora',
-      fan: { ia: 'Ia', lens: 'lente' }, log: 'REGISTRO',
-      names: { dome: 'Lector', theory: 'Teóricos', skeptics: 'Escépticos', forecaster: 'Pronosticador', director: 'Director', leverrier: 'Le Verrier', sky: 'El Cielo' },
+      lenses: { instrument: 'Escéptico de instrumento', physics: 'Escéptico de física', memory: 'Escéptico de memoria' },
+      realSource: 've una fuente real', artifact: 'lo llama artefacto', doubts: (hs) => `duda de ${hs.join(', ')}`,
+      recognises: 'lo reconoce', forgets: 'no lo reconoce',
+      choices: { wait: 'Esperar', think: 'Pensar', escalate: 'Escalar', ask: 'Preguntar' },
+      measurements: (n) => `${n} mediciones`, outside: (a, b) => `${a} de ${b} fuera del pronóstico`,
+      leaps: { hidden: 'Componente oculto', new: 'Modelo nuevo', instrument: 'Instrumento' }, chosen: 'Elegida y sellada',
+      answer: (yes) => `Respuesta: ${yes ? 'sí' : 'no'}`, score: 'puntaje log',
+      verdicts: { neptune: 'Neptuno', vulcan: 'Vulcano', abstain: 'Abstención' },
+      against: (h) => `${h} contra las hipótesis viejas`, againstLens: (h) => `«${h}» contra la lente adoptada`,
+      inN: (n) => `en ${n} mediciones`,
+      timeMachine: 'Máquina del tiempo', back: 'Atrás', next: 'Siguiente', play: 'Reproducir', pause: 'Pausa', step: 'Paso',
+      stepOf: ['paso', 'de'], thread: 'Conversación del equipo',
+      chartLabel: (oid) => `Curva de luz de ${oid} en g y r con los pronósticos sellados`, fan: { ia: 'Ia', lens: 'lente' },
     },
     tele: {
-      title: 'TELEGRAMAS', count: (n) => `${n} apuestas selladas`, tg: 'TELEGRAMA SIRA',
+      title: 'Pronósticos', count: (n) => `${n} apuestas selladas`, tg: 'TELEGRAMA SIRA',
       object: 'Objeto', model: 'Modelo', question: 'Pregunta', seal: 'Sello', answer: 'Respuesta',
       models: { v0: 'v0, solo física', v1: 'v1, equipo Muse' },
       waiting: (d) => `Esperando al cielo. Respuesta desde el ${d}.`, void: 'Sin medición para responderla.',

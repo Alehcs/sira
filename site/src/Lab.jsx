@@ -1,16 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { Board, Book, Person, Sleep, Window } from './pixel.jsx';
+import { useEffect, useState } from 'react';
+import Figure from './ui/Figure.jsx';
+import Paper from './ui/Paper.jsx';
+import Sky from './ui/Sky.jsx';
+import Stamps from './ui/Stamps.jsx';
+import { Message, Thread } from './ui/Thread.jsx';
 import { WORDS, format } from './words.js';
 
-// which room acts at each step, and which sealed forecast, physics fit and bet it shows
+const BASE = import.meta.env.BASE_URL;
+// who speaks at each step, which sealed forecast the figure shows and which bet's fit weighs the hypotheses
 const ROLES = ['dome', 'theory', 'skeptics', 'director', 'forecaster', 'sky', 'leverrier', 'leverrier', 'sky', 'theory', 'director', 'forecaster', 'sky', 'leverrier'];
 const SHOWN = ['cp1', 'cp1', 'cp1', 'cp1', 'cp1', 'cp1', 'cp2', 'leap', 'leap', 'cp4', 'cp5', 'cp5', 'cp5', 'cp5'];
 const FIT_AT = [0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 4, 4, 4];
-const BET_AT = [-1, -1, -1, -1, 0, 1, 1, 1, 2, 2, 3, 4, 4, 4];
-const COLORS = { dome: '#5CE1E6', theory: '#FF9F43', skeptics: '#C49BFF', forecaster: '#7CF29C', director: '#FFD447', leverrier: '#FF6AD5', sky: '#F2F0FF' };
-const LETTERS = { dome: 'L', theory: 'T', skeptics: 'S', forecaster: 'F', director: 'D', leverrier: 'V', sky: '★' };
-const HUE = { ia: '#7B96FF', ibc: '#8A88B0', ii: '#D9A47C', tde: '#C49BFF', null: '#5C5A85', adopted: '#FF9F43' };
+const MODELS = { dome: 'Spark Open', theory: 'Spark 1.3 high', skeptics: 'Spark 1.3 high', director: 'Spark 1.3 xhigh', forecaster: 'Spark 1.3 minimal', sky: 'ZTF', leverrier: 'Wonder high' };
 const SHORT = { ia: 'Ia', ibc: 'Ibc', ii: 'II', tde: 'TDE' };
+// sky.jpg is a lossless crop of the Pan-STARRS1 field at 0.262″ a pixel, with the object at (736, 210)
+const FIELD = { size: [1316, 416], at: [736, 210], scale: 0.262 };
+const E = <span className="mono">log<sub>10</sub>{' '}<i className="v">E</i></span>;
 
 function join(lang, items) {
   if (items.length < 2) return items.join('');
@@ -22,8 +27,7 @@ function join(lang, items) {
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const roughly = (p) => { const x = 1 / p; const e = 10 ** Math.floor(Math.log10(x)); return Math.round(x / e) * e; };
 
-function story(lang, d) {
-  const f = format(lang);
+function story(lang, d, f) {
   const k = d.facts;
   const b = d.bets;
   const es = lang === 'es';
@@ -45,7 +49,7 @@ function story(lang, d) {
         'El cielo responde: más brillante. Pero los puntos nuevos caen por encima del pronóstico de la física.',
         `Cinco días después, ${k.surprise.misses} de ${k.surprise.n} mediciones caen muy fuera del pronóstico. Por azar pasaría una vez en ${odds}. Despierta Le Verrier.`,
         `Tres Le Verrier con Wonder proponen un componente oculto, un modelo nuevo y una falla del instrumento. Lo que mejor explica el pasado es una lente invisible delante de la estrella («${f.name(k.chosen)}»), y se sella contra las hipótesis viejas.`,
-        `${k.verdict.n} mediciones nuevas: la estrella llega a su máximo y empieza a bajar, como predijo la lente. log10 E = ${f.num(k.verdict.log10_e)} a favor de la lente: Neptuno.`,
+        <>{k.verdict.n} mediciones nuevas: la estrella llega a su máximo y empieza a bajar, como predijo la lente. {E} = {f.num(k.verdict.log10_e)} a favor de la lente: <b className="ok">Neptuno</b>.</>,
         `La lente entra al lab como hipótesis y se queda con el ${lensVoice} de la voz. Ahora un teórico la defiende.`,
         'El director apuesta donde SIRA podría quedar en evidencia: ¿más brillante en tres días? Un sí refutaría la lente.',
         `${cap(f.term(b[4].term))}, dice el pronosticador: ${f.pct(b[4].p)}. Sellada.`,
@@ -68,7 +72,7 @@ function story(lang, d) {
       'The sky answers: brighter. But the new points land above the physics forecast.',
       `Five days later, ${k.surprise.misses} of ${k.surprise.n} measurements fall far outside the forecast. By luck that happens about once in ${odds} times. Le Verrier wakes up.`,
       `Three Le Verriers on Wonder propose a hidden component, a new model and an instrument fault. The best fit to the past is an invisible lens in front of the star (“${f.name(k.chosen)}”), sealed against the old hypotheses.`,
-      `${k.verdict.n} new measurements: the star peaks and turns over, as the lens predicted. log10 E = ${f.num(k.verdict.log10_e)} in favor of the lens: Neptune.`,
+      <>{k.verdict.n} new measurements: the star peaks and turns over, as the lens predicted. {E} = {f.num(k.verdict.log10_e)} in favor of the lens: <b className="ok">Neptune</b>.</>,
       `The lens joins the lab as a hypothesis and takes ${lensVoice} of the voice. A theorist now defends it.`,
       'The director bets where SIRA could be proven wrong: brighter in three days? A yes would refute the lens.',
       `${cap(f.term(b[4].term))}, says the forecaster: ${f.pct(b[4].p)}. Sealed.`,
@@ -82,230 +86,210 @@ function story(lang, d) {
   };
 }
 
-function Chart({ d, step, w }) {
-  const hi = Math.max(...d.now) + 1.5;
-  const X = (x) => 40 + ((x + 3) / (hi + 3)) * 540;
-  const Y = (v) => 250 - ((Math.log10(Math.max(40, Math.min(v, 1500))) - Math.log10(40)) / Math.log10(1500 / 40)) * 240;
-  const xy = (x, v) => `${X(x).toFixed(0)},${Y(v).toFixed(0)}`;
-  const fan = (rows, color, label) => {
-    if (!rows) return null;
-    const up = rows.map(([x, m, s]) => xy(x, m + 1.645 * s));
-    const lo = rows.slice().reverse().map(([x, m, s]) => xy(x, m - 1.645 * s));
-    const [x, m, s] = rows[rows.length - 1];
-    return (
-      <g key={label}>
-        <polygon points={up.concat(lo).join(' ')} fill={color} fillOpacity="0.3" />
-        <polyline points={rows.map(([x2, m2]) => xy(x2, m2)).join(' ')} fill="none" stroke={color} strokeWidth="3" />
-        <text x={X(x).toFixed(0)} y={(Y(m + 1.645 * s) - 6).toFixed(0)} textAnchor="end" fill={color} fontSize="14">{label}</text>
-      </g>
-    );
-  };
-  const key = SHOWN[step];
-  const ia = key === 'leap' ? d.fans.old : key === 'cp1' || key === 'cp2' ? d.fans[key] : null;
-  const lens = key === 'leap' ? d.fans.lens : key === 'cp4' || key === 'cp5' ? d.fans[key] : null;
-  const squares = (pts) => pts.map(([x, v]) => `M${(X(x) - 4).toFixed(0)} ${(Y(v) - 4).toFixed(0)}h8v8h-8z`).join(' ');
-  const t1 = d.now[step];
-  const t0 = d.sealed_at[step];
-  const start = new Date(d.first_detection);
-  const offset = (start.getUTCHours() * 3600 + start.getUTCMinutes() * 60) / 86400;
-  const ticks = [0, 11, 21, 31].map((n) => ({ x: X(n - offset), at: new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + n)).toISOString() }));
-  const f = format(w.lang);
+function Voices({ weights, w, f }) {
+  const rows = Object.entries(weights).filter(([, v]) => v >= 0.005).sort((x, y) => (x[0] === 'null') - (y[0] === 'null') || y[1] - x[1]);
   return (
-    <svg viewBox="0 0 600 280" style={{ width: '100%', height: 'auto', display: 'block' }} shapeRendering="crispEdges" role="img" aria-label={w.chartLabel(d.object)}>
-      <rect x="40" y="10" width="540" height="240" fill="#0B0B1A" />
-      <line x1="40" y1="250" x2="580" y2="250" stroke="#3C3A6B" strokeWidth="2" />
-      {fan(ia, '#7B96FF', w.fan.ia)}
-      {fan(lens, '#FF9F43', w.fan.lens)}
-      <line x1={X(t1)} y1="10" x2={X(t1)} y2="250" stroke="#F2F0FF" strokeWidth="2" strokeDasharray="6 6" />
-      <text x={X(t1) - 8} y="244" textAnchor="end" fill="#F2F0FF" fontSize="14">{w.now}</text>
-      <text x="50" y="28" fill="#B8B4E0" fontSize="14">{w.brightness}</text>
-      <path d={squares(d.points.filter((p) => p[2] <= t0))} fill="#F2F0FF" />
-      <path d={squares(d.points.filter((p) => p[2] > t0 && p[2] <= t1))} fill="#5CE1E6" />
-      {ticks.map((t) => <text key={t.at} x={t.x} y="272" textAnchor="middle" fill="#B8B4E0" fontSize="14">{f.short(t.at)}</text>)}
-    </svg>
+    <div className="voices">
+      {rows.map(([h, v]) => (
+        <div key={h} className={`v${h === 'null' ? ' null' : ''}`}>
+          <span>{w.hyp[h] || h}</span>
+          <i aria-hidden="true"><b style={{ width: `${(v * 100).toFixed(1)}%` }} /></i>
+          <span className="pct">{f.pct(v)}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
-function Room({ id, title, model, active, wide, children, say }) {
+function Sealed({ bet, now, w, f }) {
+  // the sky's answer shows on the record only once it has come
+  const a = bet.answer;
+  const known = a && !a.void && now >= a.at;
+  const right = known && (bet.p >= 0.5) === a.yes;
   return (
-    <article className={`room${wide ? ' wide' : ''}`} style={{ borderColor: active ? COLORS[id] : undefined }}>
-      <div><h3>{title}</h3><span className="model">{model}</span></div>
-      {children}
-      <div className="say">{active && <span className="bubble">{say}</span>}</div>
-    </article>
+    <Paper question={f.question(bet.question)} p={f.pct(bet.p)} term={f.term(bet.term)} hash={bet.hash} time={f.stamp(bet.time)}
+      answer={known ? { text: w.answer(a.yes), detail: `${w.score} ${f.num(a.log_score, 2)}`, tone: right ? 'ok' : 'warn' } : null} />
   );
+}
+
+function Verdict({ v, line, w, f }) {
+  const tone = { neptune: 'ok', vulcan: 'warn' }[v.verdict];
+  return (
+    <Paper title={w.verdicts[v.verdict]} tone={tone} hash={v.hash} time={f.stamp(v.time)}>
+      <p className="line">{line}</p>
+      <div className="e">{E} = {f.num(v.log10_e, v.verdict === 'abstain' ? 2 : 1)} {w.inN(v.n)}</div>
+    </Paper>
+  );
+}
+
+function attachment(i, d, step, w, f) {
+  const k = d.facts;
+  const last = d.bets[d.bets.length - 1];
+  if (i === 0) {
+    return <Stamps src={`${BASE}replays/stamps.png`} size={[1032, 252]} tile={252} gap={8} pixel={4} scale={2} labels={w.panels} alt={w.stampsAlt(d.object)} arcsec={10} />;
+  }
+  if (i === 1 || i === 9) return <Voices weights={d.bets[FIT_AT[i]].weights} w={w} f={f} />;
+  if (i === 2) {
+    const physics = k.skeptics.physics.startsWith('doubts ') ? w.doubts(k.skeptics.physics.slice(7).split(', ').map((h) => w.hyp[h] || h)) : k.skeptics.physics;
+    return (
+      <dl className="lines">
+        <dt>{w.lenses.instrument}</dt><dd>{k.skeptics.instrument === 'artifact' ? w.artifact : w.realSource}</dd>
+        <dt>{w.lenses.physics}</dt><dd>{physics}</dd>
+        <dt>{w.lenses.memory}</dt><dd>{k.skeptics.memory === 'recognises it' ? w.recognises : w.forgets}</dd>
+      </dl>
+    );
+  }
+  if (i === 3 || i === 10) {
+    const action = (i === 3 ? d.bets[0] : last).action;
+    return <div className="choices">{Object.entries(w.choices).map(([a, name]) => <span key={a} className={a === action ? 'on' : undefined}>{name}</span>)}</div>;
+  }
+  if (i === 4 || i === 11) return <Sealed bet={i === 4 ? d.bets[0] : last} now={d.now[step]} w={w} f={f} />;
+  if (i === 5 || i === 8 || i === 12) {
+    return (
+      <>
+        <div className="count"><b>{w.measurements(d.counts[i])}</b><span>+{d.counts[i] - d.counts[i - 1]}</span></div>
+        {i === 8 && <Verdict v={d.leaps[0].verdict} line={w.against(w.hyp.adopted)} w={w} f={f} />}
+      </>
+    );
+  }
+  if (i === 6) {
+    const p = k.surprise.p_value;
+    const e = Math.floor(Math.log10(p));
+    return (
+      <div className="surprise">
+        <b>{w.outside(k.surprise.misses, k.surprise.n)}</b>
+        <span><i className="v">p</i> = {f.num(p / 10 ** e, 2)} × 10<sup>{String(e).replace('-', '−')}</sup></span>
+        <span>sha256&nbsp;{d.bets[1].hash.slice(0, 8)}…</span>
+      </div>
+    );
+  }
+  if (i === 7) {
+    const leap = d.leaps[0];
+    return (
+      <ul className="props">
+        {leap.proposals.map((p) => {
+          const chosen = p.name === leap.chosen;
+          return (
+            <li key={p.name} className={chosen ? 'chosen' : undefined}>
+              <span className="leap">{w.leaps[p.leap]}</span>
+              <span>{f.name(p.name)}{chosen && <span className="seal">{w.chosen}, sha256&nbsp;{leap.hash}…</span>}</span>
+              <span className="bic"><span>BIC</span> {f.num(p.bic, 1)}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+  if (i === 13 && d.leaps[1]) return <Verdict v={d.leaps[1].verdict} line={w.againstLens(f.name(d.leaps[1].chosen))} w={w} f={f} />;
+  return null;
 }
 
 export default function Lab({ lang, data: d }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(8);
   const [playing, setPlaying] = useState(false);
-  const timer = useRef(null);
   const last = ROLES.length - 1;
-  const w = { ...WORDS[lang].lab, lang };
+  const w = WORDS[lang].lab;
   const f = format(lang);
-  const text = story(lang, d);
-  const role = ROLES[step];
-  const on = (id) => role === id;
+  const text = story(lang, d, f);
+  const k = d.facts;
+  const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
 
   useEffect(() => {
     if (!playing) return undefined;
-    timer.current = setInterval(() => setStep((s) => {
-      if (s >= last) { setPlaying(false); return s; }
-      return s + 1;
-    }), 2500);
-    return () => clearInterval(timer.current);
-  }, [playing, last]);
+    if (step >= last) { setPlaying(false); return undefined; }
+    const timer = setTimeout(() => setStep(step + 1), 2500);
+    return () => clearTimeout(timer);
+  }, [playing, step, last]);
 
-  const at = (n) => new Date(new Date(d.first_detection).getTime() + d.now[n] * 86400000).toISOString();
-  const fit = d.bets[FIT_AT[step]];
-  const voices = Object.entries(fit.weights).filter(([, v]) => v >= 0.005).sort((x, y) => (x[0] === 'null') - (y[0] === 'null') || y[1] - x[1]);
-  const held = BET_AT[step] >= 0 ? d.bets[BET_AT[step]] : null;
-  const k = d.facts;
+  const go = (n) => { setPlaying(false); setStep(Math.min(Math.max(n, 0), last)); };
   const play = () => {
     if (playing) { setPlaying(false); return; }
     if (step >= last) setStep(0);
     setPlaying(true);
   };
 
+  // the figure at this step: what the sky had shown by then and the forecast sealed last
+  const now = d.now[step];
+  const seen = d.phot.filter((p) => p[5] <= now + 1e-6).map(([day, band, kind, flux, err]) => ({ day, band, flux, err, limit: kind === 'lim' }));
+  const F = d.fans;
+  const h8 = (h) => h.slice(0, 8);
+  const sealed = (fan, band, label, hash) => ({ band, rows: fan[band], style: 'sealed', label, hash: hash && h8(hash) });
+  const forecasts = {
+    cp1: [sealed(F.cp1, 'r', w.fan.ia, d.bets[0].hash)],
+    cp2: [sealed(F.cp2, 'g'), sealed(F.cp2, 'r', w.fan.ia, d.bets[1].hash)],
+    leap: [{ band: 'g', rows: F.cp2.g, style: 'old' }, { band: 'r', rows: F.cp2.r, style: 'old' },
+      { band: 'r', rows: F.old.r, style: 'rival', label: w.fan.ia, hash: h8(d.leaps[0].hash), place: 'lower' }, sealed(F.lens, 'r', w.fan.lens, d.leaps[0].hash)],
+    cp4: [sealed(F.cp4, 'r', w.fan.lens, d.bets[3].hash)],
+    cp5: [sealed(F.cp5, 'r', w.fan.lens, d.bets[4].hash)],
+  }[SHOWN[step]];
+  const missed = step >= 6 && step <= 8;
+
+  // the steps grouped under their dates, in one row on wide screens and two rows of seven on phones
+  const dates = ROLES.map((r, i) => f.short(at(d.now[i])));
+  const button = (i) => (
+    <button key={i} type="button" className={i < step ? 'past' : undefined} aria-current={i === step ? 'step' : undefined}
+      aria-label={`${w.step} ${i + 1}: ${w.names[ROLES[i]]}`} onClick={() => go(i)}>{i + 1}</button>
+  );
+  const groups = [];
+  dates.forEach((label, i) => {
+    if (!groups.length || groups[groups.length - 1].label !== label) groups.push({ label, items: [] });
+    groups[groups.length - 1].items.push(i);
+  });
+  const halves = [[0, 7], [7, 14]].map(([a, b]) => {
+    const ids = ROLES.map((r, i) => i).slice(a, b);
+    const spans = [];
+    ids.forEach((i) => {
+      if (spans.length && spans[spans.length - 1].label === dates[i]) spans[spans.length - 1].n += 1;
+      else spans.push({ label: dates[i], n: 1, i });
+    });
+    return { ids, spans };
+  });
+
   return (
-    <div className="cols">
-      <section className="main" aria-label={w.timeMachine}>
-        <div className="rooms">
-          <Room id="dome" title={w.dome} model="Spark Open" active={on('dome')} wide say={text.says[step]}>
-            <div className="scene">
-              <Person hat="#5CE1E6" bob={on('dome')} />
-              <figure className="stamps">
-                <img src={`${import.meta.env.BASE_URL}replays/stamps.png`} alt={w.stampsAlt(d.object)} />
-                <div>{w.panels.map((p) => <span key={p}>{p}</span>)}</div>
-              </figure>
-            </div>
-            <span style={{ color: '#5CE1E6' }}>{w.real(f.pct(k.reader))}</span>
-          </Room>
-
-          <Room id="theory" title={w.theory} model="Spark 1.3 high" active={on('theory')} say={text.says[step]}>
-            <div className="scene">
-              {fit.theories.map((h, i) => <Person key={`${h}-${i}`} hat={HUE[h]} bob={on('theory')} delay={i * 0.2} />)}
-            </div>
-            <div style={{ minHeight: 96, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 15 }}>
-              {voices.map(([h, v]) => (
-                <div key={h} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div className="row" style={{ color: h === 'null' ? '#B8B4E0' : HUE[h] }}><span>{w.hyp[h] || h}</span><span>{f.pct(v)}</span></div>
-                  <div className="bar"><div style={{ width: `${v * 100}%`, background: HUE[h] || '#5C5A85' }} /></div>
-                </div>
-              ))}
-            </div>
-          </Room>
-
-          <Room id="skeptics" title={w.skeptics} model="Spark 1.3 high" active={on('skeptics')} say={text.says[step]}>
-            <div className="scene" style={{ gap: 14 }}>
-              {w.lenses.map((lens, i) => (
-                <div key={lens} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <Person hat="#C49BFF" skin={['#F2C9A0', '#D9A47C', '#A9735A'][i]} bob={on('skeptics')} delay={i * 0.2} />
-                  <span className="muted" style={{ fontSize: 13 }}>{lens}</span>
-                </div>
-              ))}
-            </div>
-          </Room>
-
-          <Room id="forecaster" title={w.forecaster} model="Spark 1.3 minimal" active={on('forecaster')} say={text.says[step]}>
-            <div className="scene"><Person hat="#7CF29C" bob={on('forecaster')} /><Book /></div>
-            <div style={{ minHeight: 44, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {held && <span className="arcade" style={{ fontSize: 14, color: '#7CF29C' }}>{f.pct(held.p)}</span>}
-              {held && <span className="mono muted" style={{ fontSize: 13 }}>sha256 {held.hash}…</span>}
-            </div>
-          </Room>
-
-          <Room id="director" title={w.director} model="Spark 1.3 xhigh" active={on('director')} say={text.says[step]}>
-            <div className="scene">
-              <Person hat="#FFD447" coat="#3C3A6B" legs="#1B1A2E" bob={on('director')} />
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1 }}>
-                {w.choices.map((c, i) => <span key={c} className={`chip${step >= 3 && i === 0 ? ' on' : ''}`}>{c}</span>)}
-              </div>
-            </div>
-          </Room>
-
-          <Room id="leverrier" title={w.leverrier} model="Wonder high" active={on('leverrier')} say={text.says[step]}>
-            <div className="scene" style={{ gap: 10 }}>
-              <Board />
-              <Person hat="#FF6AD5" bob={on('leverrier')} opacity={on('leverrier') ? 1 : step < 6 ? 0.45 : 0.75} />
-              {step < 6 && <Sleep label={w.asleep} />}
-            </div>
-            <ul style={{ minHeight: 84, margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14 }}>
-              {step >= 7 && k.proposals.map((p) => {
-                const chosen = p === k.chosen;
-                return (
-                  <li key={p} style={{ display: 'flex', gap: 8, alignItems: 'baseline', color: chosen ? '#FF6AD5' : '#B8B4E0' }}>
-                    <span aria-hidden="true" style={{ flexShrink: 0, width: 8, height: 8, border: `2px solid ${chosen ? '#FF6AD5' : '#B8B4E0'}`, background: chosen ? '#FF6AD5' : 'transparent' }} />
-                    {f.name(p)}
-                  </li>
-                );
-              })}
-            </ul>
-          </Room>
-
-          <Room id="sky" title={w.sky} model="ZTF" active={on('sky')} say={text.says[step]}>
-            <div className="scene" style={{ alignItems: 'center' }}><Window /><span style={{ fontSize: 16 }}>{w.measurements(d.counts[step])}</span></div>
-            <div style={{ minHeight: 64, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14 }}>
-              {step >= 8 && (
-                <div className="row" style={{ justifyContent: 'flex-start' }}>
-                  <span className="pixel" style={{ padding: '4px 8px', background: '#FF9F43', color: '#0B0B1A', fontSize: 13 }}>{w.neptune}</span>
-                  <span style={{ color: '#FF9F43' }}>{w.hyp.adopted}</span>
-                  <span className="mono muted" style={{ fontSize: 13 }}>log10 E {f.num(k.verdict.log10_e)}</span>
-                </div>
-              )}
-              {step >= 13 && (
-                <div className="row" style={{ justifyContent: 'flex-start' }}>
-                  <span className="pixel" style={{ padding: '4px 8px', background: '#3C3A6B', fontSize: 13 }}>{w.abstain}</span>
-                  <span className="muted">{w.secondIdea}</span>
-                  <span className="mono muted" style={{ fontSize: 13 }}>log10 E {f.num(k.second.log10_e, 2)}</span>
-                </div>
-              )}
-            </div>
-          </Room>
+    <>
+      <Sky src={`${BASE}replays/sky.jpg`} size={FIELD.size} at={FIELD.at} scale={FIELD.scale} coords={`${f.ra(d.ra)} ${f.dec(d.dec)}`} label={w.skyAlt(d.object)} />
+      <div className="objhead">
+        <h1>{d.object}</h1>
+        <div className="coords">
+          <span><b>{f.ra(d.ra)} {f.dec(d.dec)}</b></span>
+          <span>l {f.num(d.l, 2)}° b {d.b >= 0 ? '+' : ''}{f.num(d.b, 2)}°</span>
+          <span>{w.first} {f.stamp(d.first_detection)}</span>
+          <span>MJD {f.num(d.mjd, 2)}</span>
         </div>
-
-        <div className="panel">
-          <div className="row" style={{ alignItems: 'center' }}>
-            <div className="row" style={{ justifyContent: 'flex-start', gap: 16 }}>
-              <h2>{w.timeMachine}</h2>
-              <span>{f.day(at(step))}</span>
-              <span className="mono muted" style={{ fontSize: 14 }}>{f.money(d.spent[step])}</span>
-            </div>
-            <div className="row" style={{ justifyContent: 'flex-start' }}>
-              <button type="button" className="button" onClick={() => { setPlaying(false); setStep(Math.max(step - 1, 0)); }}>{w.back}</button>
-              <button type="button" className="button primary" onClick={play}>{playing ? w.pause : w.play}</button>
-              <button type="button" className="button" onClick={() => setStep(Math.min(step + 1, last))}>{w.next}</button>
+      </div>
+      <div className="lab">
+        <Thread lang={lang} label={w.thread} current={step}>
+          {ROLES.slice(0, step + 1).map((r, i) => (
+            <Message key={i} mark={w.marks[r]} name={w.names[r]} model={r === 'leverrier' && d.spent[i] === d.spent[i - 1] ? null : MODELS[r]}
+              when={f.day(at(d.now[i]))} at={at(d.now[i])} cost={f.money(d.spent[i])} says={text.says[i]} text={text.events[i]}
+              quote={d.said[i] ? { text: d.said[i], lang: 'en' } : null} current={i === step}>
+              {attachment(i, d, step, w, f)}
+            </Message>
+          ))}
+        </Thread>
+        <section className="fig">
+          <Figure lang={lang} start={d.first_detection} points={seen} forecasts={forecasts} now={now} x={[-31, 41]} y={[10, 3000]}
+            rings={missed ? d.misses.map(([day, , flux]) => ({ day, flux })) : []}
+            note={missed ? { text: w.outside(k.surprise.misses, k.surprise.n), sub: `${w.fan.ia} ${h8(d.bets[1].hash)}` } : null}
+            label={w.chartLabel(d.object)} />
+          <div className="ctrl">
+            <button type="button" className="btn" disabled={step === 0} onClick={() => go(step - 1)}>{w.back}</button>
+            <button type="button" className="btn primary" onClick={play}>{playing ? w.pause : w.play}</button>
+            <button type="button" className="btn" disabled={step === last} onClick={() => go(step + 1)}>{w.next}</button>
+            <div className="state">
+              <span>{w.stepOf[0]} <b>{step + 1}</b> {w.stepOf[1]} {ROLES.length}</span>
+              <b>{f.day(at(now))}</b>
+              <b>{f.money(d.spent[step])}</b>
             </div>
           </div>
-          <div className="steps" role="group" aria-label={w.timeMachine}>
-            {ROLES.map((r, i) => (
-              <button type="button" key={i} className={i < step ? 'past' : undefined} aria-current={i === step ? 'step' : undefined}
-                aria-label={`${w.step} ${i + 1}: ${w.names[r]}`} onClick={() => { setPlaying(false); setStep(i); }}>{i + 1}</button>
-            ))}
+          <div className="scrub" role="group" aria-label={w.timeMachine}>
+            {groups.map((g) => <div key={g.label} className="grp"><div>{g.items.map(button)}</div><span>{g.label}</span></div>)}
           </div>
-        </div>
-      </section>
-
-      <aside className="side">
-        <section className="panel" aria-label={d.object}>
-          <h2 style={{ color: '#FFD447' }}>{d.object}</h2>
-          <Chart d={d} step={step} w={w} />
+          <div className="pscrub" role="group" aria-label={w.timeMachine}>
+            {halves.flatMap((h) => [...h.ids.map(button), ...h.spans.map((s) => <span key={`d${s.i}`} style={{ gridColumn: `span ${s.n}` }}>{s.label}</span>)])}
+          </div>
         </section>
-        <section className="panel" aria-label={w.log}>
-          <h2>{w.log}</h2>
-          <ol className="log">
-            {ROLES.slice(0, step + 1).map((r, i) => ({ r, i })).reverse().map(({ r, i }) => (
-              <li key={i} className={i === step ? undefined : 'old'}>
-                <span className="mark" style={{ background: COLORS[r] }} aria-hidden="true">{LETTERS[r]}</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div className="when"><span>{f.day(at(i))}</span><span>{w.names[r]}</span></div>
-                  <span style={{ fontSize: 16, lineHeight: 1.4 }}>{text.events[i]}</span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </aside>
-    </div>
+      </div>
+    </>
   );
 }
