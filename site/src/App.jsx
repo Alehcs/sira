@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Archive from './Archive.jsx';
 import Beat from './Beat.jsx';
 import Investigate from './Investigate.jsx';
 import Lab from './Lab.jsx';
@@ -6,8 +7,8 @@ import Logbook from './Logbook.jsx';
 import Telegrams from './Telegrams.jsx';
 import { WORDS } from './words.js';
 
-const TABS = ['lab', 'live', 'beat', 'telegrams', 'logbook'];
-const fromHash = () => (TABS.includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'lab');
+const TABS = ['lab', 'live', 'archive', 'beat', 'telegrams', 'logbook'];
+const fromHash = () => (TABS.includes(window.location.hash.slice(1).split('/')[0]) ? window.location.hash.slice(1).split('/')[0] : 'lab');
 
 function firstLang() {
   try {
@@ -74,6 +75,7 @@ export default function App() {
       <main className="wrap">
         {tab === 'lab' && (lab ? <Lab lang={lang} data={lab} /> : <p className="muted">{w.loading}</p>)}
         {tab === 'live' && <Investigate lang={lang} live={live} />}
+        {tab === 'archive' && <Archive lang={lang} live={live} />}
         {tab === 'beat' && <Beat lang={lang} live={live} />}
         {tab === 'telegrams' && (live ? <Telegrams lang={lang} live={live} /> : <p className="muted">{w.loading}</p>)}
         {tab === 'logbook' && (book ? <Logbook lang={lang} lanes={book} live={live} /> : <p className="muted">{w.loading}</p>)}
