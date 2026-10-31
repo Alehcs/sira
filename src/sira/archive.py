@@ -72,13 +72,13 @@ def build(entries: list[dict], pics: dict, now: datetime) -> dict:
         if e["kind"] == "event":
             base = {"night": night, "at": e["time"], "seq": e["seq"], "model": p.get("model"), "effort": p.get("effort"),
                     "seconds": p.get("seconds"), "cost_usd": p.get("cost_usd"), "why": _clip(p["why"]) if p.get("why") else None}
-            if p["role"] == "lookout":
+            if p.get("role") == "lookout":
                 o["looks"].append(base | {"decision": p["decision"], "priority": p.get("priority")})
-            elif p["role"] == "reader":
+            elif p.get("role") == "reader":
                 m = READING.match(p["decision"])
                 o["reads"].append(base | {"label": m[1] if m else None, "p_real": float(m[2]) if m else None,
                                           "votes": p.get("votes")})
-            elif p["role"] in TEAM:
+            elif p.get("role") in TEAM:
                 o["team"].append(base | {"role": p["role"], "lens": p.get("lens"), "decision": p["decision"]})
         elif e["kind"] == "bet" and p.get(_staked(p)):
             o["bets"].append(_bet(e, night, sealed, bells, now))

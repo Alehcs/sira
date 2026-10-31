@@ -82,6 +82,27 @@ def test_the_record_keeps_the_readers_calls_the_lookouts_votes_and_void_answers(
     assert a["images"]["stamps"] == "data/img/A.png"
 
 
+def test_le_verriers_bets_and_the_rounds_own_events_stay_out():
+    more = rows() + [
+        entry(10, "outcome", {"bet": "A-1", "object": "A", "band": "ztfg", "mjd": 61341.4, "kind": "limit", "limit": 20.5,
+                              "log_score": -0.3, "baselines": {"b0": {"limit": 20.5, "log_score": -0.2}}}, "2026-10-28T01:01:00+00:00"),
+        entry(11, "surprise", {"bet": "A-1", "object": "A", "surprised": True, "misses": 4, "n": 5, "p_value": 0.001},
+              "2026-10-29T01:00:00+00:00"),
+        entry(12, "bet", {"bet": "A-leap-1", "object": "A", "model": "leverrier", "made_at": 61342.0, "forecasts": [],
+                          "proposals": []}, "2026-10-29T01:01:00+00:00"),
+        entry(13, "outcome", {"bet": "A-leap-1", "object": "A", "band": "ztfr", "mjd": 61342.5, "kind": "det", "flux": 9.0,
+                              "flux_err": 1.0, "log_score": -1.0}, "2026-10-30T01:00:00+00:00"),
+        entry(14, "verdict", {"bet": "A-leap-1", "object": "A", "verdict": "neptune", "log10_e": 3.0, "n": 6}, "2026-10-30T01:01:00+00:00"),
+        entry(15, "event", {"role": "director", "object": "A", "round": "2026-10-29", "cost_usd": 0.01}, "2026-10-29T13:00:00+00:00"),
+    ]
+    a = archive.build(more, {}, at("2026-10-31T01:00:00+00:00"))["objects"][0]
+    assert [b["bet"] for b in a["bets"]] == ["A-1"] and [o["bet"] for o in a["outcomes"]] == ["A-1", "A-1"]
+    assert a["outcomes"][1] | {"at": None} == {"bet": "A-1", "night": "2026-10-27", "at": None, "band": "ztfg", "mjd": 61341.4,
+                                               "kind": "limit", "flux": None, "flux_err": None, "limit": 20.5, "log_score": -0.3,
+                                               "pit": None, "crps": None, "baselines": {"b0": -0.2}}
+    assert [t["role"] for t in a["team"]] == ["theorist"]
+
+
 def test_the_csv_has_a_row_per_object_and_night(tmp_path):
     book = archive.build(rows(), {}, at("2026-10-29T01:00:00+00:00"))
     archive.table(book, tmp_path / "archive.csv")
