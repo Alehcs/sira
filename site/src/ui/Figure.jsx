@@ -38,9 +38,10 @@ function fit([a, b], [A, B]) {
 function describe(p, start, w, f) {
   const when = start ? f.stamp(new Date(new Date(start).getTime() + p.day * 86400000).toISOString()) : w.day(f.num(p.day, 2));
   const band = p.band === 'g' ? 'g' : 'r';
-  if (p.limit) return { when, band, lines: [w.below(`${f.num(p.flux, 1)} µJy`, f.num(magOf(p.flux), 2))] };
+  const u = w.units;
+  if (p.limit) return { when, band, lines: [w.below(`${f.num(p.flux, 1)} ${u.flux}`, f.num(magOf(p.flux), 2))] };
   const pm = (v, d) => (p.err ? ` ± ${f.num(v, d)}` : '');
-  return { when, band, lines: [`${f.num(p.flux, 1)}${pm(p.err, 1)} µJy`, `${f.num(magOf(p.flux), 2)}${pm((1.0857 * p.err) / p.flux, 2)} mag AB`] };
+  return { when, band, lines: [`${f.num(p.flux, 1)}${pm(p.err, 1)} ${u.flux}`, `${f.num(magOf(p.flux), 2)}${pm((1.0857 * p.err) / p.flux, 2)} ${u.mag}`] };
 }
 
 function Mark({ k }) {
@@ -166,14 +167,17 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
       out.push(<text key={`m${q}`} x={R + 8} y={f1(at + 4)}>{q}</text>);
     }
   } else {
-    // magnitudes on the left, the smaller number higher up, and µJy on the right
+    // magnitudes on the left, the smaller number higher up, and µJy on the right; halves are named when under 3 wholes fit
     const minor = every === 2 ? 1 : 0.5;
+    let wholes = 0;
+    for (let q = Math.ceil(bright); q <= faint; q += 1) if (q % every === 0) wholes += 1;
     for (let q = Math.ceil(bright / minor) * minor; q <= faint; q += minor) {
       const major = Number.isInteger(q) && q % every === 0;
+      const named = major || (wholes < 3 && minor === 0.5);
       const at = Y(fluxOf(q));
-      const len = major ? 7 : 3.5;
+      const len = named ? 7 : 3.5;
       ticks.push(`M${L} ${f1(at)}h${len}M${R} ${f1(at)}h-${len}`);
-      if (major) out.push(<text key={`m${q}`} x={L - 8} y={f1(at + 4)} textAnchor="end">{q}</text>);
+      if (named) out.push(<text key={`m${q}`} x={L - 8} y={f1(at + 4)} textAnchor="end">{Number.isInteger(q) ? q : f.num(q, 1)}</text>);
     }
     for (let e = Math.floor(Math.log10(lo)); mags && e <= Math.ceil(Math.log10(hi)); e += 1) {
       for (const n of [1, 3]) {
@@ -200,10 +204,10 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     out.push(<text key="days" className="axis" x={f1((L + R) / 2)} y={H - 6} textAnchor="middle">{axes.x}</text>);
   } else {
     if (mag) out.push(<text key="ujy" x={2} y={T - 11}>{w.magTitle}</text>);
-    else out.push(<text key="ujy" x={L - 8} y={T - 11} textAnchor="end">µJy</text>);
+    else out.push(<text key="ujy" x={L - 8} y={T - 11} textAnchor="end">{w.units.flux}</text>);
     out.push(<text key="days" x={R + 8} y={B + 18}>{w.days}</text>);
   }
-  if (mags) out.push(<text key="ab" x={W - 2} y={T - 11} textAnchor="end">{mag ? 'µJy' : 'mag AB'}</text>);
+  if (mags) out.push(<text key="ab" x={W - 2} y={T - 11} textAnchor="end">{mag ? w.units.flux : w.units.mag}</text>);
 
   // forecasts: mean ± z sigma, clipped to the frame, each named at its end with its seal
   const bands = [];
@@ -253,9 +257,9 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   }
   if (goal) {
     out.push(<line key="target" className="target" x1={f1(X(goal.day))} x2={f1(X(goal.day))} y1={T} y2={B} />);
-    // the label sits beside its line, never across it, nor across the line of now in words
+    // the label sits beside its line, never across it, nor across the line of now
     const right = X(goal.day) + 6 + (axes ? textWidth(goal.label || '') : String(goal.label || '').length * 8) <= R - 4;
-    const edge = axes && !right && nowAt !== null && nowAt < goal.day ? Math.min(X(nowAt), X(goal.day)) : X(goal.day);
+    const edge = !right && nowAt !== null && nowAt < goal.day ? Math.min(X(nowAt), X(goal.day)) : X(goal.day);
     if (goal.label) out.push(<text key="targetl" className={`refl${axes ? ' plain halo' : ''}`} x={f1(right ? X(goal.day) + 6 : edge - 6)} y={T + 16} textAnchor={right ? 'start' : 'end'}>{goal.label}</text>);
   }
 
@@ -320,23 +324,42 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
       for (const v of walls) if (b.x0 < v && b.x1 > v) n += 50;
       return n;
     };
-    const place = (options) => {
+    const choose = (options) => {
       let best = null;
       for (const o of options) {
         const bx = o.anchor === 'end' ? { x0: o.x - o.w, x1: o.x, y0: o.y - 12, y1: o.y + 4 } : { x0: o.x, x1: o.x + o.w, y0: o.y - 12, y1: o.y + 4 };
         const c = cost(bx);
         if (!best || c < best.c) best = { ...o, box: bx, c };
       }
-      if (best && best.c < Infinity) { taken.push(best.box); return best; }
-      return null;
+      return best && best.c < Infinity ? best : null;
+    };
+    const place = (options) => {
+      const best = choose(options);
+      if (best) taken.push(best.box);
+      return best;
     };
     if (reference && reference.label) {
-      const w0 = textWidth(reference.label);
+      // the whole label where it covers nothing, else the bare value, else the value above the frame by a piece of the line
       const ry = Y(reference.flux);
-      const xs = [];
-      for (let at = L + 8; at + w0 <= R - 8; at += 24) xs.push(at);
-      const at = place([-6, 16].flatMap((dy) => xs.map((v) => ({ x: v, anchor: 'start', y: ry + dy, w: w0 }))));
-      if (at) out.push(<text key="refl" className="refl plain halo" x={f1(at.x)} y={f1(at.y)} textAnchor={at.anchor}>{reference.label}</text>);
+      const along = (text) => {
+        const w0 = textWidth(text);
+        const xs = [];
+        for (let at = L + 8; at + w0 <= R - 8; at += 24) xs.push(at);
+        return choose([-6, 16].flatMap((dy) => xs.map((v) => ({ x: v, anchor: 'start', y: ry + dy, w: w0, text }))));
+      };
+      const short = reference.short || reference.label;
+      const title = textWidth(mag ? axes.mag || axes.y : axes.y);
+      const top = 2 + title + 16 + 24 + textWidth(short) <= W - 2;
+      let at = along(reference.label);
+      if (!at || at.c > 0) at = along(short) || at;
+      if (at && at.c > 0 && top) at = null;
+      if (at) {
+        taken.push(at.box);
+        out.push(<text key="refl" className="refl plain halo" x={f1(at.x)} y={f1(at.y)} textAnchor="start">{at.text}</text>);
+      } else if (top) {
+        out.push(<path key="refk" className="ref" d={`M${f1(W - 2 - textWidth(short) - 26)} ${T - 16}h20`} />);
+        out.push(<text key="refl" className="refl plain" x={W - 2} y={T - 12} textAnchor="end">{short}</text>);
+      }
     }
     for (const b of ['r', 'g']) {
       const text = bandNames ? bandNames[b] : b;
@@ -506,7 +529,7 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     <div className="figure" ref={ref}>
       <div className="plot" ref={plot} tabIndex={0} role="application" aria-label={label} aria-describedby={help} onKeyDown={key}
         onBlur={() => { if (pick && pick.how === 'key') setPick(null); }}>
-        <svg ref={svg} className={`live${zoomed ? ' zoomed' : ''}`} width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}
+        <svg ref={svg} className={`live${zoomed ? ' zoomed' : ''}`} width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true"
           onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}
           onPointerLeave={(e) => { if (e.pointerType === 'mouse' && !drag.current.start && pick && pick.how === 'hover') setPick(null); }}>
           <defs><clipPath id={clip}><rect x={L} y={T} width={R - L} height={B - T} /></clipPath></defs>
