@@ -131,6 +131,11 @@ export const WORDS = {
       timeMachine: 'Time machine', back: 'Back', next: 'Next', play: 'Play', pause: 'Pause', step: 'Step',
       stepOf: ['step', 'of'], thread: 'The team’s thread',
       chartLabel: (oid) => `Light curve of ${oid} in g and r with the sealed forecasts`, fan: { ia: 'Ia', lens: 'lens' },
+      views: { label: 'Which investigation', latest: 'Latest investigation', featured: 'Featured case: the invisible lens' },
+      stages: { lookout: 'Lookouts', reader: 'Reader', theorist: 'Theorists', skeptic: 'Skeptics', llm_only: 'Muse alone', director: 'Director', forecaster: 'Forecaster' },
+      sealed: 'sealed',
+      photos: (taken) => [taken ? `science, ${taken}` : 'science', 'reference', 'difference', 'the field in colour, Legacy Surveys'],
+      photosAlt: (oid) => `Photos of ${oid}: the first ZTF science, reference and difference images, and the field in colour`,
     },
     tele: {
       title: 'Forecasts', count: (n) => `${n} bets sealed`, tg: 'Telegram',
@@ -320,6 +325,11 @@ export const WORDS = {
       timeMachine: 'Máquina del tiempo', back: 'Atrás', next: 'Siguiente', play: 'Reproducir', pause: 'Pausa', step: 'Paso',
       stepOf: ['paso', 'de'], thread: 'Conversación del equipo',
       chartLabel: (oid) => `Curva de luz de ${oid} en g y r con los pronósticos sellados`, fan: { ia: 'Ia', lens: 'lente' },
+      views: { label: 'Qué investigación', latest: 'Última investigación', featured: 'Caso destacado: la lente invisible' },
+      stages: { lookout: 'Vigías', reader: 'Lector', theorist: 'Teóricos', skeptic: 'Escépticos', llm_only: 'Muse sola', director: 'Director', forecaster: 'Pronosticador' },
+      sealed: 'sellada',
+      photos: (taken) => [taken ? `ciencia, ${taken}` : 'ciencia', 'referencia', 'diferencia', 'la zona en color, Legacy Surveys'],
+      photosAlt: (oid) => `Fotos de ${oid}: las primeras imágenes de ZTF de ciencia, referencia y diferencia, y la zona en color`,
     },
     tele: {
       title: 'Pronósticos', count: (n) => `${n} apuestas selladas`, tg: 'Telegrama',

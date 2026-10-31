@@ -277,3 +277,105 @@ def test_the_lab_gives_the_observatory_the_calls_behind_each_step_and_their_seco
                         {"role": "leverrier", "leap": "instrument", "decision": "proposes Drift"}]
     assert [c["decision"] for c in calls[9]] == ["defends adopted", "defends ia", "real"]
     assert calls[10] == [{"role": "director", "decision": "bet q0"}] and calls[5] == calls[12] == calls[13] == []
+
+
+LONG = ("The flat plateau over two weeks matches a cooling hydrogen envelope. The fit has chi2 per point 0.68 and the stamp "
+        "shows a star-like source on a faint galaxy, so a hydrogen-rich collapse is the likeliest story for what it shows.")
+
+
+def nightly():
+    # two nights of team bets: B on the first, C and D on the second, D weighed by more lookouts, and a v0 bet
+    rows = []
+    add = lambda kind, payload, time: rows.append(entry(len(rows), kind, payload, time))
+    fan = [{"band": f"ztf{b}", "mjd": 61344.0 + d, "parts": [["ii", 0.5, 100.0, 10.0], ["llm", 0.5, 120.0, 10.0]]}
+           for d in (1, 2) for b in "gr"]
+
+    def night(oid, time, lookouts=1, model="v1"):
+        say = lambda role, decision, **kw: add("event", {"role": role, "object": oid, "decision": decision, "cost_usd": 0.01,
+                                                          "seconds": 2.0, **kw}, time)
+        say("forecaster", "words the bet", why="Short words.")
+        say("director", "bet q3", why="Cut director note")
+        say("skeptic", "doubts ibc", lens="physics")
+        say("skeptic", "real", lens="instrument")
+        say("llm_only", "forecasts 10 points alone")
+        say("theorist", "defends ii", why=LONG[:200])
+        say("reader", "real (0.86)", why="Compact source at the centre.")
+        for _ in range(lookouts):
+            say("lookout", "investigate", priority=0.7, why="A lookout note " + "x" * 190)
+        add("bet", {"bet": f"{oid}-{time[:10]}", "object": oid, "model": model, "made_at": 61344.0, "question": STANDARD,
+                    "risky": RISKY, "director": {"question": "q3", "why": "q3 carries the most bits."},
+                    "wording": {"term": "likely", "text": "It is likely to fade."},
+                    "theories": [{"hypothesis": "ii", "argument": LONG}],
+                    "skeptics": {"instrument": {"why": "A smooth rise."},
+                                 "physics": {"implausible": [{"hypothesis": "ibc", "why": "Too flat."}]}},
+                    "classes": {"ii": 0.6, "ia": 0.4}, "weights": {"ii": 0.9, "null": 0.1}, "decision": {"action": "wait"},
+                    "forecasts": fan, "seen": [[61340.0, "ztfr", "det", 50.0, 2.0], [61330.0, "ztfg", "limit", 10.0, None]]},
+            time)
+
+    night("B", "2026-10-29T01:00:00+00:00", lookouts=3)
+    night("C", "2026-10-30T01:00:00+00:00")
+    night("D", "2026-10-30T01:10:00+00:00", lookouts=2)
+    night("V", "2026-10-30T01:20:00+00:00", lookouts=5, model="v0")
+    add("answer", {"bet": "C-2026-10-30", "which": "risky", "yes": False, "log_score": -0.1, "mjd": 61348.0},
+        "2026-11-03T01:00:00+00:00")
+    return rows
+
+
+def test_the_lab_shows_the_latest_nights_bet_the_most_calls_weighed():
+    got = site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    assert (got["object"], got["night"], got["model"]) == ("D", "2026-10-29", "v1")
+    # the calls in the order the team works: lookouts, reader, theorists, skeptics, Muse alone, director, forecaster
+    assert [(e["role"], e.get("lens")) for e in got["events"]] == [
+        ("lookout", None), ("lookout", None), ("reader", None), ("theorist", None), ("skeptic", "instrument"),
+        ("skeptic", "physics"), ("llm_only", None), ("director", None), ("forecaster", None)]
+    assert got["question"] == site._question(RISKY) and got["staked"] == "risky" and got["term"] == "likely"
+    assert got["hash"] == f"{29:064x}" and got["made_at"] == "2026-10-31T00:00:00Z"
+    assert got["cost"] == 0.09 and got["calls"] == 9 and got["answer"] is None
+
+
+def test_the_latest_investigation_keeps_every_reason_whole():
+    events = {e["role"]: e for e in site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))["events"]}
+    # the theorist's argument comes uncut from the bet, the director's and forecaster's words too
+    assert events["theorist"]["why"] == LONG
+    assert events["director"]["why"] == "q3 carries the most bits." and events["forecaster"]["why"] == "It is likely to fade."
+    assert events["reader"]["why"] == "Compact source at the centre."
+    # a note the ledger cut with no sentence to end on shows the cut
+    assert events["lookout"]["why"].endswith("x…") and events["lookout"]["priority"] == 0.7
+    assert events["llm_only"]["why"] is None and events["skeptic"]["why"] is None
+    assert site._whole(LONG[:200]) == "The flat plateau over two weeks matches a cooling hydrogen envelope."
+
+
+def test_the_latest_investigation_draws_what_sira_saw_and_its_sealed_fan():
+    got = site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    assert got["seen"] == [[-14.0, "g", "lim", 10.0, None], [-4.0, "r", "det", 50.0, 2.0]]
+    assert got["fan"] == {"g": [[1.0, 110.0, 14.14], [2.0, 110.0, 14.14]], "r": [[1.0, 110.0, 14.14], [2.0, 110.0, 14.14]]}
+    assert got["first_detection"] == "2026-10-27T00:00:00Z" and got["classes"] == {"ii": 0.6, "ia": 0.4}
+    assert got["skeptics"]["physics"]["implausible"] == [{"hypothesis": "ibc", "why": "Too flat."}]
+    assert got["images"] == {"stamps": None, "panel": None, "taken": None, "host": None} and got["ra"] is None
+
+
+def test_the_lab_skips_an_object_in_a_round_that_has_not_closed():
+    rows = nightly()
+    rows.append(entry(len(rows), "round", {"round": "2026-10-31", "opens_at": "2026-10-31T18:00:00+00:00",
+                                           "closes_at": "2026-10-31T21:00:00+00:00", "questions": [{"object": "D"}]}))
+    assert site.latest(rows, now=datetime(2026, 10, 31, 19, tzinfo=timezone.utc))["object"] == "C"
+    assert site.latest(rows, now=datetime(2026, 10, 31, 22, tzinfo=timezone.utc))["object"] == "D"
+    # with the next round holding D too, C shows, with its answer once the ledger has it
+    later = rows + [entry(99, "round", {"closes_at": "2026-11-09T21:00:00+00:00", "questions": [{"object": "D"}]})]
+    c = site.latest(later, now=datetime(2026, 11, 4, tzinfo=timezone.utc))
+    assert c["object"] == "C" and c["answer"] == {"void": False, "yes": False, "log_score": -0.1, "at": "2026-11-04T00:00:00Z"}
+    assert site.latest(rows[:1]) is None
+
+
+def test_export_writes_the_latest_investigation(tmp_path, monkeypatch):
+    from sira import gallery
+
+    monkeypatch.setattr(gallery, "build", lambda oids, out, fresh=frozenset(), seconds=0: {
+        "D": {"ra": 150.1, "dec": -20.2, "stamps": "D.png", "panel": [63, 63], "taken": 61340.0, "host": "D.jpg"}})
+    book = tmp_path / "ledger"
+    book.mkdir()
+    (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in nightly()) + "\n")
+    site.export(book, tmp_path / "data", now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    got = json.loads((tmp_path / "data" / "latest.json").read_text())
+    assert got["object"] == "D" and got["images"]["stamps"] == "data/img/D.png" and (got["ra"], got["dec"]) == (150.1, -20.2)
+    assert got["l"] is not None and got["b"] is not None
