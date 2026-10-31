@@ -1,8 +1,10 @@
 import re
+import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
-from . import agents, catalogs, crowd, scoring
+from . import agents, catalogs, crowd, scoring, spanish
 from . import team as lab
 from .fetch import client
 from .firewall import as_of
@@ -22,10 +24,20 @@ def _now() -> str:
 
 def _clip(text: str) -> str:
     # the team's notes arrive cut at 200 characters; a visitor reads them up to their last whole sentence
-    if len(text) < 200:
+    if len(text) < 200 or text.endswith("."):
         return text
     cut = text.rfind(". ")
     return text[:cut + 1] if cut > 0 else text.rstrip() + "…"
+
+
+def said(lenses: dict) -> dict:
+    # the skeptics' events carry no words, so the chat takes them from the result
+    whole = lambda t: t if t.endswith((".", "…", "!", "?")) else t + "."
+    name = str(lenses["memory"].get("name") or "").strip()
+    return {"instrument": _clip(lenses["instrument"]["why"]),
+            "physics": " ".join(f"{spanish.HYP.get(i['hypothesis'], (i['hypothesis'],))[0]}: {whole(_clip(i['why']))}"
+                                for i in lenses["physics"]["implausible"] if i["why"]),
+            "memory": name if lenses["memory"]["recognised"] and name.lower() not in ("null", "none") else ""}
 
 
 def _rows(table: str) -> tuple[str, dict]:
@@ -90,11 +102,40 @@ def run(oid: str, ident: int | None = None) -> dict:
             raise RuntimeError(f"investigation {ident} is not waiting for {oid}")
     write = (lambda **f: save(c, ident, **f)) if ident is not None else (lambda **f: None)
     write(status="running", started_at=_now())
-    steps = []
+    steps, es, asked, lock, spent = [], {}, set(), threading.Lock(), 0.0
 
-    def report(events):
-        steps[:] = [{k: _clip(e[k]) if k == "why" else e[k] for k in SHOWN if k in e} for e in events]
-        write(steps=list(steps), cost_usd=round(sum(s["cost_usd"] for s in steps), 4))
+    def rows():
+        return [s | {"why_es": es[s["why"]]} if s.get("why") in es else s for s in steps]
+
+    def show():
+        # the Spanish lands from other threads, so the row is written by one at a time and always whole
+        with lock:
+            write(steps=rows(), cost_usd=round(sum(s["cost_usd"] for s in steps) + spent, 4))
+
+    def translate(texts):
+        # for the site only: no agent reads it, and if it fails the English stays
+        nonlocal spent
+        try:
+            more, usd = spanish.translate(llm, texts)
+            with lock:
+                es.update(more)
+                spent += usd
+            show()
+        except Exception as e:
+            print(f"no Spanish for {len(texts)} notes: {type(e).__name__}", file=sys.stderr)
+
+    def report(events, words=None):
+        fresh = [{k: _clip(e[k]) if k == "why" else e[k] for k in SHOWN if k in e} for e in events]
+        for s in fresh:
+            if (words or {}).get(s.get("lens")):
+                s["why"] = words[s["lens"]]
+        with lock:
+            steps[:] = fresh
+        show()
+        new = [w for w in dict.fromkeys(s.get("why") for s in fresh) if w and w not in asked]
+        asked.update(new)
+        if new:
+            pool.submit(translate, new)
 
     try:
         if ident is not None and in_round(c, oid):
@@ -110,10 +151,11 @@ def run(oid: str, ident: int | None = None) -> dict:
             report(first)
             result, events = lab.investigate(llm, view, ebv, pool, [0], readings.get(oid), None, alone,
                                              report=lambda more: report(first + more))
-        report(first + events)
+            # leaving the pool waits for the last Spanish, so the site has it before it stops polling at done
+            report(first + events, said(result["skeptics"]) if result else None)
         out = summary(view, result, readings.get(oid))
     except Exception as e:
         write(status="failed", error=str(e)[:200] if isinstance(e, RuntimeError) else type(e).__name__, finished_at=_now())
         raise
     write(status="done", result=out, finished_at=_now())
-    return {"object": oid, "steps": steps, "result": out}
+    return {"object": oid, "steps": rows(), "result": out}
