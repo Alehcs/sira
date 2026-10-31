@@ -210,8 +210,10 @@ def _lab(rows: list[dict], obj: dict) -> dict:
              verdicts[0], adopted, team(len(bets) - 1, "director")[-1], last, answers[last["payload"]["bet"]], verdicts[-1]]
     spent = [round(sum(e["payload"].get("cost_usd", 0) for e in events if e["seq"] <= m["seq"]), 2) for m in marks]
     times = [day(b["payload"]["made_at"]) for b in bets]
+    # the last step is the second verdict, at the time the ledger gives it
+    judged = datetime.fromisoformat(verdicts[-1]["time"]).timestamp() / 86400 + 40587
     now = [times[0]] * 5 + [times[1], times[2], times[2], times[3], times[3], times[4], times[4],
-                            day(answers[last["payload"]["bet"]]["payload"]["mjd"]) + 0.5, day(last["payload"]["made_at"]) + 5]
+                            day(answers[last["payload"]["bet"]]["payload"]["mjd"]) + 0.5, day(judged)]
     sealed_at = [times[0]] * 6 + [times[1], times[2], times[2], times[3], times[4], times[4], times[4], times[4]]
     reader = team(0, "reader")[0]["payload"]
 
