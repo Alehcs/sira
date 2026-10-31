@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Dome from './ui/Dome.jsx';
+import { lengths } from './ui/dome/script.js';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
 import Stamps from './ui/Stamps.jsx';
@@ -13,6 +15,11 @@ const DAILY = 10; // the same cap the database keeps
 const SHOWN = 9;
 const STAGES = ['reader', 'theorist', 'skeptic', 'llm_only', 'director', 'forecaster']; // what a full run reports, in order
 const MINE = 'investigation';
+// the stages as the observatory plays them, and who works before a stage's steps land: theorists, skeptics and Muse at once
+const GROUPS = [['reader'], ['theorist', 'llm_only'], ['skeptic'], ['director', 'senior'], ['forecaster']];
+const LENS_CALLS = ['instrument', 'physics', 'memory'].map((lens) => ({ role: 'skeptic', lens }));
+const WAIT = [[{ role: 'reader' }], [{ role: 'llm_only' }, ...['ia', 'ibc', 'ii'].map((h) => ({ role: 'theorist', decision: `defends ${h}` })), ...LENS_CALLS],
+  LENS_CALLS, [{ role: 'director' }], [{ role: 'forecaster' }]];
 
 const startOfDay = () => `${new Date().toISOString().slice(0, 10)}T00:00:00Z`;
 const remember = (id) => { try { localStorage.setItem(MINE, String(id)); } catch (e) { /* storage can be blocked */ } };
@@ -115,6 +122,51 @@ function seenOf(inv, cand) {
   return cand.curve.filter((p) => p[2] === 'det' && p[3] > 0).map(([mjd, band, , v, err]) => ({ day: mjd - t0, band: band.slice(-1), flux: v, err }));
 }
 
+// one beat per stage that has reported; while the team works, the next stage thinks until its step lands
+function beats(inv, points, fan, q) {
+  const r = inv.result || {};
+  const pts = points.filter((p) => p.flux > 0).map((p) => [p.day, p.flux, p.band]);
+  const days = pts.map((p) => p[0]).concat(fan.map((p) => p[0]));
+  const fluxes = pts.map((p) => p[1]).concat(fan.map((p) => p[1] + 1.645 * p[2]), fan.map((p) => p[1] - 1.645 * p[2])).filter((v) => v > 0);
+  const weights = r.classes || {};
+  const scene = {
+    pts, fan, now: 0, weights,
+    voices: Object.entries(weights).filter(([, v]) => v >= 0.005).sort((a, b) => (a[0] === 'null') - (b[0] === 'null') || b[1] - a[1]),
+    range: { x0: Math.min(0, ...days) - 1, x1: Math.max(1, ...days) + 1, f0: Math.max(1, Math.min(...fluxes, 100) * 0.8), f1: Math.max(...fluxes, 10) * 1.25 },
+  };
+  const steps = (inv.steps || []).filter((s) => !s.error);
+  const out = [];
+  for (const [i, roles] of GROUPS.entries()) {
+    const calls = steps.filter((s) => roles.includes(s.role)).map(({ role, lens, decision, seconds }) => ({ role, lens, decision, seconds }));
+    if (!calls.length) {
+      if (inv.status === 'running') out.push({ calls: WAIT[i].map((c) => ({ ...c, pending: true })), scene });
+      break;
+    }
+    out.push({ calls, scene, seal: roles[0] === 'forecaster' && q ? q.p : null });
+  }
+  return out;
+}
+
+// the observatory plays the run once from its first step, then waits on the stage at work
+function RunDome({ inv, points, fan, q, im, lang }) {
+  const key = `${inv.status}:${(inv.steps || []).length}:${points.length}`;
+  const scenes = useMemo(() => beats(inv, points, fan, q), [key]);
+  const pace = useMemo(() => lengths(scenes), [scenes]);
+  const [at, setAt] = useState(0);
+  useEffect(() => {
+    if (at >= scenes.length - 1 || !Number.isFinite(pace[at])) return undefined;
+    const timer = setTimeout(() => setAt(at + 1), pace[at] * 1000);
+    return () => clearTimeout(timer);
+  }, [at, pace, scenes.length]);
+  if (!scenes.length) return null;
+  return (
+    <div className="rundome">
+      <Dome lang={lang} beats={scenes} at={Math.min(at, scenes.length - 1)}
+        stamps={im.stamps ? { src: BASE + im.stamps, tile: im.panel[0], gap: 0, pixel: 1 } : null} />
+    </div>
+  );
+}
+
 function Run({ inv, cand, lang, w, f, hyp, onBack }) {
   if (!inv) return <p className="muted">{WORDS[lang].loading}</p>;
   const r = inv.result || {};
@@ -158,6 +210,8 @@ function Run({ inv, cand, lang, w, f, hyp, onBack }) {
       {stale && <p className="alert bad">{w.errors.stale}</p>}
       {inv.status === 'failed' && <p className="alert bad">{w.errors[inv.error] || w.errors.failed}</p>}
       {r.dropped && <p className="alert bad">{w.dropped}</p>}
+      <RunDome key={inv.id} inv={inv} points={points} fan={fan.filter((p) => p[1] === 'ztfr').map((p) => [p[0], p[2], p[3]]).sort((x, y) => x[0] - y[0])}
+        q={q} im={im} lang={lang} />
       <div className="run">
         <Thread lang={lang} label={w.thread} current={`${inv.id}:${steps.length}:${inv.status}`}>
           {steps.map((s, i) => (
