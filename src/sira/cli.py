@@ -33,6 +33,12 @@ def investigate(args) -> None:
     print(json.dumps(run(args.object, int(args.id) if args.id else None), indent=1))
 
 
+def spanish(args) -> None:
+    from .spanish import logbook
+
+    print(f"Spanish written beside the English in {args.path} for US${logbook(LLM(), Path(args.path)):.4f}")
+
+
 def costs(_args) -> None:
     print(json.dumps(CostMeter().summary(), indent=2))
 
@@ -261,6 +267,9 @@ def main() -> None:
     visit.add_argument("object")
     visit.add_argument("--id", help="the site's investigation to report to; without it the run only prints")
     visit.set_defaults(run=investigate)
+    es = sub.add_parser("spanish", help="write Le Verrier's names and ideas in Spanish beside the English in a logbook file")
+    es.add_argument("path", nargs="?", default="site/public/replays/logbook.json")
+    es.set_defaults(run=spanish)
     args = parser.parse_args()
     args.run(args)
 
