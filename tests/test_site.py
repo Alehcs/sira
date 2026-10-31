@@ -188,7 +188,7 @@ def replay():
                     "skeptics": {"instrument": {"why": "A smooth rise."}},
                     "theories": [{"hypothesis": h, "argument": f"The {h} case."} for h in theories]})
 
-    say("reader", "bogus (0.15)", why="Broken subtractions everywhere.")
+    say("reader", "bogus (0.15)", why="Broken subtractions everywhere.", seconds=6.9)
     bet(105.0)
     add("answer", {"bet": "A-105.0", "which": "question", "yes": True, "log_score": -0.58, "mjd": 108.0})
     bet(110.0)
@@ -237,3 +237,14 @@ def test_the_lab_keeps_each_seal_its_question_its_answer_and_the_words_behind_it
     assert len(said) == len(lab["now"]) == 14
     assert said[:5] == ["Broken subtractions everywhere.", "The ia case.", "A smooth rise.", "q0 at 105.0", "Likely at 105.0."]
     assert said[7] == "A lens." and said[9] == "The adopted case." and said[11] == "Likely at 125.0." and said[5] is None
+
+
+def test_the_lab_gives_the_observatory_the_calls_behind_each_step_and_their_seconds():
+    calls = site._lab(*replay())["calls"]
+    assert len(calls) == 14 and calls[0] == [{"role": "reader", "decision": "bogus (0.15)", "seconds": 6.9}]
+    assert [c["decision"] for c in calls[1]] == ["defends ia", "defends ibc"]
+    assert calls[2] == [{"role": "skeptic", "lens": "instrument", "decision": "real"}]
+    assert calls[7] == [{"role": "leverrier", "leap": "hidden", "decision": "proposes Lens"},
+                        {"role": "leverrier", "leap": "instrument", "decision": "proposes Drift"}]
+    assert [c["decision"] for c in calls[9]] == ["defends adopted", "defends ia", "real"]
+    assert calls[10] == [{"role": "director", "decision": "bet q0"}] and calls[5] == calls[12] == calls[13] == []
