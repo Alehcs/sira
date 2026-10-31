@@ -14,9 +14,9 @@ IPCC_ES = {"virtually certain": "virtualmente cierto", "very likely": "muy proba
            "about as likely as not": "tan probable como improbable", "unlikely": "improbable",
            "very unlikely": "muy improbable", "exceptionally unlikely": "excepcionalmente improbable"}
 TERMS = {"light curve": "curva de luz", "forecast": "pronóstico", "measurements": "mediciones", "artifact": "artefacto",
-         "bet": "apuesta", "science": "ciencia", "reference": "referencia", "difference": "diferencia",
-         "reader": "lector", "lookout": "vigía", "theorist": "teórico", "skeptic": "escéptico",
-         "director": "director", "forecaster": "pronosticador"}
+         "bet": "apuesta", "stamps": "imágenes", "science": "ciencia", "reference": "referencia",
+         "difference": "diferencia", "reader": "lector", "lookout": "vigía", "theorist": "teórico",
+         "skeptic": "escéptico", "director": "director", "forecaster": "pronosticador"}
 NAMES_ES = {
     "Unseen foreground microlens": "Microlente invisible en primer plano",
     "Galactic microlensing event": "Evento de microlente galáctica",
@@ -36,8 +36,8 @@ TASK = ("You translate notes written by the AI astronomers of SIRA, a public ast
         "Latin American Spanish for its website. Translate the meaning faithfully and add nothing. Keep every number "
         "exactly as written, decimal point included; keep band letters (g, r, i), units (mag, microjansky, uJy, K, d), "
         "symbols and fit parameters (x1, c, z, chi2, p_yes) and identifiers (object names such as ZTF19aavisrq, "
-        "question ids such as q2) unchanged. Use these Spanish terms: "
-        + "; ".join(f"{en} = {es}" for en, es in GLOSSARY.items())
+        "question ids such as q2) unchanged. Use these Spanish terms, capitalised only at the start of a sentence: "
+        + "; ".join(f"{en[0].lower() + en[1:]} = {es[0].lower() + es[1:]}" for en, es in GLOSSARY.items())
         + ". Reply with JSON only: the same keys, each with its note in Spanish.")
 NUMBER = re.compile(r"\d+(?:\.\d+)?")
 

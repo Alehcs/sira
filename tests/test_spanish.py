@@ -53,8 +53,9 @@ def test_a_note_whose_numbers_change_stays_in_english():
 
 def test_the_glossary_is_the_sites_own_words():
     js = WORDS.read_text().lower()
-    assert all(en.lower() in js and es.lower() in js for en, es in spanish.GLOSSARY.items())
-    assert "Type Ia supernova = Supernova tipo Ia" in spanish.TASK
+    assert all(es.lower() in js for es in spanish.GLOSSARY.values())
+    assert all(f"'{es}'" in WORDS.read_text() for en, es in spanish.HYP.values())
+    assert "type Ia supernova = supernova tipo Ia" in spanish.TASK and "stamps = imágenes" in spanish.TASK
     assert "about as likely as not = tan probable como improbable" in spanish.TASK
 
 
