@@ -176,7 +176,7 @@ export function frame(t, st) {
 
 // where each name sits under its agent, and which side each bubble opens to so neighbours do not cover each other
 export const TAGS = {
-  vig: [0, 3], lec: [-12, 3], tia: [0, 3], tibc: [0, 3], tii: [0, 3], muse: [0, 3], ein: [4, 3], efi: [0, 4], eme: [2, 6], lv: [0, 3],
+  vig: [0, 3], lec: [-12, 3], tia: [0, 3], tibc: [0, 3], tii: [0, 3], muse: [0, 3], ein: [4, 3], efi: [0, 4], eme: [2, 6], lv: [0, 6],
   dir: [0, 3], sen: [0, 3], pro: [0, 3], ztf: [30, -6],
 };
 export const TWO = new Set(['ein', 'efi', 'eme']);
