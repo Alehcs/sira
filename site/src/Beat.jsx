@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
-import Stamps from './ui/Stamps.jsx';
-import { useWidth } from './ui/width.js';
+import Photos from './ui/Photos.jsx';
 import { supabase } from './supabase.js';
 import { WORDS, format } from './words.js';
 
@@ -41,14 +40,40 @@ function countdown(ms) {
   return m ? `${m} min ${s % 60} s` : `${s} s`;
 }
 
-// the three cutouts at the largest whole scale that fits the column, two to a row when three would be too small
-function Strip({ src, panel, w, alt }) {
-  const [ref, W] = useWidth();
-  const fit = Math.floor((W - 8) / (3 * panel[0]));
-  const scale = Math.min(3, fit >= 2 ? fit : W >= 2 * panel[0] + 4 ? 2 : 1);
+// the photos of a question, or a plain line when the build has none
+function Shots({ img, alt, w, f }) {
+  if (!img || !img.stamps) return <p className="muted">{w.noShots}</p>;
   return (
-    <div className="strip" ref={ref}>
-      {W > 0 && <Stamps src={src} size={[panel[0] * 3, panel[1]]} tile={panel[0]} scale={scale} labels={w.panels} alt={alt} arcsec={10} />}
+    <div className="shots">
+      <Photos src={BASE + img.stamps} panel={img.panel} host={img.host && BASE + img.host} alt={alt}
+        labels={w.shots(img.taken && f.short(img.taken))} />
+      <p className="hint">{w.shotsNote}</p>
+    </div>
+  );
+}
+
+// what each mark on the chart is, in words
+function Key({ w }) {
+  return (
+    <ul className="key">
+      <li><svg width="30" height="14" aria-hidden="true"><circle className="ptg" cx="7" cy="7" r="3.6" /><rect className="ptr" x="17.6" y="3.6" width="6.8" height="6.8" /></svg>{w.key.point}</li>
+      <li><svg width="14" height="16" aria-hidden="true"><path className="bar sr" d="M7 0V16" /><rect className="ptr" x="3.6" y="4.6" width="6.8" height="6.8" /></svg>{w.key.err}</li>
+      <li><svg width="30" height="14" aria-hidden="true"><path className="lim sg" d="M2.5 3.5h9l-4.5 8z" /><path className="lim sr" d="M17.5 3.5h9l-4.5 8z" /></svg>{w.key.limit}</li>
+      <li><svg width="30" height="14" aria-hidden="true"><path className="dash" d="M1 7H29" /></svg>{w.key.lines}</li>
+    </ul>
+  );
+}
+
+// the light curve in plain words: brightness up, days along, both bands named, the line to beat and the day it is answered
+function Chart({ ask, points, x, start, today, label, lang, w, f }) {
+  const ref = micro(ask.reference, f);
+  return (
+    <div className="fig">
+      <Figure lang={lang} start={start} points={points} x={x} now={0} mags={false} bandNames={w.bands} label={label}
+        axes={{ y: w.axes.y, x: today ? w.axes.today : w.axes.asked }}
+        reference={{ flux: ask.reference, label: ask.kind === 'last' ? w.lastRef(ask.band, ref) : w.levelRef(ask.band, ref) }}
+        target={{ day: today ? today.day : ask.days, label: w.inDays(ask.days) }} />
+      <Key w={w} />
     </div>
   );
 }
@@ -58,15 +83,25 @@ function Slider({ value, set, disabled, w, f }) {
   return (
     <div className="slider">
       <label>
-        <span className="you"><span>{w.you}</span><b>{f.pct(p)}</b></span>
+        <span className="you"><span>{w.chance}</span><b>{f.pct(p)}</b></span>
         <input type="range" min="1" max="99" value={value} disabled={disabled} onChange={(e) => set(Number(e.target.value))} />
       </label>
-      <div className="ends" aria-hidden="true"><span>{w.no}</span><span>{w.yes}</span></div>
+      <div className="ends" aria-hidden="true"><span>{w.sureNo}</span><span>{w.unsure}</span><span>{w.sureYes}</span></div>
       <p className="scores">
-        <span>{w.score}</span>
-        <span>{w.ifYes} <b>{f.num(Math.log(p), 2)}</b></span>
-        <span>{w.ifNo} <b>{f.num(Math.log(1 - p), 2)}</b></span>
+        <span>{w.scoreIf}</span>
+        <span>{w.ifHappens} <b>{f.num(Math.log(p), 2)}</b></span>
+        <span>{w.ifNot} <b>{f.num(Math.log(1 - p), 2)}</b></span>
       </p>
+    </div>
+  );
+}
+
+function Ask({ head, ask, f, w }) {
+  return (
+    <div className="top">
+      {head}
+      <p className="text">{f.question(ask)}</p>
+      <p className="plain">{w.plain({ ...ask, ref: micro(ask.reference, f) })}</p>
     </div>
   );
 }
@@ -78,16 +113,10 @@ function Live({ q, i, img, value, set, betted, closes, lang, w, f }) {
   const target = q.mjd - opens;
   return (
     <article className="ask">
-      <div className="top">
-        <p className="nth"><b>{w.q} {i + 1}</b><span>{q.object}</span></p>
-        <p className="text">{f.question(ask)}</p>
-        {img && img.stamps && <Strip src={BASE + img.stamps} panel={img.panel} w={w} alt={w.stampsAlt(q.object)} />}
-      </div>
-      <div className="fig">
-        <Figure lang={lang} start={q.opens_at} points={seen} x={[Math.floor(Math.min(target, ...seen.map((p) => p.day))) - 1, Math.ceil(target) + 3]}
-          reference={{ flux: ask.reference, label: micro(ask.reference, f) }}
-          target={{ day: target, label: w.inDays(ask.days) }} label={w.chart(q.object)} />
-      </div>
+      <Ask head={<p className="nth"><b>{w.q} {i + 1}</b><span>{q.object}</span></p>} ask={ask} f={f} w={w} />
+      <Shots img={img} alt={w.stampsAlt(q.object)} w={w} f={f} />
+      <Chart ask={ask} points={seen} start={q.opens_at} today={{ day: target }} label={w.chart(q.object)} lang={lang} w={w} f={f}
+        x={[Math.floor(Math.min(target, ...seen.map((p) => p.day))) - 1, Math.ceil(target) + 3]} />
       <div className="pick">
         <Slider value={value} set={set} disabled={betted} w={w} f={f} />
         <Paper hash={q.commit.slice(0, 12)}><p className="line"><b>{w.sira}</b> {w.sealed(closes)}</p></Paper>
@@ -114,7 +143,6 @@ function Reveal({ q, said, shown, w, f }) {
       </Paper>
       {shown && (
         <div className="who">
-          {shown.host && <img src={BASE + shown.host} width="128" height="128" alt={w.hostAlt(shown.object)} />}
           <div>
             <p className="oid">{shown.object}</p>
             <p>{a.class}</p>
@@ -150,18 +178,13 @@ function Practice({ bank, lang, w, f }) {
     const after = said === undefined ? [] : points(q.answer.after);
     const seen = points(q.ask.seen);
     const days = q.ask.seen.concat(q.answer.after).map((r) => r[0]).concat(q.ask.days);
+    const group = bank.reveal.find((r) => r.group === q.group);
     card = (
       <article className="ask">
-        <div className="top">
-          <p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>
-          <p className="text">{f.question(q.ask)}</p>
-          <Strip src={BASE + q.ask.stamps} panel={q.ask.panel} w={w} alt={w.practiceStamps} />
-        </div>
-        <div className="fig">
-          <Figure lang={lang} points={seen.concat(after)} x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]}
-            reference={{ flux: q.ask.reference, label: micro(q.ask.reference, f) }}
-            target={{ day: q.ask.days, label: w.inDays(q.ask.days) }} label={w.practiceChart} />
-        </div>
+        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={q.ask} f={f} w={w} />
+        <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} />
+        <Chart ask={q.ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
+          x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]} />
         <div className="pick">
           {said === undefined ? (
             <>
@@ -170,7 +193,7 @@ function Practice({ bank, lang, w, f }) {
             </>
           ) : (
             <>
-              <Reveal q={q} said={said} shown={bank.reveal.find((r) => r.group === q.group)} w={w} f={f} />
+              <Reveal q={q} said={said} shown={group} w={w} f={f} />
               <button type="button" className="btn primary" onClick={() => go({ ...kept, at: at + 1 })}>{at + 1 < qs.length ? w.next : w.finish}</button>
             </>
           )}
@@ -338,6 +361,8 @@ export default function Beat({ lang, live }) {
           <h1 id="today">{w.title}</h1>
           {open && <p className="state">{w.closes(closes)}</p>}
         </div>
+        <ol className="how" aria-label={w.how}>{w.steps.map((s, k) => <li key={s}><b>{k + 1}</b><span>{s}</span></li>)}</ol>
+        <p className="howscore">{w.howScore}</p>
         {questions === null && <p className="next">{WORDS[lang].loading}</p>}
         {questions !== null && !open && (
           <p className="next">

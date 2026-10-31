@@ -135,6 +135,9 @@ main.wrap { padding-top: 26px; }
 .figure text.band-g { fill: var(--g); font-size: 14px; font-weight: 500; }
 .figure text.band-r { fill: var(--r); font-size: 14px; font-weight: 500; }
 .figure text.hyp { fill: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; }
+.figure text.axis { fill: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; }
+.figure text.halo { paint-order: stroke; stroke: var(--page); stroke-width: 4px; stroke-linejoin: round; }
+.figure text.plain { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; }
 
 /* the lab */
 .objhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 30px; margin-top: 20px; }
@@ -196,16 +199,46 @@ main.wrap { padding-top: 26px; }
 .beat .state, .tele .state { margin: 0; font: 14px/1.5 'IBM Plex Mono', monospace; color: var(--muted); }
 .beat .next { margin: 14px 0 0; font-size: 17px; }
 .beat .next b { font: 500 17px 'IBM Plex Mono', monospace; }
-.beat .ask { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: 'fig top' 'fig pick'; gap: 22px 44px; margin-top: 22px; padding-top: 26px; border-top: 1px solid var(--hairline); }
+.beat .how { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 32px; }
+.beat .how li { display: flex; align-items: baseline; gap: 12px; font-size: 16px; line-height: 1.45; }
+.beat .how b { flex: none; font: 600 30px/1 'STIX Two Text', serif; }
+.beat .howscore { margin: 14px 0 0; max-width: 92ch; font-size: 15px; color: var(--muted); }
+.beat .ask { display: grid; grid-template-columns: minmax(0, 740px) minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: 'top top' 'shots fig' 'pick fig'; align-items: start; gap: 22px 44px; margin-top: 22px; padding-top: 26px; border-top: 1px solid var(--hairline); }
+.beat .shots { grid-area: shots; min-width: 0; }
+.beat .shots > .muted { margin: 0; }
+.beat .hint { margin: 12px 0 0; max-width: 64ch; font-size: 15px; color: var(--muted); }
+.photos { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 12px; }
+.photos .pair { display: flex; flex-wrap: wrap; gap: 12px; }
+.photos .pair.beside { flex-direction: column; gap: 10px; }
+.shot { margin: 0; }
+.shot .pic { position: relative; }
+.shot i { display: block; background-repeat: no-repeat; image-rendering: pixelated; outline: 1px solid var(--hairline); }
+.shot .ticks { position: absolute; inset: 0; }
+.shot .ticks path { fill: none; }
+.shot .ticks .tk { stroke: var(--mark); stroke-width: 1.25px; }
+.shot .ticks .halo { stroke: var(--mark-halo); stroke-width: 3.5px; stroke-opacity: 0.75; }
+.shot figcaption { margin-top: 6px; font-size: 14px; line-height: 1.35; }
+.beat .key { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--muted); }
+.beat .key li { display: flex; align-items: center; gap: 8px; }
+.beat .key svg { flex: none; }
+.beat .key .ptg { fill: var(--g); }
+.beat .key .ptr { fill: var(--r); }
+.beat .key .bar { fill: none; stroke-width: 1; }
+.beat .key .lim { fill: none; stroke-width: 1.2; }
+.beat .key .sg { stroke: var(--g); }
+.beat .key .sr { stroke: var(--r); }
+.beat .key .dash { fill: none; stroke: var(--text); stroke-width: 1; stroke-dasharray: 6 4; }
 .beat .ask + .ask { margin-top: 30px; }
 .beat .fig { grid-area: fig; min-width: 0; }
 .beat .top { grid-area: top; min-width: 0; }
-.beat .pick { grid-area: pick; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.beat .pick { grid-area: pick; min-width: 0; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 18px; margin: 0; padding: 0; border: 0; }
+.beat .slider { max-width: 560px; }
 .beat .pick .btn { align-self: flex-start; }
 .beat .nth { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; margin: 0; font-size: 15px; }
 .beat .nth b { font-weight: 600; }
 .beat .nth span { font: 14px 'IBM Plex Mono', monospace; color: var(--muted); }
-.beat .text { margin: 8px 0 18px; font: 400 23px/1.35 'STIX Two Text', serif; }
+.beat .text { margin: 8px 0 6px; font: 400 23px/1.35 'STIX Two Text', serif; }
+.beat .plain { margin: 0; max-width: 64ch; font-size: 16px; }
 .beat .slider label { display: flex; flex-direction: column; gap: 2px; }
 .beat .you { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 15px; color: var(--muted); }
 .beat .you b { font: 600 34px/1 'STIX Two Text', serif; color: var(--text); }
@@ -303,7 +336,7 @@ main.wrap { padding-top: 26px; }
 .book .graves b { font-weight: 600; }
 .book .graves .mono { font-size: 13px; color: var(--muted); }
 @media (max-width: 1199px) {
-  .beat .ask { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px 32px; }
+  .beat .ask { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'top top' 'shots shots' 'fig pick'; gap: 22px 32px; }
   .beat .trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .beat .trio > :last-child { grid-column: 1 / -1; }
   .tele { grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; }
@@ -313,12 +346,14 @@ main.wrap { padding-top: 26px; }
   .book .node { width: min(196px, calc((100vw - 150px) / 4)); }
 }
 @media (max-width: 900px) {
-  .beat .ask { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'top' 'fig' 'pick'; }
+  .beat .ask { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'top' 'shots' 'fig' 'pick'; }
+  .beat .how { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .tele, .book .below { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
   .beat h1, .tele h1, .book h1 { font-size: 31px; }
   .beat .text { font-size: 20px; }
+  .beat .scores > span:first-child { flex: 1 1 100%; }
   .beat .trio { grid-template-columns: minmax(0, 1fr); }
   .book .chain { flex-direction: column; }
   .book .link { flex-direction: column; }

@@ -7,6 +7,13 @@ const minus = (v) => String(v).replace('-', '−');
 const STEPS = [1, 2, 5, 10, 20, 50, 100, 200];
 const MINOR = { 1: 0, 2: 1, 5: 1, 10: 2, 20: 5, 50: 10, 100: 20, 200: 50 };
 
+// the width of a label in the figure's sans type, for placing it
+function textWidth(text) {
+  const c = textWidth.ctx || (textWidth.ctx = document.createElement('canvas').getContext('2d'));
+  c.font = "13px 'IBM Plex Sans', sans-serif";
+  return c.measureText(text).width + 2;
+}
+
 // a round flux at or beyond v, for the ends of the log axis
 function nice(v, up) {
   const e = 10 ** Math.floor(Math.log10(v));
@@ -15,7 +22,8 @@ function nice(v, up) {
 }
 
 // the light curve: points {day, band, flux, err, limit}, forecasts {band, rows: [[day, mean, sd]], style, label, hash, place, z}
-export default function Figure({ lang, start, points = [], forecasts = [], rings = [], note, now, reference, target, x, y, label }) {
+// axes {x, y} titles the axes in words, mags={false} drops the magnitude scale, bandNames {g, r} names the bands in words
+export default function Figure({ lang, start, points = [], forecasts = [], rings = [], note, now, reference, target, x, y, label, axes, mags = true, bandNames }) {
   const [ref, W] = useWidth();
   const clip = `plot${useId().replace(/:/g, '')}`;
   const w = WORDS[lang].fig;
@@ -25,6 +33,8 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   if (!W) return <div className="figure" ref={ref} style={{ height: H }} />;
 
   const m = narrow ? { l: 38, r: 38, t: 26, b: start ? 48 : 32 } : { l: 54, r: 48, t: 28, b: start ? 52 : 36 };
+  if (!mags) m.r = narrow ? 14 : 20;
+  if (axes) { m.b += 22; m.t += 6; }
   const L = m.l;
   const T = m.t;
   const R = W - m.r;
@@ -53,7 +63,7 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   const bright = 23.9 - 2.5 * Math.log10(hi);
   const faint = 23.9 - 2.5 * Math.log10(lo);
   const every = faint - bright > 9 ? 2 : 1;
-  for (let mag = Math.ceil(bright); mag <= faint; mag += 1) {
+  for (let mag = Math.ceil(bright); mags && mag <= faint; mag += 1) {
     if (mag % every) continue;
     const at = Y(10 ** ((23.9 - mag) / 2.5));
     ticks.push(`M${R} ${f1(at)}h-5`);
@@ -70,9 +80,14 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     if (start) out.push(<text key={`c${d}`} x={f1(X(d))} y={B + 35} textAnchor="middle">{f.short(dateOf(d))}</text>);
   }
   out.push(<path key="ticks" className="tick" d={ticks.join('')} />);
-  out.push(<text key="ujy" x={L - 8} y={T - 11} textAnchor="end">µJy</text>);
-  out.push(<text key="ab" x={W - 2} y={T - 11} textAnchor="end">mag AB</text>);
-  out.push(<text key="days" x={R + 8} y={B + 18}>{w.days}</text>);
+  if (axes) {
+    out.push(<text key="ujy" className="axis" x={2} y={T - 12}>{axes.y}</text>);
+    out.push(<text key="days" className="axis" x={f1((L + R) / 2)} y={H - 6} textAnchor="middle">{axes.x}</text>);
+  } else {
+    out.push(<text key="ujy" x={L - 8} y={T - 11} textAnchor="end">µJy</text>);
+    out.push(<text key="days" x={R + 8} y={B + 18}>{w.days}</text>);
+  }
+  if (mags) out.push(<text key="ab" x={W - 2} y={T - 11} textAnchor="end">mag AB</text>);
 
   // forecasts: mean ± z sigma, clipped to the frame, each named at its end with its seal
   const bands = [];
@@ -117,13 +132,14 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
 
   if (reference) {
     out.push(<line key="ref" className="ref" x1={L} x2={R} y1={f1(Y(reference.flux))} y2={f1(Y(reference.flux))} />);
-    if (reference.label) out.push(<text key="refl" className="refl" x={L + 8} y={f1(Y(reference.flux) - 6)}>{reference.label}</text>);
+    if (reference.label && !axes) out.push(<text key="refl" className="refl" x={L + 8} y={f1(Y(reference.flux) - 6)}>{reference.label}</text>);
   }
   if (target) {
     out.push(<line key="target" className="target" x1={f1(X(target.day))} x2={f1(X(target.day))} y1={T} y2={B} />);
-    // the label sits beside its line, never across it
-    const right = X(target.day) + 6 + String(target.label || '').length * 8 <= R - 4;
-    if (target.label) out.push(<text key="targetl" className="refl" x={f1(X(target.day) + (right ? 6 : -6))} y={T + 16} textAnchor={right ? 'start' : 'end'}>{target.label}</text>);
+    // the label sits beside its line, never across it, nor across the line of now in words
+    const right = X(target.day) + 6 + (axes ? textWidth(target.label || '') : String(target.label || '').length * 8) <= R - 4;
+    const edge = axes && !right && now !== undefined && now !== null && now < target.day ? Math.min(X(now), X(target.day)) : X(target.day);
+    if (target.label) out.push(<text key="targetl" className={`refl${axes ? ' plain halo' : ''}`} x={f1(right ? X(target.day) + 6 : edge - 6)} y={T + 16} textAnchor={right ? 'start' : 'end'}>{target.label}</text>);
   }
 
   // the measurements: one sigma bars, g circles, r squares, open triangles for upper limits
@@ -157,13 +173,67 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   }
 
   // each band named once, at its first detection
-  for (const b of ['r', 'g']) {
+  for (const b of bandNames ? [] : ['r', 'g']) {
     const p = points.find((q) => q.band === b && !q.limit);
     if (p) out.push(<text key={`b${b}`} className={`band-${b}`} x={f1(X(p.day) - 9)} y={f1(Y(p.flux) + 5)} textAnchor="end">{b}</text>);
   }
 
+  // in words, the line to beat and the bands go wherever they cover the fewest marks, over the points
+  if (axes) {
+    const marks = points.map((p) => [X(p.day), Y(p.flux)]);
+    const walls = [now, target && target.day].filter((d) => d !== undefined && d !== null && d !== false).map(X);
+    const taken = [];
+    if (target && target.label) {
+      const tw = textWidth(target.label);
+      const right = X(target.day) + 6 + tw <= R - 4;
+      const edge = !right && now !== undefined && now !== null && now < target.day ? Math.min(X(now), X(target.day)) : X(target.day);
+      taken.push(right ? { x0: X(target.day), x1: X(target.day) + 8 + tw, y0: T, y1: T + 22 } : { x0: edge - 8 - tw, x1: edge, y0: T, y1: T + 22 });
+    }
+    if (now !== undefined && now !== null) taken.push({ x0: X(now) - 60, x1: X(now) + 60, y0: B - (start ? 38 : 22), y1: B });
+    const cost = (b) => {
+      if (b.x0 < L + 2 || b.x1 > R - 2 || b.y0 < T + 2 || b.y1 > B - 2) return Infinity;
+      let n = 0;
+      for (const [px, py] of marks) if (px > b.x0 - 6 && px < b.x1 + 6 && py > b.y0 - 6 && py < b.y1 + 6) n += 1;
+      for (const t of taken) if (b.x0 < t.x1 && b.x1 > t.x0 && b.y0 < t.y1 && b.y1 > t.y0) n += 100;
+      for (const v of walls) if (b.x0 < v && b.x1 > v) n += 50;
+      return n;
+    };
+    const place = (options) => {
+      let best = null;
+      for (const o of options) {
+        const box = o.anchor === 'end' ? { x0: o.x - o.w, x1: o.x, y0: o.y - 12, y1: o.y + 4 } : { x0: o.x, x1: o.x + o.w, y0: o.y - 12, y1: o.y + 4 };
+        const c = cost(box);
+        if (!best || c < best.c) best = { ...o, box, c };
+      }
+      if (best && best.c < Infinity) { taken.push(best.box); return best; }
+      return null;
+    };
+    if (reference && reference.label) {
+      const w0 = textWidth(reference.label);
+      const ry = Y(reference.flux);
+      const xs = [];
+      for (let x = L + 8; x + w0 <= R - 8; x += 24) xs.push(x);
+      const at = place([-6, 16].flatMap((dy) => xs.map((x) => ({ x, anchor: 'start', y: ry + dy, w: w0 }))));
+      if (at) out.push(<text key="refl" className="refl plain halo" x={f1(at.x)} y={f1(at.y)} textAnchor={at.anchor}>{reference.label}</text>);
+    }
+    for (const b of ['r', 'g']) {
+      const text = bandNames ? bandNames[b] : b;
+      const w0 = textWidth(text);
+      const options = points.filter((p) => p.band === b && !p.limit).flatMap((p) => {
+        const px = X(p.day);
+        const py = Y(p.flux);
+        return [[px - 9, 'end', py + 5], [px + 9, 'start', py + 5], [px - 6, 'end', py - 10], [px + 6, 'start', py - 10],
+          [px - 6, 'end', py + 20], [px + 6, 'start', py + 20]].map(([x, anchor, y]) => ({ x, anchor, y, w: w0 }));
+      });
+      const at = place(options);
+      if (at) out.push(<text key={`b${b}`} className={`band-${b} plain halo`} x={f1(at.x)} y={f1(at.y)} textAnchor={at.anchor}>{text}</text>);
+    }
+  }
+
   if (now !== undefined && now !== null) {
-    const right = X(now) + 7 + 46 <= R - 4;
+    // in words, the label keeps clear of the answer's day just after it
+    const crowded = axes && target && target.day > now && X(target.day) - X(now) < 60;
+    const right = X(now) + 7 + 46 <= R - 4 && !crowded;
     const at = { x: f1(right ? X(now) + 7 : X(now) - 7), textAnchor: right ? 'start' : 'end' };
     out.push(<line key="now" className="now" x1={f1(X(now))} x2={f1(X(now))} y1={T} y2={B} />);
     out.push(<text key="nowt" {...at} y={start ? B - 24 : B - 9}>{w.now}</text>);
