@@ -33,7 +33,7 @@ def _clip(text: str) -> str:
 def said(lenses: dict) -> dict:
     # the skeptics' events carry no words, so the chat takes them from the result
     whole = lambda t: t if t.endswith((".", "…", "!", "?")) else t + "."
-    name = str(lenses["memory"].get("name") or "").strip()
+    name = str(lenses["memory"].get("name") or "").strip()[:80]
     return {"instrument": _clip(lenses["instrument"]["why"]),
             "physics": " ".join(f"{spanish.HYP.get(i['hypothesis'], (i['hypothesis'],))[0]}: {whole(_clip(i['why']))}"
                                 for i in lenses["physics"]["implausible"] if i["why"]),
