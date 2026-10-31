@@ -3,7 +3,7 @@ name: site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "src/sira/site.py", ".github/workflows/pages.yml"]
+    paths: ["site/**", "src/sira/site.py", "src/sira/gallery.py", "src/sira/archive.py", ".github/workflows/pages.yml"]
   workflow_run:
     # rebuild once the ledger changes, so the site shows the night's bets and answers
     workflows: [nightly, challenge]
@@ -31,7 +31,15 @@ jobs:
         run: |
           git fetch origin ledger
           git worktree add ledger origin/ledger
+      - name: Restore the image cache
+        # stamps and host cutouts never change, so each build fetches only the objects it has not seen
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: images-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: images-
       - name: Read the ledger into the site's data
+        # new images stop after five minutes (gallery.SECONDS), well inside the job's fifteen
         run: uv run sira site --ledger ledger --out site/public/data
       - uses: actions/setup-node@v4
         with:

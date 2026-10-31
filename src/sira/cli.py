@@ -14,12 +14,29 @@ def site(args) -> None:
         print(f"replays written to {args.out}")
     else:
         print(json.dumps(export(Path(args.ledger), Path(args.out))["record"], indent=2))
+        img = Path(args.out) / "img"
+        print(f"{len(list(img.glob('*.png')))} stamp strips and {len(list(img.glob('*.jpg')))} host images in {img}")
+
+
+def practice(args) -> None:
+    from .fetch import client
+    from .practice import bank
+
+    data = bank(Path(args.replays), Path(args.root), Path(args.out), client())
+    print(json.dumps({"questions": len(data["questions"]), "objects": len(data["reveal"]),
+                      "yes": sum(q["answer"]["yes"] for q in data["questions"])}, indent=2))
 
 
 def investigate(args) -> None:
     from .visits import run
 
     print(json.dumps(run(args.object, int(args.id) if args.id else None), indent=1))
+
+
+def spanish(args) -> None:
+    from .spanish import logbook
+
+    print(f"Spanish written beside the English in {args.path} for US${logbook(LLM(), Path(args.path)):.4f}")
 
 
 def costs(_args) -> None:
@@ -241,10 +258,18 @@ def main() -> None:
     web.add_argument("--replays", action="store_true", help="write the replay files from var/ instead, locally")
     web.add_argument("--root", default="data/snapshot")
     web.set_defaults(run=site)
+    drill = sub.add_parser("practice", help="write the Beat SIRA practice bank from a dev replay, with nothing that names the objects")
+    drill.add_argument("--replays", default="var/replay/dev3")
+    drill.add_argument("--root", default="data/snapshot")
+    drill.add_argument("--out", default="site/public/replays")
+    drill.set_defaults(run=practice)
     visit = sub.add_parser("investigate", help="investigate one live object for a visitor of the site, outside the ledger")
     visit.add_argument("object")
     visit.add_argument("--id", help="the site's investigation to report to; without it the run only prints")
     visit.set_defaults(run=investigate)
+    es = sub.add_parser("spanish", help="write Le Verrier's names and ideas in Spanish beside the English in a logbook file")
+    es.add_argument("path", nargs="?", default="site/public/replays/logbook.json")
+    es.set_defaults(run=spanish)
     args = parser.parse_args()
     args.run(args)
 

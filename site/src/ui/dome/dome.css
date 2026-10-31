@@ -1,0 +1,62 @@
+/* the observatory stays night-lit in both themes, so its colours are defined once */
+.dome {
+  --void: #070a14; --n1: #0b1120;
+  --w0: #111a2d; --w1: #17223a; --w2: #1d2a47; --w3: #273859; --w4: #3a5079; --w5: #55709e;
+  --f0: #0d1526; --f1: #141e35; --f2: #1a2741; --f3: #22314f;
+  --x0: #1d2537; --x1: #2b3549; --x2: #4a5772; --x3: #6d7b98;
+  --m0: #222938; --m1: #353f53; --m2: #56627c; --m3: #8793ad; --m4: #b9c2d4;
+  --d0: #161e33; --d1: #1e2840; --d2: #2a3655; --d3: #67738f; --d4: #8d99b3; --d5: #b7c0d2;
+  --wd0: #3a2519; --wd1: #573825; --wd2: #7a5034; --wd3: #9c6a45;
+  --lp0: #b9782e; --lp1: #f2b55c; --lp2: #ffe3a6;
+  --rd0: #5c1820; --rd1: #b8323f; --rd2: #ef5562;
+  --g0: #16594a; --g1: #30c39f; --g2: #8be6cf;
+  --r0: #7a3a06; --r1: #ff7e00; --r2: #ffc08a;
+  --sc0: #050e0d; --sc1: #0a1a19; --sc2: #12302c; --sc3: #1d4a43;
+  --pp0: #bdb39a; --pp1: #e3dccb; --pp2: #f4f0e7;
+  --ch0: #142219; --ch1: #1d3125; --ch2: #c9d3c8;
+  --gl0: #24485a; --gl1: #4f8ca4; --gl2: #8fc3d4;
+  --ink: #04060b;
+  --sk1: #f0c6a0; --sk2: #d29b74; --sk3: #a46e4e; --sk4: #73472f;
+  --hr1: #1f1612; --hr2: #4d3020; --hr3: #8a5a32; --hr4: #c9c3b8; --hr5: #d9a95a;
+  --c-vig: #4a6f9e; --c-lec: #e2ddcf; --c-ia: #c79b2e; --c-ibc: #8a6bb0; --c-ii: #b4613f;
+  --c-ins: #3f8582; --c-fis: #6b7f3a; --c-mem: #9a5a78; --c-muse: #3b6fc0; --c-dir: #2a2f3c;
+  --c-sen: #858b96; --c-pro: #2f6b4f; --c-lv: #1b1d25;
+  --pants: #1f2433; --pants2: #2b3245; --shoe: #0b0d13;
+  --tag-bg: #070a14; --tag-text: #e8ebf2;
+  --bubble: #f4f0e7; --bubble-text: #10151b; --bubble-edge: #04060b; --bubble-muted: #4a5462;
+}
+
+.dome { position: relative; overflow: hidden; background: var(--void); border: 1px solid var(--hairline); }
+.dome.narrow { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.dome.narrow::-webkit-scrollbar { display: none; }
+.dome .stage { position: absolute; top: 0; }
+.dome canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
+.dome .over { position: absolute; left: 0; top: 0; pointer-events: none; }
+.dome .tag {
+  position: absolute; transform: translate(-50%, 0); white-space: nowrap;
+  font: 500 12px/16px 'IBM Plex Mono', ui-monospace, monospace; color: var(--tag-text); background: var(--tag-bg); padding: 0 4px;
+}
+.dome .tag.two { box-sizing: content-box; width: 13ch; white-space: normal; text-align: center; line-height: 14px; }
+/* at one pixel a tile only the agents at work are named */
+.dome.compact .tag.idle { display: none; }
+.dome .bub {
+  position: absolute; max-width: 220px; width: max-content; padding: 3px 7px 4px;
+  font: 400 13px/17px 'IBM Plex Sans', system-ui, sans-serif; color: var(--bubble-text);
+  background: var(--bubble); border: 2px solid var(--bubble-edge);
+}
+.dome.narrow .bub { max-width: 180px; font-size: 12px; line-height: 15px; padding: 2px 5px 3px; }
+.dome .bub::after {
+  content: ''; position: absolute; left: calc(var(--tx, 50%) - 4px); bottom: -8px; width: 8px; height: 6px;
+  background: var(--bubble); border: 2px solid var(--bubble-edge); border-top: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 34%, 66% 34%, 66% 67%, 34% 67%, 34% 100%, 0 100%);
+}
+.dome .bub[data-far]::after { display: none; }
+.dome .bub[data-far]::before { content: ''; position: absolute; left: calc(var(--tx) - 1px); top: 100%; height: var(--ty); border-left: 2px dotted var(--bubble); }
+.dome .bub.think { display: flex; align-items: center; gap: 7px; padding: 2px 6px 3px; font: 500 12px/16px 'IBM Plex Mono', ui-monospace, monospace; }
+.dome .bub.think .dots { display: flex; gap: 3px; }
+.dome .bub.think i { display: block; width: 4px; height: 4px; background: var(--bubble-muted); }
+.dome .bub.think i.on { background: var(--bubble-text); }
+.dome .slip {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  font: 600 12px/1 'IBM Plex Mono', ui-monospace, monospace; color: var(--bubble-text); background: var(--bubble);
+}

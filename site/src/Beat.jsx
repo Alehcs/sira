@@ -1,58 +1,262 @@
 import { useEffect, useState } from 'react';
-import { Envelope } from './pixel.jsx';
+import Figure from './ui/Figure.jsx';
+import Paper from './ui/Paper.jsx';
+import Photos from './ui/Photos.jsx';
 import { supabase } from './supabase.js';
 import { WORDS, format } from './words.js';
 
+const BASE = import.meta.env.BASE_URL;
 const LEVEL = /^(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?$/;
 const toMjd = (iso) => new Date(iso).getTime() / 86400000 + 40587;
 const ALIAS = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$/; // the same rule the database keeps
+const WINDOW = 40; // days of light curve shown before a round opens
+const KEPT = 'practice';
+const level = (v) => Number(Number(v).toFixed(1)); // every threshold rounds as the numbers on the page do
 
 function fields(q) {
   const m = LEVEL.exec(q.text);
-  if (m) return { kind: 'level', direction: m[1] === 'Brighter' ? 'above' : 'below', reference: Number(m[2]), band: m[3], days: Number(m[4]) };
-  return { kind: 'last', direction: 'above', reference: Math.round(q.reference * 10) / 10, band: (q.band || 'ztfr').slice(-1), days: 3 };
+  if (m) return { kind: 'level', direction: m[1] === 'Brighter' ? 'above' : 'below', reference: level(Number(m[2])), band: m[3], days: Number(m[4]) };
+  return { kind: 'last', direction: 'above', reference: level(q.reference), band: (q.band || 'ztfr').slice(-1), days: 3 };
 }
 
-function Curve({ q, w, label }) {
-  // days before the round opened on x, flux on a log scale on y, the bet's window shaded
-  const now = toMjd(q.opens_at);
-  const ahead = q.mjd - now;
-  const dets = (q.seen || []).filter((p) => p[2] === 'det' && p[3] > 0 && now - p[0] <= 30);
-  const fluxes = dets.map((p) => p[3]).concat([q.reference]);
-  const lo = Math.log10(Math.max(5, Math.min(...fluxes) / 1.6));
-  const hi = Math.log10(Math.max(...fluxes) * 1.6);
-  const X = (d) => ((d + 30) / (30 + ahead + 1)) * 520;
-  const Y = (f) => 122 - ((Math.log10(f) - lo) / (hi - lo)) * 114;
-  const squares = (band) => dets.filter((p) => p[1] === band).map((p) => `M${(X(p[0] - now) - 3).toFixed(0)} ${(Y(p[3]) - 3).toFixed(0)}h6v6h-6z`).join(' ');
+const points = (rows, shift = 0) => rows
+  .map(([day, band, kind, flux, err]) => ({ day: day - shift, band: band.slice(-1), flux, err, limit: kind !== 'det' }))
+  .filter((p) => p.flux > 0);
+const micro = (v, f) => `${f.num(v, Number.isInteger(v) ? 0 : 1)} µJy`;
+const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+
+function recall() {
+  try {
+    const kept = JSON.parse(localStorage.getItem(KEPT));
+    if (kept && Number.isInteger(kept.at) && kept.said && typeof kept.said === 'object') return kept;
+  } catch (e) { /* storage can be blocked */ }
+  return { at: 0, said: {} };
+}
+
+function countdown(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor(s / 60) % 60;
+  if (h) return `${h} h ${m} min`;
+  return m ? `${m} min ${s % 60} s` : `${s} s`;
+}
+
+// the photos of a question, or a plain line when the build has none
+function Shots({ img, alt, w, f }) {
+  if (!img || !img.stamps) return <p className="muted">{w.noShots}</p>;
   return (
-    <svg viewBox="0 0 520 150" shapeRendering="crispEdges" role="img" aria-label={label}>
-      <rect x="0" y="0" width="520" height="130" fill="#0B0B1A" />
-      <rect x={X(ahead - 0.5)} y="0" width={X(ahead + 0.5) - X(ahead - 0.5)} height="130" fill="#FFD447" fillOpacity="0.12" />
-      <text x={X(ahead)} y="70" textAnchor="middle" fill="#FFD447" fontSize="22">?</text>
-      <line x1="0" y1={Y(q.reference)} x2="520" y2={Y(q.reference)} stroke="#FF7A7A" strokeWidth="2" strokeDasharray="6 6" />
-      <line x1={X(0)} y1="0" x2={X(0)} y2="130" stroke="#F2F0FF" strokeWidth="2" />
-      <path d={squares('ztfg')} fill="#7CF29C" />
-      <path d={squares('ztfr')} fill="#FF7A7A" />
-      <text x="4" y="146" fill="#B8B4E0" fontSize="13">{w.daysAgo(30)}</text>
-      <text x={X(0)} y="146" textAnchor="middle" fill="#F2F0FF" fontSize="13">{w.today}</text>
-      <text x="516" y="146" textAnchor="end" fill="#FFD447" fontSize="13">+{Math.round(ahead)} d</text>
-    </svg>
+    <div className="shots">
+      <Photos src={BASE + img.stamps} panel={img.panel} host={img.host && BASE + img.host} alt={alt}
+        labels={w.shots(img.taken && f.short(img.taken))} />
+      <p className="hint">{w.shotsNote}</p>
+    </div>
   );
 }
 
-function Board({ live, w, f }) {
-  const beat = live ? live.beat : { rounds: [], board: [] };
+// the marks the chart's legend only explains, in words
+const keys = (w) => [
+  { mark: <svg width="14" height="16" aria-hidden="true"><path className="bar sr" d="M7 0V16" /><rect className="ptr" x="3.6" y="4.6" width="6.8" height="6.8" /></svg>, text: w.key.err },
+  { mark: <svg width="30" height="14" aria-hidden="true"><path className="dash" d="M1 7H29" /></svg>, text: w.key.lines },
+];
+
+// the light curve in plain words: brightness up, days along, both bands named, the line to beat and the day it is answered
+function Chart({ ask, points, x, start, today, label, lang, w, f }) {
+  const ref = micro(ask.reference, f);
+  return (
+    <div className="fig">
+      <Figure lang={lang} start={start} points={points} x={x} now={0} nowLabel={today ? undefined : w.question} mags={false} bandNames={w.bands} label={label}
+        axes={{ y: w.axes.y, mag: w.axes.mag, x: today ? w.axes.today : w.axes.asked }}
+        reference={{ flux: ask.reference, label: ask.kind === 'last' ? w.lastRef(ask.band, ref) : w.levelRef(ask.band, ref) }}
+        target={{ day: today ? today.day : ask.days, label: w.inDays(ask.days) }}
+        legend={{ ...w.bands, lim: w.key.limit }} keys={keys(w)} />
+    </div>
+  );
+}
+
+function Slider({ value, set, disabled, w, f }) {
+  const p = value / 100;
+  return (
+    <div className="slider">
+      <label>
+        <span className="you"><span>{w.chance}</span><b>{f.pct(p)}</b></span>
+        <input type="range" min="1" max="99" value={value} disabled={disabled} onChange={(e) => set(Number(e.target.value))} />
+      </label>
+      <div className="ends" aria-hidden="true"><span>{w.sureNo}</span><span>{w.unsure}</span><span>{w.sureYes}</span></div>
+      <p className="scores">
+        <span>{w.scoreIf}</span>
+        <span>{w.ifHappens} <b>{f.num(Math.log(p), 2)}</b></span>
+        <span>{w.ifNot} <b>{f.num(Math.log(1 - p), 2)}</b></span>
+      </p>
+    </div>
+  );
+}
+
+function Ask({ head, ask, f, w }) {
+  return (
+    <div className="top">
+      {head}
+      <p className="text">{f.question(ask)}</p>
+      <p className="plain">{w.plain({ ...ask, ref: micro(ask.reference, f) })}</p>
+    </div>
+  );
+}
+
+function Live({ q, i, img, value, set, betted, closes, lang, w, f }) {
+  const opens = toMjd(q.opens_at);
+  const ask = fields(q);
+  const seen = points(q.seen || [], opens).filter((p) => p.day >= -WINDOW);
+  const target = q.mjd - opens;
+  return (
+    <article className="ask">
+      <Ask head={<p className="nth"><b>{w.q} {i + 1}</b><span>{q.object}</span></p>} ask={ask} f={f} w={w} />
+      <Shots img={img} alt={w.stampsAlt(q.object)} w={w} f={f} />
+      <Chart ask={ask} points={seen} start={q.opens_at} today={{ day: target }} label={w.chart(q.object)} lang={lang} w={w} f={f}
+        x={[Math.floor(Math.min(target, ...seen.map((p) => p.day))) - 1, Math.ceil(target) + 3]} />
+      <div className="pick">
+        <Slider value={value} set={set} disabled={betted} w={w} f={f} />
+        <Paper hash={q.commit.slice(0, 12)}><p className="line"><b>{w.sira}</b> {w.sealed(closes)}</p></Paper>
+      </div>
+    </article>
+  );
+}
+
+function Reveal({ q, said, shown, w, f }) {
+  const a = q.answer;
+  const mine = Math.log(a.yes ? said : 1 - said);
+  const lead = mine - a.log_score;
+  const result = lead > 1e-9 ? { text: w.won, tone: 'ok' } : lead < -1e-9 ? { text: w.lost, tone: 'warn' } : { text: w.tie };
+  return (
+    <>
+      <Paper title={w.skyAnswer(a.yes)} answer={result}>
+        <table className="vs">
+          <thead><tr><th /><th>{w.said}</th><th>{w.score}</th></tr></thead>
+          <tbody>
+            <tr><td>{w.you}</td><td>{f.pct(said)}</td><td>{f.num(mine, 2)}</td></tr>
+            <tr><td>{w.sira}</td><td>{f.pct(a.sira)}</td><td>{f.num(a.log_score, 2)}</td></tr>
+          </tbody>
+        </table>
+      </Paper>
+      {shown && (
+        <div className="who">
+          <div>
+            <p className="oid">{shown.object}</p>
+            <p>{a.class}</p>
+            <a href={shown.alerce}>ALeRCE</a>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Practice({ bank, lang, w, f }) {
+  const [kept, setKept] = useState(recall);
+  const [value, setValue] = useState(50);
+  const qs = bank.questions;
+  const at = Math.min(kept.at, qs.length);
+  const q = qs[at];
+  const said = q ? kept.said[q.label] : undefined;
+  const keep = (next) => {
+    setKept(next);
+    try { localStorage.setItem(KEPT, JSON.stringify(next)); } catch (e) { /* storage can be blocked */ }
+  };
+  const go = (next) => { keep(next); setValue(50); };
+
+  // the running tally, on the questions answered so far
+  const done = qs.filter((x) => kept.said[x.label] !== undefined);
+  const yours = done.map((x) => Math.log(x.answer.yes ? kept.said[x.label] : 1 - kept.said[x.label]));
+  const siras = done.map((x) => x.answer.log_score);
+  const beaten = yours.filter((v, i) => v - siras[i] > 1e-9).length;
+
+  let card = null;
+  if (q) {
+    const after = said === undefined ? [] : points(q.answer.after);
+    const seen = points(q.ask.seen);
+    const days = q.ask.seen.concat(q.answer.after).map((r) => r[0]).concat(q.ask.days);
+    const group = bank.reveal.find((r) => r.group === q.group);
+    const ask = { ...q.ask, reference: level(q.ask.reference) };
+    card = (
+      <article className="ask">
+        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={ask} f={f} w={w} />
+        <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} />
+        <Chart ask={ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
+          x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]} />
+        <div className="pick">
+          {said === undefined ? (
+            <>
+              <Slider value={value} set={setValue} w={w} f={f} />
+              <button type="button" className="btn primary" onClick={() => keep({ ...kept, said: { ...kept.said, [q.label]: value / 100 } })}>{w.answer}</button>
+            </>
+          ) : (
+            <>
+              <Reveal q={q} said={said} shown={group} w={w} f={f} />
+              <button type="button" className="btn primary" onClick={() => go({ ...kept, at: at + 1 })}>{at + 1 < qs.length ? w.next : w.finish}</button>
+            </>
+          )}
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <section className="practice" aria-labelledby="practice">
+      <div className="head">
+        <h2 id="practice">{w.practice}</h2>
+        <dl className="tally">
+          <div><dt>{w.answered}</dt><dd>{w.of(done.length, qs.length)}</dd></div>
+          <div><dt>{w.yours}</dt><dd>{done.length ? f.num(mean(yours), 2) : '—'}</dd></div>
+          <div><dt>{w.siras}</dt><dd>{done.length ? f.num(mean(siras), 2) : '—'}</dd></div>
+          <div><dt>{w.beaten}</dt><dd>{w.of(beaten, done.length)}</dd></div>
+        </dl>
+        <button type="button" className="btn" disabled={!done.length} onClick={() => go({ at: 0, said: {} })}>{w.restart}</button>
+      </div>
+      {card || <p className="next">{w.done(qs.length)}</p>}
+    </section>
+  );
+}
+
+function LastRound({ round, w, f }) {
+  return (
+    <section aria-labelledby="last">
+      <h2 id="last">{w.last}</h2>
+      {!round && <p className="muted">{w.noRound}</p>}
+      {round && <p className="when">{f.day(`${round.round}T12:00:00Z`)}</p>}
+      {round && (
+        <ol className="past">
+          {round.questions.map((q) => {
+            const res = round.results[q.id];
+            const sky = !res ? w.pending : res.void ? w.void : res.yes ? w.yes : w.no;
+            return (
+              <li key={q.id}>
+                <p className="oid">{q.object}</p>
+                <p>{f.question({ ...q.question, reference: level(q.question.reference) })}</p>
+                <dl>
+                  <div><dt>{w.sira}</dt><dd>{f.pct(round.answers[q.id])}</dd></div>
+                  {round.crowd && round.crowd[q.id] !== undefined && round.crowd[q.id] !== null && <div><dt>{w.crowd}</dt><dd>{f.pct(round.crowd[q.id])}</dd></div>}
+                  <div><dt>{w.sky}</dt><dd className={res && res.void ? 'muted' : undefined}>{sky}</dd></div>
+                </dl>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function Board({ beat, w, f }) {
   const players = beat.rounds.reduce((n, r) => Math.max(n, r.players || 0), 0);
   const rows = beat.board.length ? beat.board : ['sira', 'crowd', 'sira_crowd'].map((who) => ({ who, resolved: 0, mean: null }));
   return (
-    <section className="panel" aria-label={w.board}>
-      <div className="row"><h2>{w.board}</h2><span className="muted" style={{ fontSize: 14 }}>{w.players(players)}</span></div>
+    <section aria-labelledby="board">
+      <h2 id="board">{w.board}</h2>
+      <p className="when">{w.players(players)}</p>
       <table className="board">
-        <thead><tr><th>{w.who}</th><th className="n">{w.resolved}</th><th className="n">{w.score}</th></tr></thead>
+        <thead><tr><th>{w.who}</th><th className="n">{w.resolved}</th><th className="n">{w.mean}</th></tr></thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.who}>
-              <td style={{ color: r.who === 'sira' ? '#FFD447' : undefined }}>{w.rows[r.who] || r.handle || r.who}</td>
+            <tr key={r.who} className={r.who === 'sira' ? 'us' : undefined}>
+              <td>{w.rows[r.who] || r.handle || r.who}</td>
               <td className="n">{r.resolved}</td>
               <td className="n">{r.mean === null ? '—' : f.num(r.mean, 2)}</td>
             </tr>
@@ -63,35 +267,17 @@ function Board({ live, w, f }) {
   );
 }
 
-function LastRound({ round, w, f }) {
-  if (!round || !Object.keys(round.answers).length) return null;
-  return (
-    <section className="panel" aria-label={w.last}>
-      <div className="row"><h2>{w.last}</h2><span className="muted" style={{ fontSize: 14 }}>{f.day(`${round.round}T12:00:00Z`)}</span></div>
-      {round.questions.map((q) => {
-        const res = round.results[q.id];
-        return (
-          <div key={q.id} style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 10, borderTop: '2px solid #2A2850' }}>
-            <span className="mono" style={{ fontSize: 14 }}>{q.object}</span>
-            <span style={{ fontSize: 15 }}>{w.siraSaid} {f.pct(round.answers[q.id])}{round.crowd && round.crowd[q.id] !== undefined ? `, ${w.crowdSaid} ${f.pct(round.crowd[q.id])}` : ''}</span>
-            <span className="muted" style={{ fontSize: 15 }}>{w.skyAnswer}: {res ? (res.yes ? w.yes : w.no) : w.pending}</span>
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
 export default function Beat({ lang, live }) {
   const w = WORDS[lang].beat;
   const f = format(lang);
-  const [questions, setQuestions] = useState(supabase ? null : []);
+  const [rows, setRows] = useState(supabase ? null : []);
+  const [clock, setClock] = useState(Date.now);
   const [offline, setOffline] = useState(!supabase);
   const [values, setValues] = useState({});
   const [mine, setMine] = useState({});
   const [alias, setAlias] = useState('');
   const [status, setStatus] = useState('idle');
-  const [rules, setRules] = useState(false);
+  const [bank, setBank] = useState(null);
 
   const loadMine = async (ids) => {
     const { data: session } = await supabase.auth.getSession();
@@ -100,15 +286,39 @@ export default function Beat({ lang, live }) {
     if (data) setMine(Object.fromEntries(data.map((b) => [b.question_id, Number(b.p_yes)])));
   };
 
-  useEffect(() => {
-    if (!supabase) return;
-    const now = new Date().toISOString();
-    supabase.from('questions').select('*').lte('opens_at', now).gt('closes_at', now).order('id').then(({ data, error }) => {
-      if (error) { setOffline(true); setQuestions([]); return; }
-      setQuestions(data);
-      loadMine(data.map((q) => q.id));
+  // every question not yet closed, so one about to open can count down and appear on time
+  const load = () => {
+    const now = new Date();
+    supabase.from('questions').select('*').gt('closes_at', now.toISOString()).order('id').then(({ data, error }) => {
+      if (error) { setOffline(true); setRows([]); return; }
+      setClock(Date.now());
+      setRows(data);
+      loadMine(data.filter((q) => new Date(q.opens_at) <= now).map((q) => q.id));
     });
+  };
+
+  useEffect(() => {
+    if (supabase) load();
+    fetch(`${BASE}replays/practice.json`).then((r) => (r.ok ? r.json() : null)).then(setBank).catch(() => setBank(null));
   }, []);
+
+  const questions = rows && rows.filter((q) => Date.parse(q.opens_at) <= clock);
+  const soon = rows ? rows.filter((q) => Date.parse(q.opens_at) > clock).map((q) => Date.parse(q.opens_at)) : [];
+  const next = soon.length ? Math.min(...soon) : null;
+  const end = questions && questions.length ? Math.min(...questions.map((q) => Date.parse(q.closes_at))) : null;
+
+  useEffect(() => {
+    if (next === null) return undefined;
+    const tick = setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [next]);
+  useEffect(() => {
+    // ask again the moment a round opens or closes
+    const at = [next, end].filter((t) => t !== null);
+    if (!at.length) return undefined;
+    const timer = setTimeout(load, Math.max(1000, Math.min(...at) - Date.now() + 1000));
+    return () => clearTimeout(timer);
+  }, [next, end]);
 
   const send = async () => {
     const handle = alias.trim();
@@ -130,72 +340,61 @@ export default function Beat({ lang, live }) {
   const closes = open ? f.chile(questions[0].closes_at) : '18:00';
   const betted = open && questions.every((q) => mine[q.id] !== undefined);
   const notes = { alias: [w.aliasNote, 'bad'], error: [w.failed, 'bad'], already: [w.already, 'bad'], sent: [w.sentNote(closes), 'ok'] };
-  const lastRound = live && live.beat.rounds.find((r) => Object.keys(r.answers).length);
+  const beat = live ? live.beat : { rounds: [], board: [] };
+  const lastRound = beat.rounds.find((r) => Object.keys(r.answers).length);
+  // a question's images come with the site's data: from its round once the site has it, else from last night's candidates
+  const images = (q) => {
+    const round = beat.rounds.find((r) => r.round === q.round);
+    const asked = round && round.questions.find((x) => x.id === q.id);
+    const seen = live && live.candidates.find((c) => c.object === q.object);
+    return (asked && asked.images && asked.images.stamps ? asked.images : seen && seen.images) || null;
+  };
 
   return (
-    <div className="cols">
-      <section className="main" aria-label={w.title}>
-        <div className="row">
-          <h2 className="heading">{w.title}</h2>
-          {open && <span className="pixel" style={{ fontSize: 16, color: '#FFD447' }}>{w.closes(closes)}</span>}
+    <div className="beat">
+      <section aria-labelledby="today">
+        <div className="head">
+          <h1 id="today">{w.title}</h1>
+          {open && <p className="state">{w.closes(closes)}</p>}
         </div>
-        {questions === null && <p className="muted">…</p>}
-        {questions !== null && !open && <p className="note">{offline ? w.offline : w.none}</p>}
-        {open && questions.map((q, i) => {
-          const value = mine[q.id] !== undefined ? Math.round(mine[q.id] * 100) : values[q.id] || 50;
-          return (
-            <article key={q.id} className="question">
-              <div className="row">
-                <h3 className="pixel" style={{ margin: 0, fontSize: 16, color: '#FFD447' }}>{w.q} {i + 1}</h3>
-                <span className="mono muted" style={{ fontSize: 14 }}>{q.object}</span>
-              </div>
-              <p>{f.question(fields(q))}</p>
-              <div className="split">
-                <Curve q={q} w={w} label={q.object} />
-                <div className="pick">
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span className="muted" style={{ fontSize: 14 }}>{w.you}</span>
-                    <span className="arcade" style={{ fontSize: 20, color: '#FFD447' }}>{f.pct(value / 100)}</span>
-                    <input type="range" min="1" max="99" value={value} disabled={betted}
-                      onChange={(e) => setValues({ ...values, [q.id]: Number(e.target.value) })} />
-                  </label>
-                  <div className="row muted" style={{ fontSize: 13 }}><span>{w.no}</span><span>{w.yes}</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Envelope />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span className="muted" style={{ fontSize: 14 }}>{w.sira}</span>
-                      <span style={{ fontSize: 15, color: '#FF6AD5' }}>{w.sealed(closes)}</span>
-                      <span className="mono muted" style={{ fontSize: 12 }}>{q.commit.slice(0, 12)}…</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </section>
-
-      <aside className="side">
+        <ol className="how" aria-label={w.how}>{w.steps.map((s, k) => <li key={s}><b>{k + 1}</b><span>{s}</span></li>)}</ol>
+        <p className="howscore">{w.howScore}</p>
+        {questions === null && <p className="next">{WORDS[lang].loading}</p>}
+        {questions !== null && !open && (
+          <p className="next">
+            {offline ? w.offline : next !== null ? w.opens(f.chile(new Date(next).toISOString())) : w.none}
+            {next !== null && !offline && <> {w.opensIn} <b>{countdown(next - clock)}</b>.</>}
+          </p>
+        )}
+        {open && questions.map((q, i) => (
+          <Live key={q.id} q={q} i={i} img={images(q)} closes={closes} betted={betted} lang={lang} w={w} f={f}
+            value={mine[q.id] !== undefined ? Math.round(mine[q.id] * 100) : values[q.id] || 50}
+            set={(v) => setValues({ ...values, [q.id]: v })} />
+        ))}
         {open && (
-          <section className="panel">
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span className="pixel" style={{ fontSize: 15, color: '#5CE1E6' }}>{w.alias}</span>
+          <div className="seal">
+            <label>
+              <span>{w.alias}</span>
               <input type="text" value={alias} maxLength={24} disabled={betted} onChange={(e) => setAlias(e.target.value)} />
             </label>
-            <button type="button" className={`button ${betted || status === 'sent' ? 'done' : 'primary'}`} disabled={betted || status === 'sending'}
-              onClick={send} style={{ minHeight: 48 }}>
+            <button type="button" className="btn primary" disabled={betted || status === 'sending'} onClick={send}>
               {betted ? w.sent : status === 'sending' ? w.sending : w.send(questions.length)}
             </button>
-            {notes[status] && <span className={`note ${notes[status][1]}`}>{notes[status][0]}</span>}
-          </section>
+            {notes[status] && <p className={`note ${notes[status][1]}`}>{notes[status][0]}</p>}
+          </div>
         )}
+      </section>
+
+      {bank && bank.questions.length > 0 && <Practice bank={bank} lang={lang} w={w} f={f} />}
+
+      <div className="trio">
         <LastRound round={lastRound} w={w} f={f} />
-        <Board live={live} w={w} f={f} />
-        <section className="panel">
-          <button type="button" className="button" style={{ alignSelf: 'flex-start' }} aria-expanded={rules} onClick={() => setRules(!rules)}>{w.rules}</button>
-          {rules && <ol style={{ margin: 0, paddingLeft: 22, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 16, lineHeight: 1.4 }}>{w.ruleList.map((r) => <li key={r}>{r}</li>)}</ol>}
+        <Board beat={beat} w={w} f={f} />
+        <section aria-labelledby="rules">
+          <h2 id="rules">{w.rules}</h2>
+          <ol className="rules">{w.ruleList.map((r) => <li key={r}>{r}</li>)}</ol>
         </section>
-      </aside>
+      </div>
     </div>
   );
 }
