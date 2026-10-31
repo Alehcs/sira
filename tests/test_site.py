@@ -93,3 +93,24 @@ def test_candidates_are_what_the_lookouts_weighed_last_night():
     got = site.candidates(rows)
     assert got == [{"object": "B", "priority": 0.8, "picked": True, "reader": "real", "p_real": 0.93, "bet": True},
                    {"object": "C", "priority": 0.5, "picked": False, "reader": None, "p_real": None, "bet": False}]
+
+
+IDEA = ("A dark star passing in front of the source would brighten it and fade it again in the same way in every band, "
+        "with no change of colour; the curve so far rises as one, so a lens fits it without any supernova at all.")
+
+
+def test_the_logbook_tells_le_verriers_ideas_whole(tmp_path):
+    rows = [
+        entry(0, "bet", {"bet": "Z-1", "object": "Z", "model": "v1"}),
+        entry(1, "surprise", {"bet": "Z-1", "object": "Z", "surprised": True, "misses": 4, "n": 5, "p_value": 0.001}),
+        entry(2, "event", {"role": "leverrier", "object": "Z", "leap": "hidden", "decision": "proposes Unseen lens",
+                           "why": IDEA[:200]}),
+        entry(3, "event", {"role": "leverrier", "object": "Z", "leap": "new", "decision": "proposes Other idea", "why": "Short."}),
+        entry(4, "bet", {"bet": "Z-leap-1", "object": "Z", "made_at": 61340.0, "chosen": "Unseen lens", "cost_usd": 0.5,
+                         "proposals": [{"leap": "hidden", "name": "Unseen lens", "idea": IDEA},
+                                       {"leap": "new", "name": "Other idea", "idea": "Short."}]}),
+        entry(5, "verdict", {"bet": "Z-leap-1", "object": "Z", "verdict": "neptune", "log10_e": 6.5, "n": 12}),
+    ]
+    chain = site._logbook(tmp_path, rows)[0]["chains"][0]
+    assert [(p["name"], p["idea"], p["chosen"]) for p in chain["proposals"]] == [("Unseen lens", IDEA, True),
+                                                                                  ("Other idea", "Short.", False)]

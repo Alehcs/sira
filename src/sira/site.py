@@ -260,10 +260,13 @@ def _logbook(var: Path, team_rows: list[dict]) -> list[dict]:
     for leap, shock in zip(leaps, shocks):
         mine = [e["payload"] for e in events if e["seq"] < leap["seq"] and e["seq"] > shock["seq"]]
         v = verdicts[leap["payload"]["bet"]]["payload"]
+        # the events keep 200 characters of each idea; the leap bet keeps them whole
+        ideas = {(x["leap"], x["name"]): x["idea"] for x in leap["payload"].get("proposals", [])}
+        named = [(m, m["decision"].replace("proposes ", "")) for m in mine]
         chains.append({"at": _date(leap["payload"]["made_at"]), "misses": shock["payload"]["misses"], "n": shock["payload"]["n"],
                        "p": shock["payload"]["p_value"], "cost_usd": round(leap["payload"]["cost_usd"], 2),
-                       "proposals": [{"leap": m["leap"], "name": m["decision"].replace("proposes ", ""), "idea": m["why"],
-                                      "chosen": m["decision"].endswith(leap["payload"]["chosen"])} for m in mine],
+                       "proposals": [{"leap": m["leap"], "name": name, "idea": ideas.get((m["leap"], name), m["why"]),
+                                      "chosen": m["decision"].endswith(leap["payload"]["chosen"])} for m, name in named],
                        "verdict": {k: v[k] for k in ("verdict", "log10_e", "n")}})
     lanes.append({"object": team_rows[0]["payload"]["object"], "source": "team", "chains": chains, "adopted": True})
     for path in sorted(var.glob("leverrier-*.json")):
