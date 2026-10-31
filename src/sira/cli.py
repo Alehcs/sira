@@ -14,6 +14,8 @@ def site(args) -> None:
         print(f"replays written to {args.out}")
     else:
         print(json.dumps(export(Path(args.ledger), Path(args.out))["record"], indent=2))
+        img = Path(args.out) / "img"
+        print(f"{len(list(img.glob('*.png')))} stamp strips and {len(list(img.glob('*.jpg')))} host images in {img}")
 
 
 def investigate(args) -> None:

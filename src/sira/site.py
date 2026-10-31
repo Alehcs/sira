@@ -8,6 +8,7 @@ from .ledger import Ledger
 LEVEL = re.compile(r"(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?")
 READING = re.compile(r"^(real|bogus) \(([\d.]+)\)$")
 NIGHTLY = (21, 13)  # nightly.yml's cron, in UTC
+IMG = "data/img/"  # where the build's images sit, from the site's root
 
 
 def _date(mjd: float) -> str:
@@ -56,6 +57,13 @@ def _answer(a: dict | None) -> dict | None:
     if a.get("void"):
         return {"void": True, "yes": None}
     return {"void": False, "yes": a["yes"], "log_score": a["log_score"], "at": _date(a["mjd"])}
+
+
+def _images(found: dict | None) -> dict:
+    found = found or {}
+    return {"stamps": IMG + found["stamps"] if found.get("stamps") else None, "panel": found.get("panel"),
+            "taken": _date(found["taken"]) if found.get("taken") else None,
+            "host": IMG + found["host"] if found.get("host") else None}
 
 
 def telegrams(entries: list[dict]) -> list[dict]:
@@ -109,15 +117,16 @@ def surprises(entries: list[dict]) -> list[dict]:
     return out
 
 
-def rounds(entries: list[dict]) -> dict:
+def rounds(entries: list[dict], pics: dict | None = None) -> dict:
     # Beat SIRA: each round's questions, SIRA's revealed answers, the crowd and the scores
-    by = {}
+    by, pics = {}, pics or {}
     for e in entries:
         p = e["payload"]
         if e["kind"] == "round":
             by[p["round"]] = {"round": p["round"], "opens_at": p["opens_at"], "closes_at": p["closes_at"],
                               "questions": [{k: q[k] for k in ("id", "object", "commit")} | {"question": _question(
-                                  {"text": q["text"], "p_yes": None, "mjd": q["mjd"], "reference": q["reference"], "band": q["band"]})}
+                                  {"text": q["text"], "p_yes": None, "mjd": q["mjd"], "reference": q["reference"], "band": q["band"]}),
+                                  "images": _images(pics.get(q["object"]))}
                                   for q in p["questions"]], "answers": {}, "players": 0, "results": {}}
         elif e["kind"] == "reveal" and p["round"] in by:
             by[p["round"]]["answers"] = {a["id"]: a["p_yes"] for a in p["answers"]}
@@ -145,8 +154,10 @@ def rounds(entries: list[dict]) -> dict:
     return {"rounds": sorted(by.values(), key=lambda r: r["round"], reverse=True), "board": board}
 
 
-def candidates(entries: list[dict], n: int = 24) -> list[dict]:
+def candidates(entries: list[dict], pics: dict | None = None, n: int = 24) -> list[dict]:
     # what the lookouts weighed on the last night, so a visitor can send the lab after any of it
+    from .visits import _clip
+
     looks = [e for e in entries if e["kind"] == "event" and e["payload"].get("role") == "lookout" and e["payload"].get("object")]
     if not looks:
         return []
@@ -157,27 +168,38 @@ def candidates(entries: list[dict], n: int = 24) -> list[dict]:
         p = e["payload"]
         if e["kind"] == "event" and p.get("role") == "lookout" and p.get("object"):
             votes.setdefault(p["object"], []).append((p.get("decision") == "investigate", p.get("priority") or 0.0))
-    seen, bet = {}, set()
+    seen, bets = {}, {}
     for e in night:
         p = e["payload"]
         m = READING.match(str(p.get("decision", ""))) if p.get("role") == "reader" else None
         if e["kind"] == "event" and m:
-            seen[p.get("object")] = (m[1], float(m[2]))
-        elif e["kind"] == "bet":
-            bet.add(p["object"])
-    rows = [{"object": oid, "priority": round(_mean([v[1] for v in vs]), 2), "picked": 2 * sum(v[0] for v in vs) > len(vs),
-             "reader": seen.get(oid, (None, None))[0], "p_real": seen.get(oid, (None, None))[1], "bet": oid in bet}
-            for oid, vs in votes.items()]
+            seen[p.get("object")] = (m[1], float(m[2]), p.get("why"))
+        elif e["kind"] == "bet" and "-leap-" not in p["bet"] and p.get(_staked(p)):
+            bets[p["object"]] = e
+    rows = []
+    for oid, vs in votes.items():
+        label, p_real, why = seen.get(oid, (None, None, None))
+        bet, found = bets.get(oid), (pics or {}).get(oid) or {}
+        # the staked forecast is in Telegrams already, so a card may show it before any Beat SIRA bell
+        sealed = bet and {"seq": bet["seq"], "question": _question(bet["payload"][_staked(bet["payload"])]),
+                          "term": (bet["payload"].get("wording") or {}).get("term")}
+        rows.append({"object": oid, "priority": round(_mean([v[1] for v in vs]), 2), "picked": 2 * sum(v[0] for v in vs) > len(vs),
+                     "reader": label, "p_real": p_real, "why": _clip(why) if why else None, "bet": bet is not None,
+                     "telegram": sealed, "ra": found.get("ra"), "dec": found.get("dec"), "points": found.get("points"),
+                     "curve": found.get("curve"), "images": _images(found)})
     return sorted(rows, key=lambda r: -r["priority"])[:n]
 
 
-def live(entries: list[dict]) -> dict:
+def live(entries: list[dict], pics: dict | None = None) -> dict:
+    from .visits import MIN_POINTS
+
     tele = telegrams(entries)
     anchors = [e for e in entries if e["kind"] == "anchor"]
     head = anchors[-1]["payload"] if anchors else {}
     return {"head": {"hash": head.get("head"), "tsa_time": head.get("tsa_time"), "run": head.get("run"), "seq": head.get("seq")},
             "entries": len(entries), "telegrams": tele, "record": record(entries, tele),
-            "surprises": surprises(entries), "beat": rounds(entries), "candidates": candidates(entries)}
+            "surprises": surprises(entries), "beat": rounds(entries, pics), "candidates": candidates(entries, pics),
+            "min_points": MIN_POINTS}
 
 
 def _lab(rows: list[dict], obj: dict) -> dict:
@@ -301,7 +323,15 @@ def replays(var: Path, snapshot: Path, out: Path, oid: str = "ZTF19aavisrq") -> 
 
 
 def export(ledger_dir: Path, out: Path) -> dict:
-    data = live(Ledger(ledger_dir).entries())
+    from . import gallery
+
+    entries = Ledger(ledger_dir).entries()
     out.mkdir(parents=True, exist_ok=True)
-    (out / "live.json").write_text(json.dumps(data, separators=(",", ":")))
+    today = [c["object"] for c in candidates(entries)]
+    played = [q["object"] for e in entries if e["kind"] == "round" for q in e["payload"]["questions"]]
+    rest = sorted({e["payload"]["object"] for e in entries if e["payload"].get("object")})
+    # tonight's candidates are read fresh; everything older comes from the cache after its first build
+    pics = gallery.build(today + played + rest, out / "img", fresh=set(today))
+    data = live(entries, pics)
+    (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
     return data

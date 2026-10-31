@@ -1,3 +1,5 @@
+import json
+
 from sira import site
 
 
@@ -70,29 +72,58 @@ def test_beat_sira_ranks_everyone_by_their_mean_score():
                                              "players": {"p1": -2.3, "p2": -0.36}}}),
         entry(4, "crowd_answer", {"question": "2026-10-30-2", "round": "2026-10-30", "void": True}),
     ]
-    beat = site.rounds(rows)
+    beat = site.rounds(rows, {"C": {"stamps": "C.png", "panel": [63, 63], "taken": 61340.5}})
     r = beat["rounds"][0]
     assert r["answers"] == {q["id"]: 0.2} and r["players"] == 2 and r["crowd"] == {q["id"]: 0.6}
     assert r["results"]["2026-10-30-2"] == {"void": True, "yes": None} and r["results"][q["id"]]["void"] is False
+    assert r["questions"][0]["images"] == {"stamps": "data/img/C.png", "panel": [63, 63], "taken": "2026-10-27T12:00:00Z",
+                                           "host": None}
     assert [x["who"] for x in beat["board"]] == ["sira", "p2", "sira_crowd", "crowd", "p1"]
     assert next(x for x in beat["board"] if x["who"] == "p2")["handle"] == "leo"
 
 
-def test_candidates_are_what_the_lookouts_weighed_last_night():
+WHY = ("Round positive source at the centre of the difference, as wide as the stars. It sits on the edge of a faint "
+       "galaxy seen in the template, with clean subtraction around it and no dipoles anywhere in the field near it, so")
+
+
+def candidate_rows():
     look = lambda seq, oid, call, p, time: entry(seq, "event", {"role": "lookout", "object": oid, "decision": call,
                                                                 "priority": p, "cost_usd": 0.01}, time)
-    rows = [
+    return [
         look(0, "OLD", "investigate", 0.9, "2026-10-29T01:00:00+00:00"),
-        entry(1, "event", {"role": "reader", "object": "B", "decision": "real (0.93)", "cost_usd": 0.01}, "2026-10-30T01:00:00+00:00"),
+        entry(1, "event", {"role": "reader", "object": "B", "decision": "real (0.93)", "cost_usd": 0.01, "why": WHY[:200]},
+              "2026-10-30T01:00:00+00:00"),
         look(2, "B", "investigate", 0.8, "2026-10-30T01:01:00+00:00"),
         look(3, "C", "pass", 0.4, "2026-10-30T01:01:00+00:00"),
         look(4, "C", "investigate", 0.6, "2026-10-30T01:02:00+00:00"),
         look(5, "C", "pass", 0.5, "2026-10-30T01:02:00+00:00"),
-        entry(6, "bet", {"bet": "B-1", "object": "B"}, "2026-10-30T01:20:00+00:00"),
+        entry(6, "bet", {"bet": "B-1", "object": "B", "model": "v1", "made_at": 61343.0, "question": STANDARD,
+                         "risky": RISKY, "director": {"question": "q3"}, "wording": {"term": "very likely"}},
+              "2026-10-30T01:20:00+00:00"),
     ]
-    got = site.candidates(rows)
-    assert got == [{"object": "B", "priority": 0.8, "picked": True, "reader": "real", "p_real": 0.93, "bet": True},
-                   {"object": "C", "priority": 0.5, "picked": False, "reader": None, "p_real": None, "bet": False}]
+
+
+def test_candidates_are_what_the_lookouts_weighed_last_night():
+    got = site.candidates(candidate_rows())
+    assert [(c["object"], c["priority"], c["picked"], c["reader"], c["p_real"], c["bet"]) for c in got] == [
+        ("B", 0.8, True, "real", 0.93, True), ("C", 0.5, False, None, None, False)]
+    # the reader's note ends on its last whole sentence, as in Investigate
+    assert got[0]["why"] == "Round positive source at the centre of the difference, as wide as the stars."
+    assert got[0]["telegram"] == {"seq": 6, "question": site._question(RISKY), "term": "very likely"}
+    assert got[1]["why"] is None and got[1]["telegram"] is None
+    assert got[1]["points"] is None and got[1]["images"] == {"stamps": None, "panel": None, "taken": None, "host": None}
+
+
+def test_a_card_carries_what_the_build_drew_for_it():
+    pics = {"B": {"ra": 150.1, "dec": -20.2, "points": 4, "curve": [[61340.1, "ztfr", "det", 50.0, 2.0]], "first": 61330.0,
+                  "stamps": "B.png", "panel": [63, 50], "taken": 61331.0, "host": "B.jpg"}}
+    data = site.live(candidate_rows(), pics)
+    b = data["candidates"][0]
+    assert (b["ra"], b["dec"], b["points"], b["curve"]) == (150.1, -20.2, 4, [[61340.1, "ztfr", "det", 50.0, 2.0]])
+    assert b["images"] == {"stamps": "data/img/B.png", "panel": [63, 50], "taken": "2026-10-18T00:00:00Z",
+                           "host": "data/img/B.jpg"}
+    # the cards hide what the lab could not investigate, by the same rule visits.py enforces
+    assert data["min_points"] == 5
 
 
 IDEA = ("A dark star passing in front of the source would brighten it and fade it again in the same way in every band, "
@@ -114,3 +145,22 @@ def test_the_logbook_tells_le_verriers_ideas_whole(tmp_path):
     chain = site._logbook(tmp_path, rows)[0]["chains"][0]
     assert [(p["name"], p["idea"], p["chosen"]) for p in chain["proposals"]] == [("Unseen lens", IDEA, True),
                                                                                   ("Other idea", "Short.", False)]
+
+
+def test_export_draws_tonights_candidates_fresh(tmp_path, monkeypatch):
+    from sira import gallery
+
+    asked = {}
+
+    def draw(oids, out, fresh=frozenset(), seconds=0):
+        asked.update(oids=oids, out=out, fresh=fresh)
+        return {"B": {"ra": 150.1, "dec": -20.2, "points": 4, "curve": [], "first": 61330.0}}
+
+    monkeypatch.setattr(gallery, "build", draw)
+    book = tmp_path / "ledger"
+    book.mkdir()
+    (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in candidate_rows()) + "\n")
+    data = site.export(book, tmp_path / "data")
+    assert asked["oids"][:2] == ["B", "C"] and set(asked["oids"]) == {"B", "C", "OLD"} and asked["fresh"] == {"B", "C"}
+    assert asked["out"] == tmp_path / "data" / "img" and data["candidates"][0]["ra"] == 150.1
+    assert json.loads((tmp_path / "data" / "live.json").read_text())["record"] == data["record"]
