@@ -24,6 +24,10 @@ def _iso(when: datetime) -> str:
     return when.astimezone(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def _master() -> bytes:
     key = os.getenv("SIRA_ENVELOPE_KEY", "")
     if not key:
@@ -199,9 +203,10 @@ def forecasts(llm, c, views: list[dict], entries: list[dict], pool, budget: floa
 
 def open_round(ledger: Ledger, c, llm, now: datetime, pool, budget: float = 2.0, dry: bool = False, look=None) -> dict:
     day, entries = now.date().isoformat(), ledger.entries()
+    last = datetime.combine(now.date(), LAST_OPEN, timezone.utc)
     if day in _by(entries, "round"):
         return {"skipped": f"round {day} is already open"}
-    if now.time() >= LAST_OPEN:
+    if now + OPEN_DELAY > last:
         return {"skipped": f"too late to open round {day}: it would close in under 30 minutes"}
     master = None if dry else _master()
     t = mjd(_iso(now))
@@ -209,7 +214,12 @@ def open_round(ledger: Ledger, c, llm, now: datetime, pool, budget: float = 2.0,
     made, events, spent, passed = forecasts(llm, c, views, entries, pool, budget)
     if not made:
         return {"skipped": "no object gave a question", "passed": passed, "spent_usd": round(spent, 4)}
-    opens_at, closes_at = _iso(now + OPEN_DELAY), _iso(datetime.combine(now.date(), CLOSE, timezone.utc))
+    # the team takes minutes, so bets open a little after its answers are ready, not after the job started
+    ready = _now()
+    if ready + OPEN_DELAY > last:
+        return {"skipped": f"too late to open round {day}: its answers were ready at {ready:%H:%M} UTC, "
+                           "so it would close in under 30 minutes", "passed": passed, "spent_usd": round(spent, 4)}
+    opens_at, closes_at = _iso(ready + OPEN_DELAY), _iso(datetime.combine(now.date(), CLOSE, timezone.utc))
     questions, answers = [], []
     for i, (view, q) in enumerate(made, 1):
         qid = f"{day}-{i}"
@@ -229,14 +239,18 @@ def open_round(ledger: Ledger, c, llm, now: datetime, pool, budget: float = 2.0,
                                     "cost_usd": round(spent, 4), "questions": questions})
     try:
         anchor = ledger.anchor(c)
-    except Exception:
-        # nothing was published yet, so a round that could not be stamped is taken back whole
+        stamped = anchor["payload"]["tsa_time"]
+        if mjd(stamped) > mjd(opens_at):
+            raise RuntimeError(f"round {day} was stamped at {stamped}, after it was due to open at {opens_at}, "
+                               "so it was taken back")
+    except BaseException:
+        # nothing was published yet, so a round that could not be stamped in time is taken back whole
         ledger.path.write_bytes(before)
         for f in ledger.receipts.glob(entry["hash"] + ".*"):
             f.unlink()
         raise
     return {"round": day, "questions": [q["id"] for q in questions], "opens_at": opens_at, "closes_at": closes_at,
-            "spent_usd": round(spent, 4), "passed": passed, "anchor": anchor["payload"] if anchor else None}
+            "spent_usd": round(spent, 4), "passed": passed, "anchor": anchor["payload"]}
 
 
 def publish_round(ledger: Ledger, c, now: datetime) -> dict:

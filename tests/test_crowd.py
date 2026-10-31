@@ -1,7 +1,7 @@
 import json
 import math
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pytest
@@ -45,6 +45,7 @@ def lab(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "check_rfc3161", check)
     monkeypatch.setattr(verify, "check_rfc3161", check)
     monkeypatch.setattr(ledger, "OTS", "true")
+    monkeypatch.setattr(crowd, "_now", lambda: datetime.fromisoformat(clock["iso"]))
     monkeypatch.setenv("SIRA_ENVELOPE_KEY", MASTER)
     monkeypatch.setattr(crowd, "_supabase", lambda: ("https://example.supabase.co", {}))
     obj = sn_object()
@@ -54,6 +55,7 @@ def lab(tmp_path, monkeypatch):
     monkeypatch.setattr(agents, "llm_only", lambda llm, case, days, bands: ({"points": {}, "classes": {}}, {}))
 
     def investigate(llm, view, ebv, pool, seniors, reading=None, adopted=None, alone=None):
+        clock["iso"] = clock.pop("ready", clock["iso"])  # the team works until its answers are ready
         said = {"role": "director", "model": "muse-spark-1.3", "effort": "xhigh", "cost_usd": 0.02, "seconds": 3.0,
                 "case": "case-x", "decision": "bet q0", "why": "it is very likely to fade"}
         return live.forecast(view, ebv), [said]
@@ -66,10 +68,11 @@ def lab(tmp_path, monkeypatch):
     return {"book": book, "clock": clock, "obj": obj, "root": tmp_path}
 
 
-def opened(lab):
-    lab["clock"]["iso"] = OPEN.isoformat()
+def opened(lab, ready=OPEN, start=OPEN):
+    # the job starts at start and the team's answers are ready, and stamped, at ready
+    lab["clock"] |= {"iso": start.isoformat(), "ready": ready.isoformat()}
     with ThreadPoolExecutor(2) as pool:
-        return crowd.open_round(lab["book"], None, None, OPEN, pool)
+        return crowd.open_round(lab["book"], None, None, start, pool)
 
 
 def closed(lab, monkeypatch, bets):
@@ -165,10 +168,37 @@ def test_no_round_opens_or_publishes_after_half_past_eight_utc(lab, monkeypatch)
     late = OPEN.replace(hour=20, minute=31)
     with ThreadPoolExecutor(1) as pool:
         assert "too late" in crowd.open_round(lab["book"], None, None, late, pool)["skipped"]
+        # a job starting after 20:25 could not open by 20:30, so it does not pay for the team
+        assert "spent_usd" not in crowd.open_round(lab["book"], None, None, late.replace(minute=26), pool)
     assert not [e for e in lab["book"].entries() if e["kind"] == "round"]
     opened(lab)
     monkeypatch.setattr(crowd, "publish", lambda c, payload: pytest.fail("published after 20:30"))
     assert "too late" in crowd.publish_round(lab["book"], None, late)["skipped"]
+
+
+def test_a_slow_team_still_seals_its_answers_before_the_round_opens(lab, monkeypatch):
+    result = opened(lab, ready=OPEN + timedelta(minutes=9))
+    assert result["opens_at"] == "2026-11-02T13:34:00+00:00"
+    monkeypatch.setattr(crowd, "publish", lambda c, payload: len(payload["questions"]))
+    assert crowd.publish_round(lab["book"], None, OPEN + timedelta(minutes=10))["published"] == 1
+    report = verify.verify(lab["root"])
+    assert report["passes"], report["problems"]
+
+
+def test_answers_ready_too_near_the_bell_open_no_round(lab):
+    before = lab["book"].path.read_bytes()
+    result = opened(lab, ready=OPEN.replace(hour=20, minute=26), start=OPEN.replace(hour=20, minute=20))
+    assert "answers were ready at 20:26 UTC" in result["skipped"]
+    assert lab["book"].path.read_bytes() == before
+
+
+def test_a_round_stamped_after_it_would_open_is_taken_back(lab, monkeypatch):
+    book = lab["book"]
+    before, receipts = book.path.read_bytes(), set(book.receipts.iterdir())
+    monkeypatch.setattr(crowd, "_now", lambda: OPEN)  # the runner's clock, while the stamp comes six minutes later
+    with pytest.raises(RuntimeError, match="stamped at .* so it was taken back"):
+        opened(lab, ready=OPEN + timedelta(minutes=6))
+    assert book.path.read_bytes() == before and set(book.receipts.iterdir()) == receipts
 
 
 def test_a_round_that_cannot_be_stamped_is_taken_back(lab, monkeypatch):
@@ -177,7 +207,7 @@ def test_a_round_that_cannot_be_stamped_is_taken_back(lab, monkeypatch):
 
     monkeypatch.setattr(ledger, "rfc3161", down)
     before = lab["book"].path.read_bytes()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="authority down"):
         opened(lab)
     assert lab["book"].path.read_bytes() == before
 
