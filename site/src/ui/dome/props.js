@@ -54,7 +54,7 @@ export function drawTelescope(t, st) {
   rect(cx - 15, axis - 4, 5, base - 17 - axis + 4, C('d3'));
   rect(cx - 15, axis - 4, 1, base - 17 - axis + 4, C('d4'));
   // the tube, tipped toward the slit, outlined
-  const dir = [-0.2425, -0.9701], per = [0.9701, -0.2425];
+  const dir = [-0.669, -0.743], per = [0.743, -0.669];
   const at = (k, w) => [cx + dir[0] * k + per[0] * w, axis + dir[1] * k + per[1] * w];
   const band = (k0, k1, w0, w1, c) => poly([at(k0, w0), at(k1, w0), at(k1, w1), at(k0, w1)], c);
   band(-23, 38, -9, 9, C('ink'));
@@ -166,7 +166,7 @@ export function drawMuseGlass() {
 export function drawSkeptics(t, st) {
   const z = 56;
   // instrument: two racks with blinking lights
-  for (const x0 of [3, 4.6]) {
+  for (const x0 of [5.2, 6.6]) {
     box(x0, 0, z, 1.4, 1.3, 34, C('m1'), C('m0'), C('m1'));
     for (let k = 0; k < 6; k++) {
       const p = P(x0 + 0.2, 1.31, z + 30 - k * 5);

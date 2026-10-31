@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { WORDS, format } from '../words.js';
-import { H, W, bind, palette } from './dome/engine.js';
+import { H, SLIT, W, bind, palette } from './dome/engine.js';
 import { SIDE, TAGS, TWO, frame, slip } from './dome/scene.js';
 import { moment, plan } from './dome/script.js';
 import { useWidth } from './width.js';
@@ -38,7 +38,7 @@ function useImage(src, read) {
 // the sky through the slit: the field around the object in 4×4 blocks, averaged, colours untouched
 function slit(ctx, at) {
   const [cx, cy] = at;
-  const cols = 34, rows = 52, k = 4;
+  const cols = SLIT, rows = 52, k = 4;
   const x0 = Math.round(cx - (cols / 2) * k), y0 = Math.round(cy - 20 * k);
   const d = ctx.getImageData(x0, y0, cols * k, rows * k).data;
   return Array.from({ length: rows }, (_, j) => Array.from({ length: cols }, (__, i) => [0, 1, 2].map((c) => {

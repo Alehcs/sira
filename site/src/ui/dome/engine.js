@@ -8,7 +8,7 @@ export const D = 4;
 export const RX = 70;
 export const RY = 35;
 export const HD = 10;
-export const SLIT = 34;
+export const SLIT = 50;
 export const YDC = OY - 16 - 112;
 export const YEQ = YDC - HD;
 
