@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Dome from './ui/Dome.jsx';
+import { lengths } from './ui/dome/script.js';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
-import Sky from './ui/Sky.jsx';
 import Stamps from './ui/Stamps.jsx';
 import { Message, Thread } from './ui/Thread.jsx';
 import { WORDS, format } from './words.js';
@@ -14,7 +15,9 @@ const FIT_AT = [0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 4, 4, 4];
 const MODELS = { dome: 'Spark Open', theory: 'Spark 1.3 high', skeptics: 'Spark 1.3 high', director: 'Spark 1.3 xhigh', forecaster: 'Spark 1.3 minimal', sky: 'ZTF', leverrier: 'Wonder high' };
 const SHORT = { ia: 'Ia', ibc: 'Ibc', ii: 'II', tde: 'TDE' };
 // sky.jpg is a lossless crop of the Pan-STARRS1 field at 0.262″ a pixel, with the object at (736, 210)
-const FIELD = { size: [1316, 416], at: [736, 210], scale: 0.262 };
+const FIELD = { at: [736, 210] };
+// in the observatory: whom the sky and Le Verrier speak to at each of their steps
+const TO = { 5: ['director'], 6: ['director'], 7: ['forecaster'], 8: ['leverrier'], 12: ['forecaster'] };
 const E = <span className="mono">log<sub>10</sub>{' '}<i className="v">E</i></span>;
 
 function join(lang, items) {
@@ -84,6 +87,36 @@ function story(lang, d, f) {
       'Neptune: the lens was right.', 'Now we defend the lens.', 'A yes would prove us wrong.', `${cap(f.term(b[4].term))}: ${f.pct(b[4].p)}.`,
       right ? 'Fainter, as the lens said.' : 'The lens missed.', 'Nothing new to invent.'],
   };
+}
+
+// each step as the observatory plays it: the calls behind it, who says the step's line and what the screens show
+function beats(d, says) {
+  const F = d.fans;
+  const fans = { cp1: F.cp1.r, cp2: F.cp2.r, leap: F.lens.r, cp4: F.cp4.r, cp5: F.cp5.r };
+  return ROLES.map((role, i) => {
+    const calls = d.calls[i].map((c) => ({ ...c }));
+    const weights = d.bets[FIT_AT[i]].weights;
+    const theories = calls.filter((c) => c.role === 'theorist');
+    const lead = theories.find((c) => c.decision === 'defends adopted')
+      || theories.sort((a, b) => (weights[b.decision.slice(8)] || 0) - (weights[a.decision.slice(8)] || 0))[0];
+    const speaker = { dome: calls.find((c) => c.role === 'reader'), theory: lead, skeptics: calls.find((c) => c.lens === 'instrument'),
+      director: calls.find((c) => c.role === 'director'), forecaster: calls.find((c) => c.role === 'forecaster'),
+      leverrier: calls.find((c) => c.role === 'leverrier') }[role];
+    if (speaker) Object.assign(speaker, { says: says[i] }, TO[i] && { to: TO[i] });
+    else calls.push({ role: role === 'sky' ? 'sky' : 'leverrier', says: says[i], to: TO[i] });
+    const now = d.now[i];
+    const fan = fans[SHOWN[i]];
+    return {
+      calls,
+      seal: role === 'forecaster' ? (i === 4 ? d.bets[0] : d.bets[d.bets.length - 1]).p : null,
+      scene: {
+        now, fan, weights, old: SHOWN[i] === 'leap' ? F.old.r : fan, lens: F.lens.r, rival: F.old.r,
+        range: { x0: -3, x1: 41, f0: 22, f1: 1600 },
+        pts: d.phot.filter((p) => p[2] === 'det' && p[5] <= now + 1e-6).map((p) => [p[0], p[3], p[1]]),
+        voices: Object.entries(weights).filter(([, v]) => v >= 0.005).sort((x, y) => (x[0] === 'null') - (y[0] === 'null') || y[1] - x[1]),
+      },
+    };
+  });
 }
 
 function Voices({ weights, w, f }) {
@@ -193,13 +226,16 @@ export default function Lab({ lang, data: d }) {
   const text = story(lang, d, f);
   const k = d.facts;
   const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
+  const scenes = useMemo(() => beats(d, text.says), [d, lang]);
+  const pace = useMemo(() => lengths(scenes), [scenes]);
 
+  // playing, each step lasts as long as the observatory takes to play it
   useEffect(() => {
     if (!playing) return undefined;
     if (step >= last) { setPlaying(false); return undefined; }
-    const timer = setTimeout(() => setStep(step + 1), 2500);
+    const timer = setTimeout(() => setStep(step + 1), pace[step] * 1000);
     return () => clearTimeout(timer);
-  }, [playing, step, last]);
+  }, [playing, step, last, pace]);
 
   const go = (n) => { setPlaying(false); setStep(Math.min(Math.max(n, 0), last)); };
   const play = () => {
@@ -247,7 +283,8 @@ export default function Lab({ lang, data: d }) {
 
   return (
     <>
-      <Sky src={`${BASE}replays/sky.jpg`} size={FIELD.size} at={FIELD.at} scale={FIELD.scale} coords={`${f.ra(d.ra)} ${f.dec(d.dec)}`} label={w.skyAlt(d.object)} />
+      <Dome lang={lang} beats={scenes} at={step} sky={{ src: `${BASE}replays/sky.jpg`, at: FIELD.at }}
+        stamps={{ src: `${BASE}replays/stamps.png`, tile: 252, gap: 8, pixel: 4 }} />
       <div className="objhead">
         <h1>{d.object}</h1>
         <div className="coords">
