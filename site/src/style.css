@@ -138,6 +138,32 @@ main.wrap { padding-top: 26px; }
 .figure text.axis { fill: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; }
 .figure text.halo { paint-order: stroke; stroke: var(--page); stroke-width: 4px; stroke-linejoin: round; }
 .figure text.plain { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; }
+.figure .plot { position: relative; }
+.figure svg.live { touch-action: pan-y; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+.figure svg.zoomed { cursor: grab; }
+.figure svg.zoomed:active { cursor: grabbing; }
+.figure .pick { fill: none; stroke: var(--text); stroke-width: 1.5; }
+.figure .zoombox { fill: var(--fan); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.figure .hidden { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.tip { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; display: flex; flex-direction: column; gap: 1px; width: max-content; max-width: min(270px, 80%); padding: 7px 10px 8px; background: var(--raised); border: 1px solid var(--muted); border-radius: 3px; font-size: 13.5px; line-height: 1.4; color: var(--text); }
+.tip .when { font: 12px/1.5 'IBM Plex Mono', monospace; color: var(--muted); }
+.tip b { font-weight: 600; }
+.tip .band-g { color: var(--g); }
+.tip .band-r { color: var(--r); }
+.figbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 10px; }
+.figbar .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.figbar .legend button, .figbar .legend .static { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; line-height: 1.3; text-align: left; }
+.figbar .legend button { padding: 4px 10px; border: 1px solid var(--hairline); border-radius: 3px; background: transparent; color: var(--text); }
+.figbar .legend button[aria-pressed='false'] { color: var(--muted); border-style: dashed; text-decoration: line-through; }
+.figbar .legend button[aria-pressed='false'] svg { opacity: 0.3; }
+.figbar .legend .static { padding: 0 4px; color: var(--muted); }
+.figbar svg { flex: none; }
+.figbar .med { fill: none; stroke: var(--text); stroke-width: 1.5; }
+.figbar .bar { fill: none; stroke-width: 1; }
+.figbar .dash { fill: none; stroke: var(--text); stroke-width: 1; stroke-dasharray: 6 4; }
+.figbar .views { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.figbar .views .seg button { min-height: 36px; }
+.figbar .views .btn { min-height: 38px; padding: 0 12px; font-size: 14px; }
 
 /* the lab */
 .objhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 30px; margin-top: 20px; }
@@ -208,8 +234,8 @@ main.wrap { padding-top: 26px; }
 .beat .shots > .muted { margin: 0; }
 .beat .hint { margin: 12px 0 0; max-width: 64ch; font-size: 15px; color: var(--muted); }
 .photos { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 12px; }
-.photos .pair { display: flex; flex-wrap: wrap; gap: 12px; }
-.photos .pair.beside { flex-direction: column; gap: 10px; }
+.photos .ztf { display: flex; flex-direction: column; gap: 14px; }
+.photos .ztf.row { flex-direction: row; gap: 12px; }
 .shot { margin: 0; }
 .shot .pic { position: relative; }
 .shot i { display: block; background-repeat: no-repeat; image-rendering: pixelated; outline: 1px solid var(--hairline); }
@@ -218,16 +244,6 @@ main.wrap { padding-top: 26px; }
 .shot .ticks .tk { stroke: var(--mark); stroke-width: 1.25px; }
 .shot .ticks .halo { stroke: var(--mark-halo); stroke-width: 3.5px; stroke-opacity: 0.75; }
 .shot figcaption { margin-top: 6px; font-size: 14px; line-height: 1.35; }
-.beat .key { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--muted); }
-.beat .key li { display: flex; align-items: center; gap: 8px; }
-.beat .key svg { flex: none; }
-.beat .key .ptg { fill: var(--g); }
-.beat .key .ptr { fill: var(--r); }
-.beat .key .bar { fill: none; stroke-width: 1; }
-.beat .key .lim { fill: none; stroke-width: 1.2; }
-.beat .key .sg { stroke: var(--g); }
-.beat .key .sr { stroke: var(--r); }
-.beat .key .dash { fill: none; stroke: var(--text); stroke-width: 1; stroke-dasharray: 6 4; }
 .beat .ask + .ask { margin-top: 30px; }
 .beat .fig { grid-area: fig; min-width: 0; }
 .beat .top { grid-area: top; min-width: 0; }

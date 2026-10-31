@@ -69,12 +69,12 @@ export function format(lang) {
     if (q.kind === 'level') {
       const more = q.direction === 'above';
       return es
-        ? `¿Más ${more ? 'brillante' : 'débil'} que ${ref} μJy en ${q.band} en ${q.days} días?`
-        : `${more ? 'Brighter' : 'Fainter'} than ${ref} μJy in ${q.band} in ${q.days} days?`;
+        ? `¿Más ${more ? 'brillante' : 'débil'} que ${ref} µJy en ${q.band} en ${q.days} días?`
+        : `${more ? 'Brighter' : 'Fainter'} than ${ref} µJy in ${q.band} in ${q.days} days?`;
     }
     return es
-      ? `¿Más brillante en ${q.band} en ${q.days} días que en su última detección en ${q.band} (${ref} μJy)?`
-      : `Brighter in ${q.band} in ${q.days} days than at its last ${q.band} detection (${ref} μJy)?`;
+      ? `¿Más brillante en ${q.band} en ${q.days} días que en su última detección en ${q.band} (${ref} µJy)?`
+      : `Brighter in ${q.band} in ${q.days} days than at its last ${q.band} detection (${ref} µJy)?`;
   };
   return { num, pct, money, ra, dec, day, short, stamp, chile, term, name, question };
 }
@@ -86,7 +86,12 @@ export const WORDS = {
     sections: 'Sections', language: 'Language', theme: 'Theme', themes: { dark: 'Dark', light: 'Light' },
     repo: 'Code', ledger: 'Public ledger', protocol: 'Protocol', loading: 'Loading…',
     credits: 'Images: Pan-STARRS1 via the Legacy Surveys viewer; Legacy Surveys / D. Lang (Perimeter Institute), CC BY 4.0; ZTF via ALeRCE.',
-    fig: { days: 'days', now: 'now' },
+    fig: {
+      days: 'days', now: 'now', band: { g: 'green filter g', r: 'red filter r' }, lim: 'not seen', fc: 'forecast',
+      below: (flux, mag) => `not seen, fainter than ${flux} (${mag} mag AB)`, day: (d) => `day ${d}`,
+      flux: 'Brightness', mag: 'Magnitude', scale: 'Scale', show: 'Show or hide', full: 'Full view', magTitle: 'mag AB, smaller is brighter',
+      keys: 'Arrow keys move between points, + and − zoom in time, 0 shows the full view. Drag to zoom; once zoomed, drag to move along.',
+    },
     thread: { more: 'More below' },
     dome: {
       label: 'Cutaway of SIRA’s observatory: the telescope under the dome, the lab and the control room, with the team at work',
@@ -153,8 +158,7 @@ export const WORDS = {
     },
     beat: {
       title: 'Today’s questions', closes: (t) => `Closes at ${t}, Chile time`, q: 'Question', you: 'You', no: 'no', yes: 'yes',
-      score: 'log score', ifYes: 'if yes', ifNo: 'if no', inDays: (n) => `in ${n} days`,
-      panels: ['science', 'reference', 'difference'],
+      score: 'score', inDays: (n) => `in ${n} days`,
       stampsAlt: (oid) => `First ZTF images of ${oid}: science, reference and difference`,
       chart: (oid) => `Light curve of ${oid} with the question’s threshold and day`,
       sealed: (t) => `has answered, sealed until ${t}`, sira: 'SIRA',
@@ -163,11 +167,11 @@ export const WORDS = {
       failed: 'Could not send. Try again in a moment.', already: 'You already bet on this round.',
       none: 'The next round opens in the afternoon, Chile time, and closes at 18:00.', offline: 'Bets open once the game’s database is connected.',
       opens: (t) => `The next round opens at ${t}, Chile time.`, opensIn: 'It opens in',
-      board: 'Table', players: (n) => (n === 1 ? '1 player' : `${n} players`), who: 'Player', resolved: 'Resolved', mean: 'Mean log score',
+      board: 'Table', players: (n) => (n === 1 ? '1 player' : `${n} players`), who: 'Player', resolved: 'Resolved', mean: 'Mean score',
       rows: { sira: 'SIRA', crowd: 'The crowd', sira_crowd: 'SIRA + crowd' },
       last: 'Last round', noRound: 'No round has closed yet.', crowd: 'Crowd', sky: 'Sky', pending: 'waiting', void: 'void, no measurement',
       rules: 'Rules',
-      ruleList: ['Give a probability from 1 to 99%.', 'Bets close at 18:00 Chile, before night falls at Palomar. Nobody, SIRA included, sees new data before then.', 'The sky answers within days. The score is logarithmic: the more probability you gave to what happened, the better.', 'SIRA’s forecast from the previous night for these objects is public in Forecasts.'],
+      ruleList: ['Give a probability from 1 to 99%.', 'Bets close at 18:00 Chile, before night falls at Palomar. Nobody, SIRA included, sees new data before then.', 'The sky answers within days. Your score runs from 0 downwards, and whoever ends closest to 0 wins.', 'SIRA’s forecast from the previous night for these objects is public in Forecasts.'],
       practice: 'Practice with past questions', nth: (i, n) => `Question ${i} of ${n}`, again: 'same object, later',
       practiceChart: 'The light curve SIRA saw, in days from the question', practiceStamps: 'First ZTF images: science, reference and difference',
       answer: 'Answer', next: 'Next question', finish: 'See the tally', restart: 'Start again',
@@ -175,20 +179,20 @@ export const WORDS = {
       won: 'You beat SIRA', lost: 'SIRA wins', tie: 'A tie',
       answered: 'Answered', yours: 'Your mean', siras: 'SIRA’s mean', beaten: 'You beat SIRA',
       of: (a, b) => `${a} of ${b}`, done: (n) => `You answered all ${n}.`,
-      hostAlt: (oid) => `Legacy Surveys DR10 image of the field of ${oid}`,
       how: 'How to play',
       steps: ['Look at the photo and the curve: each dot is one measurement of how bright the object is.',
-        'Decide whether in 3 days it will be brighter than at its last measurement.',
+        'Decide whether in 3 days it will be brighter than at its last measurement in red.',
         'Move the slider: 90% means you are very sure it will, 10% very sure it will not.'],
-      howScore: 'Your score is the logarithm of the chance you gave to what happened: closer to 0 is better, and you beat SIRA if you end up closer to 0 than SIRA.',
+      howScore: 'Your score runs from 0 downwards: if you say 90% and it happens, you lose little (−0.11); if it does not, you lose a lot (−2.30). Whoever ends closest to 0 wins.',
       shots: (taken) => [taken ? `ZTF photo when it appeared, ${taken}` : 'ZTF photo when it appeared', 'The same spot before', 'What changed (the difference)', 'The spot in colour, years before'],
       shotsNote: 'The two ticks point at the object. A bright dot in what changed is new light.',
       noShots: 'No photos of this object yet.',
       plain: (q) => `The answer is yes if in ${q.days} days its brightness in the ${q.band === 'g' ? 'green' : 'red'} filter ${q.direction === 'below' ? 'drops below' : 'goes above'} ${q.ref}.`,
-      axes: { y: '↑ more brightness (µJy)', today: 'days from today', asked: 'days from the question' },
+      axes: { y: '↑ more brightness (µJy)', mag: '↑ more brightness (mag AB, smaller is brighter)', today: 'days from today', asked: 'days from the question' },
       bands: { g: 'green filter (g)', r: 'red filter (r)' },
-      lastRef: (band, v) => `its last brightness in ${band}: ${v}`, levelRef: (band, v) => `the mark in ${band}: ${v}`,
-      key: { point: 'a measurement', err: 'its margin of error', limit: 'not seen, it was fainter than this', lines: 'the brightness to beat and the day of the answer' },
+      lastRef: (band, v) => `its last brightness in ${band === 'g' ? 'green' : 'red'}: ${v}`, levelRef: (band, v) => `the mark in ${band === 'g' ? 'green' : 'red'}: ${v}`,
+      question: 'question',
+      key: { err: 'its margin of error', limit: 'not seen, it was fainter than this', lines: 'the brightness to beat and the day of the answer' },
       chance: 'Your chance of yes', sureNo: 'sure no', unsure: 'no idea', sureYes: 'sure yes',
       scoreIf: 'Your score', ifHappens: 'if yes', ifNot: 'if no',
     },
@@ -214,7 +218,7 @@ export const WORDS = {
       directs: (action) => (action === 'escalate' ? 'asks the senior' : action === 'bet' ? 'picks the question to stake' : 'reviews the bet'),
       words: 'words the bet', dropped: 'The team dropped it: the instrument skeptic called it an artifact.',
       classes: 'What it is', other: 'Something else', thread: 'The team’s thread',
-      chart: (oid) => `Light curve of ${oid} in g and r with the team’s forecast`, at: (ref, band) => `${ref} μJy in ${band}`,
+      chart: (oid) => `Light curve of ${oid} in g and r with the team’s forecast`, at: (ref, band) => `${ref} µJy in ${band}`,
       today: 'Today', back: 'Back to the list', none: 'No candidates from last night yet.',
       errors: { too_few_points: 'Too few detections to investigate it yet.', in_round: 'It is in today’s Beat SIRA round. Try after 18:00 Chile.', stale: 'The lab did not start this run.', failed: 'The run failed.' },
       refused: {
@@ -244,9 +248,9 @@ export const WORDS = {
       sealedBets: (n, parts) => `${n} sealed: ${parts.join('; ')}`, byModel: (n, m) => `${n} ${m}`,
       skyState: (s, a) => `${s} measurements scored, ${a} questions answered`,
       what: (d) => `What it is, ${d}`, scored: 'Scored measurements',
-      table: { band: 'Band', at: 'Measured (UTC)', flux: 'μJy', log: 'Log', pit: 'PIT', bet: 'Bet' },
+      table: { band: 'Band', at: 'Measured (UTC)', flux: 'µJy', log: 'Log', pit: 'PIT', bet: 'Bet' },
       nights: 'Nights', sealedRecords: 'Sealed bets',
-      measured: (band, flux, err) => `Measures ${band} = ${flux} ± ${err} μJy`, forBet: (score, d) => `, log score ${score} for the bet of ${d}`,
+      measured: (band, flux, err) => `Measures ${band} = ${flux} ± ${err} µJy`, forBet: (score, d) => `, log score ${score} for the bet of ${d}`,
       answered: (yes, d) => `Answers ${yes ? 'yes' : 'no'} to the question of ${d}`, voided: (d) => `No measurement answers the question of ${d}`,
       seals: 'seals the bet', shut: (t) => `The team’s notes from this night open ${t}.`, weak: 'Weak point', killed: 'Ruled out',
       weights: 'Physics weights', waitingAnswer: (d) => `Waiting for the sky. Answer from ${d}.`, void: 'No measurement to answer it.',
@@ -261,7 +265,12 @@ export const WORDS = {
     sections: 'Secciones', language: 'Idioma', theme: 'Tema', themes: { dark: 'Oscuro', light: 'Claro' },
     repo: 'Código', ledger: 'Registro público', protocol: 'Protocolo', loading: 'Cargando…',
     credits: 'Imágenes: Pan-STARRS1 a través del visor de Legacy Surveys; Legacy Surveys / D. Lang (Perimeter Institute), CC BY 4.0; ZTF a través de ALeRCE.',
-    fig: { days: 'días', now: 'ahora' },
+    fig: {
+      days: 'días', now: 'ahora', band: { g: 'filtro verde g', r: 'filtro rojo r' }, lim: 'no se vio', fc: 'pronóstico',
+      below: (flux, mag) => `no se vio, por debajo de ${flux} (${mag} mag AB)`, day: (d) => `día ${d}`,
+      flux: 'Brillo', mag: 'Magnitud', scale: 'Escala', show: 'Mostrar u ocultar', full: 'Vista completa', magTitle: 'mag AB, menor es más brillante',
+      keys: 'Las flechas recorren los puntos, + y − acercan o alejan en el tiempo, 0 vuelve a la vista completa. Arrastra para acercar; ya cerca, arrastra para moverte.',
+    },
     thread: { more: 'Más abajo' },
     dome: {
       label: 'Corte del observatorio de SIRA: el telescopio bajo la cúpula, el laboratorio y la sala de control, con el equipo trabajando',
@@ -328,8 +337,7 @@ export const WORDS = {
     },
     beat: {
       title: 'Preguntas de hoy', closes: (t) => `Cierra a las ${t}, hora de Chile`, q: 'Pregunta', you: 'Tú', no: 'no', yes: 'sí',
-      score: 'puntaje log', ifYes: 'si sí', ifNo: 'si no', inDays: (n) => `en ${n} días`,
-      panels: ['ciencia', 'referencia', 'diferencia'],
+      score: 'puntaje', inDays: (n) => `en ${n} días`,
       stampsAlt: (oid) => `Primeras imágenes de ZTF de ${oid}: ciencia, referencia y diferencia`,
       chart: (oid) => `Curva de luz de ${oid} con el umbral y el día de la pregunta`,
       sealed: (t) => `ya respondió, sellado hasta las ${t}`, sira: 'SIRA',
@@ -338,11 +346,11 @@ export const WORDS = {
       failed: 'No se pudo enviar. Prueba de nuevo en un momento.', already: 'Ya apostaste en esta ronda.',
       none: 'La próxima ronda abre en la tarde, hora de Chile, y cierra a las 18:00.', offline: 'Las apuestas abren cuando la base de datos del juego esté conectada.',
       opens: (t) => `La próxima ronda abre a las ${t}, hora de Chile.`, opensIn: 'Faltan',
-      board: 'Tabla', players: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`), who: 'Jugador', resolved: 'Resueltas', mean: 'Puntaje log medio',
+      board: 'Tabla', players: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`), who: 'Jugador', resolved: 'Resueltas', mean: 'Puntaje medio',
       rows: { sira: 'SIRA', crowd: 'La multitud', sira_crowd: 'SIRA + multitud' },
       last: 'Última ronda', noRound: 'Todavía no se ha cerrado ninguna ronda.', crowd: 'Multitud', sky: 'Cielo', pending: 'esperando', void: 'nula, sin medición',
       rules: 'Reglas',
-      ruleList: ['Da una probabilidad de 1 a 99 %.', 'Las apuestas cierran a las 18:00 de Chile, antes de que anochezca en Palomar. Nadie, ni SIRA, ve datos nuevos antes.', 'El cielo responde en pocos días. El puntaje es logarítmico: mientras más probabilidad le diste a lo que pasó, mejor.', 'El pronóstico de SIRA de la noche anterior para estos objetos es público en Pronósticos.'],
+      ruleList: ['Da una probabilidad de 1 a 99 %.', 'Las apuestas cierran a las 18:00 de Chile, antes de que anochezca en Palomar. Nadie, ni SIRA, ve datos nuevos antes.', 'El cielo responde en pocos días. Tu puntaje va de 0 hacia abajo y gana quien quede más cerca de 0.', 'El pronóstico de SIRA de la noche anterior para estos objetos es público en Pronósticos.'],
       practice: 'Práctica con preguntas pasadas', nth: (i, n) => `Pregunta ${i} de ${n}`, again: 'el mismo objeto, más tarde',
       practiceChart: 'La curva de luz que vio SIRA, en días desde la pregunta', practiceStamps: 'Primeras imágenes de ZTF: ciencia, referencia y diferencia',
       answer: 'Responder', next: 'Siguiente pregunta', finish: 'Ver el resultado', restart: 'Empezar de nuevo',
@@ -350,20 +358,20 @@ export const WORDS = {
       won: 'Le ganaste a SIRA', lost: 'Gana SIRA', tie: 'Empate',
       answered: 'Respondidas', yours: 'Tu promedio', siras: 'El de SIRA', beaten: 'Le ganaste',
       of: (a, b) => `${a} de ${b}`, done: (n) => `Respondiste las ${n}.`,
-      hostAlt: (oid) => `Imagen de Legacy Surveys DR10 del campo de ${oid}`,
       how: 'Cómo jugar',
       steps: ['Mira la foto y la curva: cada punto es una medición de cuánto brilla el objeto.',
-        'Decide si en 3 días brillará más que en su última medición.',
+        'Decide si en 3 días brillará más que en su última medición en rojo.',
         'Mueve el control: 90 % es que estás muy seguro de que sí; 10 %, muy seguro de que no.'],
-      howScore: 'Tu puntaje es el logaritmo de la probabilidad que le diste a lo que pasó: más cerca de 0 es mejor, y le ganas a SIRA si quedas más cerca de 0 que ella.',
+      howScore: 'Tu puntaje va de 0 hacia abajo: si dices 90 % y pasa, pierdes poco (−0,11); si no pasa, pierdes mucho (−2,30). Gana quien quede más cerca de 0.',
       shots: (taken) => [taken ? `Foto de ZTF cuando apareció, ${taken}` : 'Foto de ZTF cuando apareció', 'La misma zona antes', 'Lo que cambió (la diferencia)', 'La zona en color, años antes'],
       shotsNote: 'Las dos marcas apuntan al objeto. Un punto claro en lo que cambió es luz nueva.',
       noShots: 'Todavía no hay fotos de este objeto.',
       plain: (q) => `La respuesta es sí si en ${q.days} días su brillo en el filtro ${q.band === 'g' ? 'verde' : 'rojo'} ${q.direction === 'below' ? 'baja de' : 'supera'} ${q.ref}.`,
-      axes: { y: '↑ más brillo (µJy)', today: 'días desde hoy', asked: 'días desde la pregunta' },
+      axes: { y: '↑ más brillo (µJy)', mag: '↑ más brillo (mag AB, menor es más brillante)', today: 'días desde hoy', asked: 'días desde la pregunta' },
       bands: { g: 'filtro verde (g)', r: 'filtro rojo (r)' },
-      lastRef: (band, v) => `su último brillo en ${band}: ${v}`, levelRef: (band, v) => `la marca en ${band}: ${v}`,
-      key: { point: 'una medición', err: 'su margen de error', limit: 'no se vio, estaba por debajo de este brillo', lines: 'el brillo a superar y el día de la respuesta' },
+      lastRef: (band, v) => `su último brillo en ${band === 'g' ? 'verde' : 'rojo'}: ${v}`, levelRef: (band, v) => `la marca en ${band === 'g' ? 'verde' : 'rojo'}: ${v}`,
+      question: 'la pregunta',
+      key: { err: 'su margen de error', limit: 'no se vio, estaba por debajo de este brillo', lines: 'el brillo a superar y el día de la respuesta' },
       chance: 'Tu probabilidad de sí', sureNo: 'seguro que no', unsure: 'ni idea', sureYes: 'seguro que sí',
       scoreIf: 'Tu puntaje', ifHappens: 'si es sí', ifNot: 'si es no',
     },
@@ -389,7 +397,7 @@ export const WORDS = {
       directs: (action) => (action === 'escalate' ? 'consulta al senior' : action === 'bet' ? 'elige la pregunta de la apuesta' : 'revisa la apuesta'),
       words: 'redacta la apuesta', dropped: 'El equipo lo descartó: el escéptico de instrumento lo llamó artefacto.',
       classes: 'Qué es', other: 'Otra cosa', thread: 'Conversación del equipo',
-      chart: (oid) => `Curva de luz de ${oid} en g y r con el pronóstico del equipo`, at: (ref, band) => `${ref} μJy en ${band}`,
+      chart: (oid) => `Curva de luz de ${oid} en g y r con el pronóstico del equipo`, at: (ref, band) => `${ref} µJy en ${band}`,
       today: 'Hoy', back: 'Volver a la lista', none: 'Todavía no hay candidatos de anoche.',
       errors: { too_few_points: 'Todavía tiene muy pocas detecciones para investigarlo.', in_round: 'Está en la ronda de hoy de Apuesta contra SIRA. Prueba después de las 18:00 de Chile.', stale: 'El laboratorio no inició esta corrida.', failed: 'La corrida falló.' },
       refused: {
@@ -419,9 +427,9 @@ export const WORDS = {
       sealedBets: (n, parts) => `${n} selladas: ${parts.join('; ')}`, byModel: (n, m) => `${n} ${m}`,
       skyState: (s, a) => `${s} mediciones puntuadas, ${a} preguntas respondidas`,
       what: (d) => `Qué es, ${d}`, scored: 'Mediciones puntuadas',
-      table: { band: 'Banda', at: 'Medida (UTC)', flux: 'μJy', log: 'Log', pit: 'PIT', bet: 'Apuesta' },
+      table: { band: 'Banda', at: 'Medida (UTC)', flux: 'µJy', log: 'Log', pit: 'PIT', bet: 'Apuesta' },
       nights: 'Noches', sealedRecords: 'Apuestas selladas',
-      measured: (band, flux, err) => `Mide ${band} = ${flux} ± ${err} μJy`, forBet: (score, d) => `, puntaje log ${score} para la apuesta del ${d}`,
+      measured: (band, flux, err) => `Mide ${band} = ${flux} ± ${err} µJy`, forBet: (score, d) => `, puntaje log ${score} para la apuesta del ${d}`,
       answered: (yes, d) => `Responde ${yes ? 'sí' : 'no'} a la pregunta del ${d}`, voided: (d) => `Ninguna medición responde la pregunta del ${d}`,
       seals: 'sella la apuesta', shut: (t) => `Las notas del equipo de esta noche se abren el ${t}.`, weak: 'Punto débil', killed: 'Descartada',
       weights: 'Pesos de la física', waitingAnswer: (d) => `Esperando al cielo. Respuesta desde el ${d}.`, void: 'Sin medición para responderla.',

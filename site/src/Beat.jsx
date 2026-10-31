@@ -11,11 +11,12 @@ const toMjd = (iso) => new Date(iso).getTime() / 86400000 + 40587;
 const ALIAS = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$/; // the same rule the database keeps
 const WINDOW = 40; // days of light curve shown before a round opens
 const KEPT = 'practice';
+const level = (v) => Number(Number(v).toFixed(1)); // every threshold rounds as the numbers on the page do
 
 function fields(q) {
   const m = LEVEL.exec(q.text);
-  if (m) return { kind: 'level', direction: m[1] === 'Brighter' ? 'above' : 'below', reference: Number(m[2]), band: m[3], days: Number(m[4]) };
-  return { kind: 'last', direction: 'above', reference: Math.round(q.reference * 10) / 10, band: (q.band || 'ztfr').slice(-1), days: 3 };
+  if (m) return { kind: 'level', direction: m[1] === 'Brighter' ? 'above' : 'below', reference: level(Number(m[2])), band: m[3], days: Number(m[4]) };
+  return { kind: 'last', direction: 'above', reference: level(q.reference), band: (q.band || 'ztfr').slice(-1), days: 3 };
 }
 
 const points = (rows, shift = 0) => rows
@@ -52,28 +53,22 @@ function Shots({ img, alt, w, f }) {
   );
 }
 
-// what each mark on the chart is, in words
-function Key({ w }) {
-  return (
-    <ul className="key">
-      <li><svg width="30" height="14" aria-hidden="true"><circle className="ptg" cx="7" cy="7" r="3.6" /><rect className="ptr" x="17.6" y="3.6" width="6.8" height="6.8" /></svg>{w.key.point}</li>
-      <li><svg width="14" height="16" aria-hidden="true"><path className="bar sr" d="M7 0V16" /><rect className="ptr" x="3.6" y="4.6" width="6.8" height="6.8" /></svg>{w.key.err}</li>
-      <li><svg width="30" height="14" aria-hidden="true"><path className="lim sg" d="M2.5 3.5h9l-4.5 8z" /><path className="lim sr" d="M17.5 3.5h9l-4.5 8z" /></svg>{w.key.limit}</li>
-      <li><svg width="30" height="14" aria-hidden="true"><path className="dash" d="M1 7H29" /></svg>{w.key.lines}</li>
-    </ul>
-  );
-}
+// the marks the chart's legend only explains, in words
+const keys = (w) => [
+  { mark: <svg width="14" height="16" aria-hidden="true"><path className="bar sr" d="M7 0V16" /><rect className="ptr" x="3.6" y="4.6" width="6.8" height="6.8" /></svg>, text: w.key.err },
+  { mark: <svg width="30" height="14" aria-hidden="true"><path className="dash" d="M1 7H29" /></svg>, text: w.key.lines },
+];
 
 // the light curve in plain words: brightness up, days along, both bands named, the line to beat and the day it is answered
 function Chart({ ask, points, x, start, today, label, lang, w, f }) {
   const ref = micro(ask.reference, f);
   return (
     <div className="fig">
-      <Figure lang={lang} start={start} points={points} x={x} now={0} mags={false} bandNames={w.bands} label={label}
-        axes={{ y: w.axes.y, x: today ? w.axes.today : w.axes.asked }}
+      <Figure lang={lang} start={start} points={points} x={x} now={0} nowLabel={today ? undefined : w.question} mags={false} bandNames={w.bands} label={label}
+        axes={{ y: w.axes.y, mag: w.axes.mag, x: today ? w.axes.today : w.axes.asked }}
         reference={{ flux: ask.reference, label: ask.kind === 'last' ? w.lastRef(ask.band, ref) : w.levelRef(ask.band, ref) }}
-        target={{ day: today ? today.day : ask.days, label: w.inDays(ask.days) }} />
-      <Key w={w} />
+        target={{ day: today ? today.day : ask.days, label: w.inDays(ask.days) }}
+        legend={{ ...w.bands, lim: w.key.limit }} keys={keys(w)} />
     </div>
   );
 }
@@ -179,11 +174,12 @@ function Practice({ bank, lang, w, f }) {
     const seen = points(q.ask.seen);
     const days = q.ask.seen.concat(q.answer.after).map((r) => r[0]).concat(q.ask.days);
     const group = bank.reveal.find((r) => r.group === q.group);
+    const ask = { ...q.ask, reference: level(q.ask.reference) };
     card = (
       <article className="ask">
-        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={q.ask} f={f} w={w} />
+        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={ask} f={f} w={w} />
         <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} />
-        <Chart ask={q.ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
+        <Chart ask={ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
           x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]} />
         <div className="pick">
           {said === undefined ? (
@@ -233,7 +229,7 @@ function LastRound({ round, w, f }) {
             return (
               <li key={q.id}>
                 <p className="oid">{q.object}</p>
-                <p>{f.question(q.question)}</p>
+                <p>{f.question({ ...q.question, reference: level(q.question.reference) })}</p>
                 <dl>
                   <div><dt>{w.sira}</dt><dd>{f.pct(round.answers[q.id])}</dd></div>
                   {round.crowd && round.crowd[q.id] !== undefined && round.crowd[q.id] !== null && <div><dt>{w.crowd}</dt><dd>{f.pct(round.crowd[q.id])}</dd></div>}

@@ -25,24 +25,22 @@ function Shot({ src, size, at, side, k, label, host }) {
   );
 }
 
-// the ZTF science image large, the reference and the difference beside it, and the colour image of the field, all at whole scales
+// the three ZTF images at one whole scale, in a row when they fit and one under another on phones, then the colour image of the field
 export default function Photos({ src, panel, host, labels, alt }) {
   const [ref, W] = useWidth();
   const p = panel[0];
-  const big = Math.max(1, Math.min(5, Math.floor(W / p)));
-  const small = Math.max(1, Math.min(2, Math.floor((W - 12) / (2 * p))));
+  const gap = 12;
+  const fits = Math.floor((W - 2 * gap) / (3 * p));
+  const row = fits >= 2;
+  const k = Math.max(1, Math.min(3, row ? fits : Math.floor(W / p)));
   const hostScale = W >= 256 ? 2 : 1;
-  // the reference and difference stand beside the main photo when there is room, else in a row under it
-  const beside = W >= p * big + 12 + p * small;
   const size = [p * 3, panel[1]];
   return (
     <div className="photos" ref={ref} role="group" aria-label={alt}>
       {W > 0 && (
         <>
-          <Shot src={src} size={size} at={0} side={p * big} k={big} label={labels[0]} />
-          <div className={`pair${beside ? ' beside' : ''}`}>
-            <Shot src={src} size={size} at={1} side={p * small} k={small} label={labels[1]} />
-            <Shot src={src} size={size} at={2} side={p * small} k={small} label={labels[2]} />
+          <div className={`ztf${row ? ' row' : ''}`}>
+            {[0, 1, 2].map((at) => <Shot key={at} src={src} size={size} at={at} side={p * k} k={k} label={labels[at]} />)}
           </div>
           {host && <Shot src={host} side={128 * hostScale} label={labels[3]} host />}
         </>
