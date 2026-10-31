@@ -157,20 +157,38 @@ def live(entries: list[dict]) -> dict:
 
 
 def _lab(rows: list[dict], obj: dict) -> dict:
-    # the lab's replay: the r light curve, every sealed forecast and the facts each step tells
+    # the lab's replay: the g and r light curve with its limits, every sealed forecast and the facts each step tells
+    from astropy.coordinates import SkyCoord
+
+    from .leverrier import TAIL
+    from .photometry import flux
+
     t0 = min(p["mjd"] for p in obj["photometry"] if p["kind"] != "limit")
     day = lambda m: round(m - t0, 3)
     dets = [p for p in obj["photometry"] if p["kind"] != "limit"]
 
     def moments(points):
-        out = []
-        for f in points:
-            if f["band"] != "ztfr":
-                continue
+        def row(f):
             m = sum(w * mu for _, w, mu, _ in f["parts"])
             v = sum(w * (sd * sd + mu * mu) for _, w, mu, sd in f["parts"]) - m * m
-            out.append([day(f["mjd"]), round(m, 1), round(max(v, 0) ** 0.5, 1)])
-        return out
+            return [day(f["mjd"]), round(m, 1), round(max(v, 0) ** 0.5, 1)]
+        return {b: [row(f) for f in points if f["band"] == f"ztf{b}"] for b in "gr"}
+
+    def measured(p):
+        # an upper limit is drawn at the flux of its limiting magnitude
+        if p["kind"] == "limit":
+            return [day(p["mjd"]), p["band"][-1], "lim", round(flux(p["mag"], 0)[0], 2), None, day(p["available_at"])]
+        return [day(p["mjd"]), p["band"][-1], "det", round(p["flux"], 2), round(p["flux_err"], 2), day(p["available_at"])]
+
+    def staked(p):
+        risky = p.get("risky")
+        return risky if risky and (p.get("director") or {}).get("question") == risky.get("id") else p["question"]
+
+    def answered(a):
+        if a is None:
+            return None
+        p = a["payload"]
+        return {"void": True} if p.get("void") else {"yes": p["yes"], "log_score": p["log_score"], "at": day(p["mjd"])}
 
     bets = [r for r in rows if r["kind"] == "bet" and "-leap-" not in r["payload"]["bet"]]
     leaps = [r for r in rows if r["kind"] == "bet" and "-leap-" in r["payload"]["bet"]]
@@ -196,18 +214,46 @@ def _lab(rows: list[dict], obj: dict) -> dict:
                             day(answers[last["payload"]["bet"]]["payload"]["mjd"]) + 0.5, day(last["payload"]["made_at"]) + 5]
     sealed_at = [times[0]] * 6 + [times[1], times[2], times[2], times[3], times[4], times[4], times[4], times[4]]
     reader = team(0, "reader")[0]["payload"]
+
+    # the measurements the surprised forecast missed: a PIT in either tail, as Le Verrier counts them
+    shock = surprise["payload"]
+    misses = [[day(p["mjd"]), p["band"][-1], round(p["flux"], 2), p["baselines"][shock["forecast"]]["pit"]]
+              for p in (r["payload"] for r in of("outcome")) if p["bet"] == shock["bet"]
+              and not TAIL <= p["baselines"][shock["forecast"]]["pit"] <= 1 - TAIL]
+    verdict_of = {r["payload"]["bet"]: r for r in verdicts}
+
+    def leap(r):
+        v = verdict_of[r["payload"]["bet"]]
+        return {"hash": r["hash"][:12], "time": r["time"], "chosen": r["payload"]["chosen"],
+                "proposals": [{k: x[k] for k in ("leap", "name", "bic")} for x in r["payload"]["proposals"]],
+                "verdict": {"hash": v["hash"][:12], "time": v["time"]} | {k: v["payload"][k] for k in ("verdict", "log10_e", "n")}}
+
+    # each step's agent in its own words, where the ledger kept them whole
+    argued = lambda b, h: next(t["argument"] for t in b["payload"]["theories"] if t["hypothesis"] == h)
+    lead = max((h for h in bets[0]["payload"]["weights"] if h != "null"), key=bets[0]["payload"]["weights"].get)
+    adopter = next(b for b in bets if any(t["hypothesis"] == "adopted" for t in b["payload"]["theories"]))
+    idea = next(x["idea"] for x in leaps[0]["payload"]["proposals"] if x["name"] == leaps[0]["payload"]["chosen"])
+    said = [reader["why"], argued(bets[0], lead), bets[0]["payload"]["skeptics"]["instrument"]["why"],
+            bets[0]["payload"]["director"]["why"], bets[0]["payload"]["wording"]["text"], None, None, idea, None,
+            argued(adopter, "adopted"), last["payload"]["director"]["why"], last["payload"]["wording"]["text"], None, None]
+    sky = SkyCoord(obj["ra"], obj["dec"], unit="deg").galactic
     return {
-        "object": obj["oid"], "first_detection": _date(t0),
-        "points": sorted([day(p["mjd"]), round(p["flux"], 1), day(p["available_at"])] for p in dets if p["band"] == "ztfr"),
+        "object": obj["oid"], "first_detection": _date(t0), "mjd": round(t0, 5),
+        "ra": obj["ra"], "dec": obj["dec"], "l": round(float(sky.l.deg), 4), "b": round(float(sky.b.deg), 4),
+        "phot": [measured(p) for p in sorted(obj["photometry"], key=lambda p: p["mjd"])],
         "counts": [sum(1 for p in dets if day(p["available_at"]) <= t) for t in now],
         "now": now, "sealed_at": sealed_at, "spent": spent,
         "fans": {f"cp{i + 1}": moments(b["payload"]["baselines"]["b1"]) for i, b in enumerate(bets)}
                 | {"lens": moments(leaps[0]["payload"]["forecasts"]), "old": moments(leaps[0]["payload"]["baselines"]["old"])},
-        "bets": [{"hash": b["hash"][:12], "p": (b["payload"]["risky"] if (b["payload"].get("director") or {}).get("question")
-                                               == (b["payload"].get("risky") or {}).get("id") else b["payload"]["question"])["p_yes"],
-                  "term": b["payload"]["wording"]["term"], "weights": b["payload"]["weights"],
-                  "theories": [r["payload"]["decision"].replace("defends ", "") for r in team(k, "theorist")]}
+        "misses": misses,
+        "bets": [{"hash": b["hash"][:12], "time": b["time"], "p": staked(b["payload"])["p_yes"],
+                  "question": _question(staked(b["payload"])), "term": b["payload"]["wording"]["term"],
+                  "weights": b["payload"]["weights"], "action": b["payload"]["decision"]["action"],
+                  "theories": [r["payload"]["decision"].replace("defends ", "") for r in team(k, "theorist")],
+                  "answer": answered(answers.get(b["payload"]["bet"]))}
                  for k, b in enumerate(bets)],
+        "leaps": [leap(r) for r in leaps],
+        "said": said,
         "facts": {
             "reader": float(re.search(r"\(([\d.]+)\)", reader["decision"])[1]),
             "skeptics": {r["payload"]["lens"]: r["payload"]["decision"] for r in team(0, "skeptic")},
@@ -265,7 +311,7 @@ def replays(var: Path, snapshot: Path, out: Path, oid: str = "ZTF19aavisrq") -> 
     rows = [json.loads(line) for line in (var / "replay" / "dev2" / oid / "ledger.jsonl").read_text().splitlines()]
     obj = json.loads((snapshot / "objects" / f"{oid}.json").read_text())
     out.mkdir(parents=True, exist_ok=True)
-    (out / "lab.json").write_text(json.dumps(_lab(rows, obj), separators=(",", ":")))
+    (out / "lab.json").write_text(json.dumps(_lab(rows, obj), separators=(",", ":"), ensure_ascii=False))
     (out / "logbook.json").write_text(json.dumps(_logbook(var, rows), separators=(",", ":"), ensure_ascii=False))
     first = min((p for p in obj["photometry"] if p["kind"] != "limit"), key=lambda p: p["mjd"])
     with httpx.Client(timeout=30) as c:
