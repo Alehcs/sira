@@ -282,6 +282,14 @@ def _lab(rows: list[dict], obj: dict) -> dict:
     said = [reader["why"], argued(bets[0], lead), bets[0]["payload"]["skeptics"]["instrument"]["why"],
             bets[0]["payload"]["director"]["why"], bets[0]["payload"]["wording"]["text"], None, None, idea, None,
             argued(adopter, "adopted"), last["payload"]["director"]["why"], last["payload"]["wording"]["text"], None, None]
+    # the model calls each step stands for, with what each decided and the seconds it took, for the observatory
+    call = lambda r: {k: r["payload"][k] for k in ("role", "lens", "leap", "decision", "seconds") if k in r["payload"]}
+    adopting = bets.index(adopter)
+    wonder = lambda lo, hi: [r for r in events if r["payload"]["role"] == "leverrier" and lo < r["seq"] < hi]
+    calls = [team(0, "reader"), team(0, "theorist") + team(0, "llm_only")[-1:], team(0, "skeptic"), team(0, "director"),
+             team(0, "forecaster"), [], [], wonder(surprise["seq"], leaps[0]["seq"]), [],
+             team(adopting, "theorist") + team(adopting, "skeptic") + team(adopting, "llm_only")[-1:], team(len(bets) - 1, "director"),
+             team(len(bets) - 1, "forecaster"), [], wonder(leaps[0]["seq"], leaps[-1]["seq"])]
     sky = SkyCoord(obj["ra"], obj["dec"], unit="deg").galactic
     return {
         "object": obj["oid"], "first_detection": _date(t0), "mjd": round(t0, 5),
@@ -300,6 +308,7 @@ def _lab(rows: list[dict], obj: dict) -> dict:
                  for k, b in enumerate(bets)],
         "leaps": [leap(r) for r in leaps],
         "said": said,
+        "calls": [[call(r) for r in step] for step in calls],
         "facts": {
             "reader": float(re.search(r"\(([\d.]+)\)", reader["decision"])[1]),
             "skeptics": {r["payload"]["lens"]: r["payload"]["decision"] for r in team(0, "skeptic")},
