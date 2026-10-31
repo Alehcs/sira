@@ -220,3 +220,11 @@ def test_scores_compare_sira_the_crowd_and_both():
                  "players": {"a": round(math.log(0.6), 4), "b": round(math.log(0.2), 4)}}
     assert crowd.scores(0.8, [], False) == {"sira": round(math.log(0.2), 4), "crowd": None, "sira_crowd": None,
                                             "players": {}}
+
+
+def test_a_round_takes_objects_whose_last_r_detection_is_up_to_five_days_old(lab):
+    obj = lab["obj"]
+    stale = dict(obj, photometry=[dict(r, mjd=r["mjd"] - 3, available_at=r["available_at"] - 3) for r in obj["photometry"]])
+    assert crowd.picks(lab["book"].entries(), None, OPEN_MJD, lambda oid, t: stale)
+    older = dict(obj, photometry=[dict(r, mjd=r["mjd"] - 5, available_at=r["available_at"] - 5) for r in obj["photometry"]])
+    assert not crowd.picks(lab["book"].entries(), None, OPEN_MJD, lambda oid, t: older)

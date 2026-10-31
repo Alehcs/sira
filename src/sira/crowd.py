@@ -16,6 +16,7 @@ CLOSE = time(21, 0)  # 18:00 in Chile, before night falls at Palomar
 LAST_OPEN = time(20, 30)  # GitHub can start the job hours late; a round this near the bell is not opened
 OPEN_DELAY = timedelta(minutes=5)  # bets open a little after SIRA's answers are sealed
 MIN_DETS, MIN_R = 10, 4  # a light curve worth betting on
+FRESH = 5  # days since the last r detection; ZTF can skip a field for a few nights
 SENIORS = 1  # Wonder at max effort, at most once a round
 TEXT = "Brighter in r three days from now than at its last r detection?"
 
@@ -164,7 +165,7 @@ def picks(entries: list[dict], c, now: float, look=None) -> list[dict]:
             continue
         dets = [r for r in view["photometry"] if r["kind"] == "det" and r["band"] in live.BANDS]
         red = [r for r in dets if r["band"] == "ztfr" and r["flux"] > 0]
-        if len(dets) >= MIN_DETS and len(red) >= MIN_R and max(r["mjd"] for r in red) >= now - 3:
+        if len(dets) >= MIN_DETS and len(red) >= MIN_R and max(r["mjd"] for r in red) >= now - FRESH:
             views.append(view)
     return views
 
