@@ -1,0 +1,8 @@
+/* the lab's two views and the photos under the latest investigation */
+.labviews { margin: 4px 0 18px; }
+.labviews button { min-height: 44px; font-size: 15px; }
+.labphotos { margin-top: 32px; }
+@media (max-width: 700px) {
+  .labviews { display: flex; width: 100%; margin-bottom: 14px; }
+  .labviews button { flex: 1 1 0; padding: 6px 10px; line-height: 1.3; }
+}

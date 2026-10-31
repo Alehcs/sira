@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Classes, cost, flux as fluxText, heard, model, say, who } from './Investigate.jsx';
 import Dome from './ui/Dome.jsx';
 import { lengths } from './ui/dome/script.js';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
+import Photos from './ui/Photos.jsx';
 import Stamps from './ui/Stamps.jsx';
 import { Message, Thread } from './ui/Thread.jsx';
 import { WORDS, format } from './words.js';
+import './lab.css';
 
 const BASE = import.meta.env.BASE_URL;
+// the latest investigation's steps, in the order the team works; the senior speaks with the director
+const STAGES = [['lookout'], ['reader'], ['theorist'], ['skeptic'], ['llm_only'], ['director', 'senior'], ['forecaster']];
 // who speaks at each step, which sealed forecast the figure shows and which bet's fit weighs the hypotheses
 const ROLES = ['dome', 'theory', 'skeptics', 'director', 'forecaster', 'sky', 'leverrier', 'leverrier', 'sky', 'theory', 'director', 'forecaster', 'sky', 'leverrier'];
 const SHOWN = ['cp1', 'cp1', 'cp1', 'cp1', 'cp1', 'cp1', 'cp2', 'leap', 'leap', 'cp4', 'cp5', 'cp5', 'cp5', 'cp5'];
@@ -217,17 +222,11 @@ function attachment(i, d, step, w, f) {
   return null;
 }
 
-export default function Lab({ lang, data: d }) {
-  const [step, setStep] = useState(8);
+// a replay opens on its last step with the whole thread from the top; the thread follows once the visitor plays or picks a step
+function useSteps(last, pace) {
+  const [step, setStep] = useState(last);
   const [playing, setPlaying] = useState(false);
-  const last = ROLES.length - 1;
-  const w = WORDS[lang].lab;
-  const f = format(lang);
-  const text = story(lang, d, f);
-  const k = d.facts;
-  const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
-  const scenes = useMemo(() => beats(d, text.says), [d, lang]);
-  const pace = useMemo(() => lengths(scenes), [scenes]);
+  const [follow, setFollow] = useState(false);
 
   // playing, each step lasts as long as the observatory takes to play it
   useEffect(() => {
@@ -237,12 +236,40 @@ export default function Lab({ lang, data: d }) {
     return () => clearTimeout(timer);
   }, [playing, step, last, pace]);
 
-  const go = (n) => { setPlaying(false); setStep(Math.min(Math.max(n, 0), last)); };
+  const go = (n) => { setFollow(true); setPlaying(false); setStep(Math.min(Math.max(n, 0), last)); };
   const play = () => {
+    setFollow(true);
     if (playing) { setPlaying(false); return; }
     if (step >= last) setStep(0);
     setPlaying(true);
   };
+  return { step, playing, follow, go, play };
+}
+
+function Controls({ step, last, playing, go, play, w, children }) {
+  return (
+    <div className="ctrl">
+      <button type="button" className="btn" disabled={step === 0} onClick={() => go(step - 1)}>{w.back}</button>
+      <button type="button" className="btn primary" onClick={play}>{playing ? w.pause : w.play}</button>
+      <button type="button" className="btn" disabled={step === last} onClick={() => go(step + 1)}>{w.next}</button>
+      <div className="state">
+        <span>{w.stepOf[0]} <b>{step + 1}</b> {w.stepOf[1]} {last + 1}</span>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Featured({ lang, data: d }) {
+  const last = ROLES.length - 1;
+  const w = WORDS[lang].lab;
+  const f = format(lang);
+  const text = story(lang, d, f);
+  const k = d.facts;
+  const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
+  const scenes = useMemo(() => beats(d, text.says), [d, lang]);
+  const pace = useMemo(() => lengths(scenes), [scenes]);
+  const { step, playing, follow, go, play } = useSteps(last, pace);
 
   // the figure at this step: what the sky had shown by then and the forecast sealed last
   const now = d.now[step];
@@ -295,7 +322,7 @@ export default function Lab({ lang, data: d }) {
         </div>
       </div>
       <div className="lab">
-        <Thread lang={lang} label={w.thread} current={step}>
+        <Thread lang={lang} label={w.thread} current={step} follow={follow}>
           {ROLES.slice(0, step + 1).map((r, i) => (
             <Message key={i} mark={w.marks[r]} name={w.names[r]} model={r === 'leverrier' && d.spent[i] === d.spent[i - 1] ? null : MODELS[r]}
               when={f.day(at(d.now[i]))} at={at(d.now[i])} cost={f.money(d.spent[i])} says={text.says[i]} text={text.events[i]}
@@ -309,16 +336,10 @@ export default function Lab({ lang, data: d }) {
             rings={missed ? d.misses.map(([day, , flux]) => ({ day, flux })) : []}
             note={missed ? { text: w.outside(k.surprise.misses, k.surprise.n), sub: `${w.fan.ia} ${h8(d.bets[1].hash)}` } : null}
             label={w.chartLabel(d.object)} />
-          <div className="ctrl">
-            <button type="button" className="btn" disabled={step === 0} onClick={() => go(step - 1)}>{w.back}</button>
-            <button type="button" className="btn primary" onClick={play}>{playing ? w.pause : w.play}</button>
-            <button type="button" className="btn" disabled={step === last} onClick={() => go(step + 1)}>{w.next}</button>
-            <div className="state">
-              <span>{w.stepOf[0]} <b>{step + 1}</b> {w.stepOf[1]} {ROLES.length}</span>
-              <b>{f.day(at(now))}</b>
-              <b>{f.money(d.spent[step])}</b>
-            </div>
-          </div>
+          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w}>
+            <b>{f.day(at(now))}</b>
+            <b>{f.money(d.spent[step])}</b>
+          </Controls>
           <div className="scrub" role="group" aria-label={w.timeMachine}>
             {groups.map((g) => <div key={g.label} className="grp"><div>{g.items.map(button)}</div><span>{g.label}</span></div>)}
           </div>
@@ -327,6 +348,151 @@ export default function Lab({ lang, data: d }) {
           </div>
         </section>
       </div>
+    </>
+  );
+}
+
+// the observatory's beats for the latest investigation: each stage's calls, with the screens on what SIRA saw and its sealed fan
+function liveBeats(d, stages) {
+  const pts = d.seen.filter((p) => p[2] === 'det' && p[3] > 0 && p[0] >= -40).map((p) => [p[0], p[3], p[1]]);
+  const fan = d.fan.r || [];
+  const days = pts.map((p) => p[0]).concat(fan.map((p) => p[0]));
+  const fluxes = pts.map((p) => p[1]).concat(fan.map((p) => p[1] + 1.645 * p[2]), fan.map((p) => p[1] - 1.645 * p[2])).filter((v) => v > 0);
+  const weights = d.classes || d.weights || {};
+  const scene = {
+    pts, fan, now: 0, weights,
+    voices: Object.entries(weights).filter(([, v]) => v >= 0.005).sort((a, b) => (a[0] === 'null') - (b[0] === 'null') || b[1] - a[1]),
+    range: { x0: Math.min(0, ...days) - 1, x1: Math.max(1, ...days) + 1, f0: Math.max(1, Math.min(...fluxes, 100) * 0.8), f1: Math.max(...fluxes, 10) * 1.25 },
+  };
+  // the two lookouts on the catwalk share no single bubble in the observatory, so their stage plays without calls
+  return stages.map(({ roles, events }) => ({
+    calls: roles[0] === 'lookout' ? [] : events.map(({ role, lens, decision, seconds }) => ({ role, lens, decision, seconds })),
+    scene, seal: roles[0] === 'forecaster' ? d.question.p : null,
+  }));
+}
+
+function Latest({ lang, d }) {
+  const w = WORDS[lang].lab;
+  const live = WORDS[lang].live;
+  const tele = WORDS[lang].tele;
+  const f = format(lang);
+  const hyp = { ...w.hyp, other: live.other };
+  const stages = useMemo(() => STAGES.map((roles) => ({ roles, events: d.events.filter((e) => roles.includes(e.role)) }))
+    .filter((s) => s.events.length), [d]);
+  const scenes = useMemo(() => liveBeats(d, stages), [d, stages]);
+  const pace = useMemo(() => lengths(scenes), [scenes]);
+  const last = stages.length - 1;
+  const { step, playing, follow, go, play } = useSteps(last, pace);
+  const im = d.images || {};
+  const q = d.question;
+  const sealedAt = d.sealed_at || d.time;
+  const spent = stages.slice(0, step + 1).flatMap((s) => s.events).reduce((a, e) => a + (e.cost_usd || 0), 0);
+  const a = d.answer;
+  const answer = !a ? { text: tele.waiting, detail: tele.due(f.stamp(d.answer_due)) }
+    : a.void ? { text: tele.void, detail: tele.voidWhy }
+      : { text: w.answer(a.yes), detail: `${w.score} ${f.num(a.log_score, 2)}`, tone: (q.p >= 0.5) === a.yes ? 'ok' : 'warn' };
+
+  // the English reasons keep their language inside a Spanish page unless the ledger has them in Spanish
+  const quote = (e) => {
+    if (lang === 'es' && e.why_es) return { text: e.why_es, lang: 'es' };
+    const text = e.why || heard(e, d.skeptics, hyp);
+    return text ? { text, lang: 'en' } : null;
+  };
+  const attach = (e) => {
+    if (e.role === 'reader' && im.stamps) {
+      return <Stamps src={BASE + im.stamps} size={[im.panel[0] * 3, im.panel[1]]} tile={im.panel[0]} scale={2} labels={live.panels} alt={live.stampsAlt(d.object)} />;
+    }
+    if (e.role !== 'forecaster') return null;
+    return (
+      <div className="betbox">
+        <Paper question={f.question(q)} p={f.pct(q.p)} term={f.term(d.term)} hash={d.hash.slice(0, 12)} time={f.stamp(sealedAt)} answer={answer} />
+        {d.classes && <Classes odds={d.classes} hyp={hyp} f={f} />}
+      </div>
+    );
+  };
+
+  const points = d.seen.map(([day, band, kind, v, err]) => ({ day, band, flux: v, err, limit: kind === 'lim' }));
+  const sealed = stages[step].roles[0] === 'forecaster';
+  const forecasts = sealed ? ['g', 'r'].filter((b) => (d.fan[b] || []).length)
+    .map((b) => ({ band: b, rows: d.fan[b], style: 'sealed' })) : [];
+  // from a week before the first detection to just past the question's day
+  const firstDay = Math.min(0, ...points.filter((p) => !p.limit).map((p) => p.day));
+  const span = [Math.max(-40, Math.floor(firstDay) - 7), q.days + 2];
+  const button = (i) => (
+    <button key={i} type="button" className={i < step ? 'past' : undefined} aria-current={i === step ? 'step' : undefined}
+      aria-label={`${w.step} ${i + 1}: ${w.stages[stages[i].roles[0]]}`} onClick={() => go(i)}>{i + 1}</button>
+  );
+
+  return (
+    <>
+      <Dome lang={lang} beats={scenes} at={step} stamps={im.stamps ? { src: BASE + im.stamps, tile: im.panel[0], gap: 0, pixel: 1 } : null} />
+      <div className="objhead">
+        <h1>{d.object}</h1>
+        <div className="coords">
+          {d.ra !== null && d.ra !== undefined && <span><b>{f.ra(d.ra)} {f.dec(d.dec)}</b></span>}
+          {d.l !== null && d.l !== undefined && <span>l {f.num(d.l, 2)}° b {d.b >= 0 ? '+' : ''}{f.num(d.b, 2)}°</span>}
+          {d.first_detection && <span>{w.first} {f.stamp(d.first_detection)}</span>}
+          <span>{w.sealed} {f.stamp(sealedAt)}</span>
+        </div>
+      </div>
+      <div className="lab">
+        <Thread lang={lang} label={w.thread} current={step} follow={follow}>
+          {stages.slice(0, step + 1).flatMap((s, i) => s.events.map((e, j) => (
+            <Message key={`${i}.${j}`} mark={live.marks[e.role] || '?'} name={who(e, live)} model={model(e)}
+              when={typeof e.seconds === 'number' ? `${f.num(e.seconds, 0)} s` : null} at={`PT${Math.round(e.seconds || 0)}S`}
+              cost={e.cost_usd ? cost(lang, f, e.cost_usd) : null} text={say(e, live, f, hyp)} quote={quote(e)} current={i === step}>
+              {attach(e)}
+            </Message>
+          )))}
+        </Thread>
+        <section className="fig">
+          <Figure lang={lang} start={d.made_at} points={points} forecasts={forecasts} now={0} nowLabel={w.sealed} x={span}
+            reference={{ flux: q.reference, label: live.at(fluxText(f, q.reference), q.band) }} target={{ day: q.days, label: f.short(q.due) }}
+            label={live.chart(d.object)} />
+          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w}>
+            <b>{f.day(sealedAt)}</b>
+            <b>{f.money(spent)}</b>
+          </Controls>
+          <div className="scrub" role="group" aria-label={w.timeMachine}>
+            {stages.map((s, i) => <div key={s.roles[0]} className="grp"><div>{button(i)}</div><span>{w.stages[s.roles[0]]}</span></div>)}
+          </div>
+          <div className="pscrub" role="group" aria-label={w.timeMachine}>{stages.map((s, i) => button(i))}</div>
+        </section>
+      </div>
+      {im.stamps && (
+        <section className="labphotos">
+          <Photos src={BASE + im.stamps} panel={im.panel} host={im.host && BASE + im.host} alt={w.photosAlt(d.object)}
+            labels={w.photos(im.taken && f.short(im.taken))} />
+        </section>
+      )}
+    </>
+  );
+}
+
+// the night's latest sealed investigation; the featured case when the build has none
+function useLatest() {
+  const [data, setData] = useState(undefined);
+  useEffect(() => {
+    fetch(`${BASE}data/latest.json`).then((r) => (r.ok ? r.json() : null)).then(setData).catch(() => setData(null));
+  }, []);
+  return data;
+}
+
+export default function Lab({ lang, data }) {
+  const latest = useLatest();
+  const [view, setView] = useState(null);
+  const w = WORDS[lang].lab;
+  if (latest === undefined) return <p className="muted">{WORDS[lang].loading}</p>;
+  const has = !!(latest && latest.events && latest.events.length);
+  const shown = has ? view || 'latest' : 'featured';
+  return (
+    <>
+      {has && (
+        <div className="seg labviews" role="group" aria-label={w.views.label}>
+          {['latest', 'featured'].map((v) => <button key={v} type="button" aria-pressed={shown === v} onClick={() => setView(v)}>{w.views[v]}</button>)}
+        </div>
+      )}
+      {shown === 'latest' ? <Latest key="latest" lang={lang} d={latest} /> : <Featured key="featured" lang={lang} data={data} />}
     </>
   );
 }
