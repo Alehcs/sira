@@ -64,7 +64,7 @@ def build(oids: list[str], out: Path, fresh: set = frozenset(), seconds: float =
     # every object fails on its own: no light curve, no stamps or no host, and the build goes on
     out.mkdir(parents=True, exist_ok=True)
     c, stop = client(), time.monotonic() + seconds
-    c.timeout = 20
+    c.timeout = 20  # a stalled request gives up long before the job's limit
 
     def safe(oid):
         if time.monotonic() > stop:

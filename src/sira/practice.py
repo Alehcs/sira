@@ -14,7 +14,7 @@ PATH = "replays/practice/"  # where the images sit, from the site's root
 
 
 def _stamps(c, root: Path, obj: dict, before: float) -> list[bytes] | None:
-    # the first stamps in hand by the first question: the snapshot's, or the archive's for an earlier detection it never flagged
+    # stamps in hand by the first question: the snapshot's, or the archive's for an earlier detection it never flagged
     first = obj.get("first_stamps") or {}
     if first.get("files") and first["available_at"] <= before:
         return [(root / f).with_suffix(".fits").read_bytes() for f in first["files"]]
