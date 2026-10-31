@@ -24,6 +24,12 @@ export const cost = (lang, f, v) => `US$${lang === 'es' ? ' ' : ''}${f.num(v, 3
 export const model = (s) => (s.model ? `${s.model.split('/').pop()}${s.effort ? ` ${s.effort}` : ''}` : null);
 export const who = (s, w) => (s.role === 'skeptic' ? w.skeptic(s.lens) : w.roles[s.role] || s.role);
 export const flux = (f, v) => f.num(v, Number.isInteger(v) ? 0 : 1);
+// the ledger cuts these notes at 200 characters: end on the last whole sentence, or show the cut
+export const whole = (t) => {
+  if (!t || t.length < 190 || /[.!?…]$/.test(t)) return t;
+  const cut = t.lastIndexOf('. ');
+  return cut > 0 ? t.slice(0, cut + 1) : `${t.trimEnd()}…`;
+};
 
 // one agent's step in a sentence of the site's own words
 export function say(s, w, f, hyp) {
@@ -48,8 +54,8 @@ export function say(s, w, f, hyp) {
 // the skeptics' own sentences, from their verdicts, for a step that came without words
 export function heard(s, lenses, hyp) {
   if (s.role !== 'skeptic' || !lenses) return null;
-  if (s.lens === 'instrument') return lenses.instrument && lenses.instrument.why;
-  if (s.lens === 'physics') return [].concat((lenses.physics && (lenses.physics.implausible || lenses.physics)) || []).map((i) => `${hyp[i.hypothesis] || i.hypothesis}: ${i.why}`).join(' ');
+  if (s.lens === 'instrument') return lenses.instrument && whole(lenses.instrument.why);
+  if (s.lens === 'physics') return [].concat((lenses.physics && (lenses.physics.implausible || lenses.physics)) || []).map((i) => `${hyp[i.hypothesis] || i.hypothesis}: ${whole(i.why)}`).join(' ');
   return lenses.memory && lenses.memory.recognised ? lenses.memory.name : null;
 }
 

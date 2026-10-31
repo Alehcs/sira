@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Classes, cost, flux, heard, model, say, who } from './Investigate.jsx';
+import { Classes, cost, flux, heard, model, say, who, whole } from './Investigate.jsx';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
 import Stamps from './ui/Stamps.jsx';
@@ -320,7 +320,7 @@ function Notes({ o, book, lang, w, live, hyp, f }) {
         <Message key={key} mark={live.marks[s.role] || '?'} name={who(s, live)} model={model(s)}
           when={typeof s.seconds === 'number' ? `${f.num(s.seconds, 0)} s` : null} at={`PT${Math.round(s.seconds || 0)}S`}
           cost={s.cost_usd ? cost(lang, f, s.cost_usd) : null} text={say(s, live, f, hyp)} quote={words ? { text: words, lang: 'en' } : null}>
-          {theory && theory.weakest_point && <dl className="lines"><dt>{w.weak}</dt><dd lang="en">{theory.weakest_point}</dd></dl>}
+          {theory && theory.weakest_point && <dl className="lines"><dt>{w.weak}</dt><dd lang="en">{whole(theory.weakest_point)}</dd></dl>}
           {s.role === 'forecaster' && bet && (bet.classes || bet.weights) && <Classes odds={bet.classes || bet.weights} hyp={hyp} f={f} />}
         </Message>,
       );
