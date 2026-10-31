@@ -73,7 +73,7 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   const narrow = W < 500;
   const H = narrow ? 300 : Math.round(Math.max(300, Math.min(440, W * 0.64)));
 
-  // the wheel zooms once the reader is in the chart, or with ctrl as trackpads pinch
+  // the wheel zooms only with ctrl, which is also what a trackpad pinch sends, so the page still scrolls
   useEffect(() => {
     const el = svg.current;
     if (!el) return undefined;
@@ -81,7 +81,7 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
       const g = geo.current;
       const r = el.getBoundingClientRect();
       const px = e.clientX - r.left;
-      if (!g || px < g.L || px > g.R || !(e.ctrlKey || e.metaKey || document.activeElement === plot.current)) return;
+      if (!g || px < g.L || px > g.R || !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         const k = (g.x1 - g.x0) / (g.R - g.L);
