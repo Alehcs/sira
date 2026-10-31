@@ -226,9 +226,7 @@ def _lab(rows: list[dict], obj: dict) -> dict:
             return [day(p["mjd"]), p["band"][-1], "lim", round(flux(p["mag"], 0)[0], 2), None, day(p["available_at"])]
         return [day(p["mjd"]), p["band"][-1], "det", round(p["flux"], 2), round(p["flux_err"], 2), day(p["available_at"])]
 
-    def staked(p):
-        risky = p.get("risky")
-        return risky if risky and (p.get("director") or {}).get("question") == risky.get("id") else p["question"]
+    staked = lambda p: p[_staked(p)]
 
     def answered(a):
         if a is None:
