@@ -324,8 +324,10 @@ export default function Investigate({ lang, live }) {
   const byPriority = (a, b) => b.priority - a.priority;
   const cards = ok.filter((c) => c.bet).sort(byPriority).concat(ok.filter((c) => !c.bet && c.reader === 'real').sort(byPriority)).slice(0, SHOWN);
   // the latest run of each object today, so a second visitor opens it instead of paying for another
+  // runs on objects in an open round stay hidden until the bell, or they would show SIRA's answer early
+  const shown = (list || []).filter((r) => !held.has(r.object));
   const ran = new Map();
-  (list || []).filter((r) => r.status !== 'failed').forEach((r) => { if (!ran.has(r.object)) ran.set(r.object, r); });
+  shown.filter((r) => r.status !== 'failed').forEach((r) => { if (!ran.has(r.object)) ran.set(r.object, r); });
   const left = list ? Math.max(0, DAILY - list.length) : null;
   const mine = (list || []).some((r) => r.id === recall() && busy(r));
   const sel = cards.find((c) => c.object === picked) || cards[0];
@@ -334,7 +336,7 @@ export default function Investigate({ lang, live }) {
 
   const below = (
     <div className="below">
-      <Today rows={list || []} w={w} f={f} onOpen={open} />
+      <Today rows={shown} w={w} f={f} onOpen={open} />
       <section className="how">
         <button type="button" className="btn" aria-expanded={how} onClick={() => setHow(!how)}>{w.how}</button>
         {how && <ol>{w.howList.map((r) => <li key={r}>{r}</li>)}</ol>}
