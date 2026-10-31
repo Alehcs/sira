@@ -224,12 +224,37 @@ main.wrap { padding-top: 26px; }
 .beat h2, .tele h2, .book h2 { margin: 0; font: 600 24px/1.2 'STIX Two Text', serif; }
 .beat .state, .tele .state { margin: 0; font: 14px/1.5 'IBM Plex Mono', monospace; color: var(--muted); }
 .beat .next { margin: 14px 0 0; font-size: 17px; }
-.beat .next b { font: 500 17px 'IBM Plex Mono', monospace; }
+.beat .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: 8px; }
+.beat .hero.alone { min-height: calc(100vh - 150px); min-height: calc(100svh - 150px); justify-content: center; padding-bottom: 40px; }
+.beat .hero h1 { margin: 8px 0 0; font-size: 54px; }
+.beat .stats { display: flex; flex-wrap: wrap; justify-content: center; row-gap: 6px; margin-top: 16px; font-size: 15.5px; color: var(--muted); }
+.beat .stats > div { padding: 1px 18px; border-left: 1px solid var(--hairline); }
+.beat .stats > div:first-child { border-left: 0; }
+.beat .stats b { font: 500 15.5px 'IBM Plex Mono', monospace; color: var(--text); }
+.beat .countdown { width: 100%; max-width: 880px; margin-top: 24px; padding: 40px 24px 32px; border: 1px solid var(--hairline); border-radius: 3px; background: var(--surface); }
+.beat .countdown.small { max-width: 680px; padding: 24px 24px 20px; }
+.beat .clock { display: flex; justify-content: center; align-items: flex-start; gap: 0 14px; }
+.beat .clock .unit { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.beat .clock b { font: 400 120px/0.9 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; color: var(--text); }
+.beat .clock .unit > span { font-size: 14.5px; color: var(--muted); }
+.beat .clock .colon { font: 300 96px/1 'IBM Plex Mono', monospace; color: var(--muted); }
+.beat .clock.small b { font-size: 68px; }
+.beat .clock.small .colon { font-size: 54px; }
+.beat .countdown .until, .beat .also p { text-wrap: balance; }
+.beat .countdown .until { margin: 22px auto 0; max-width: 54ch; font-size: 17px; line-height: 1.5; }
+.beat .countdown.small .until { margin-top: 16px; font-size: 16px; }
+.beat .countdown .until + .until { margin-top: 6px; font-size: 15px; }
+.beat .round { width: 100%; margin-top: 28px; padding: 26px 32px 30px; border: 1px solid var(--hairline); border-radius: 3px; text-align: left; }
+.beat .round > h2 + .ask { margin-top: 14px; padding-top: 0; border-top: 0; }
+.beat .also { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 28px; }
+.beat .also .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 30px; font-size: 17px; text-decoration: none; }
+.beat .also p { margin: 0; max-width: 46ch; font-size: 15px; color: var(--muted); }
+.beat .rulebook { margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--hairline); }
 .beat .how { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 32px; }
 .beat .how li { display: flex; align-items: baseline; gap: 12px; font-size: 16px; line-height: 1.45; }
 .beat .how b { flex: none; font: 600 30px/1 'STIX Two Text', serif; }
 .beat .howscore { margin: 14px 0 0; max-width: 92ch; font-size: 15px; color: var(--muted); }
-.beat .ask { display: grid; grid-template-columns: minmax(0, 740px) minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: 'top top' 'shots fig' 'pick fig'; align-items: start; gap: 22px 44px; margin-top: 22px; padding-top: 26px; border-top: 1px solid var(--hairline); }
+.beat .ask { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 410px); grid-template-rows: auto; grid-template-areas: 'top top' 'shots shots' 'fig pick'; align-items: start; gap: 22px 44px; margin-top: 22px; padding-top: 26px; border-top: 1px solid var(--hairline); }
 .beat .shots { grid-area: shots; min-width: 0; }
 .beat .shots > .muted { margin: 0; }
 .beat .hint { margin: 12px 0 0; max-width: 64ch; font-size: 15px; color: var(--muted); }
@@ -266,7 +291,8 @@ main.wrap { padding-top: 26px; }
 .beat .seal label { flex: 0 1 320px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--muted); }
 .beat input[type='text'] { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--muted); border-radius: 3px; background: var(--raised); color: var(--text); font-size: 17px; }
 .beat .seal .note { flex: 1 1 100%; margin: 0; }
-.beat .practice { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--hairline); }
+.beat .practice { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--hairline); scroll-margin-top: 12px; }
+.beat .practice:focus { outline: none; }
 .beat .practice .head { align-items: center; gap: 12px 30px; }
 .beat .practice .ask { border-top: 0; padding-top: 0; }
 .beat .tally { display: flex; flex-wrap: wrap; gap: 4px 26px; margin: 0 auto 0 0; font-size: 15px; }
@@ -352,7 +378,7 @@ main.wrap { padding-top: 26px; }
 .book .graves b { font-weight: 600; }
 .book .graves .mono { font-size: 13px; color: var(--muted); }
 @media (max-width: 1199px) {
-  .beat .ask { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'top top' 'shots shots' 'fig pick'; gap: 22px 32px; }
+  .beat .ask { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 22px 32px; }
   .beat .trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .beat .trio > :last-child { grid-column: 1 / -1; }
   .tele { grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; }
@@ -368,6 +394,22 @@ main.wrap { padding-top: 26px; }
 }
 @media (max-width: 700px) {
   .beat h1, .tele h1, .book h1 { font-size: 31px; }
+  .beat .hero h1 { font-size: 32px; }
+  .beat .hero.alone { min-height: calc(100vh - 200px); min-height: calc(100svh - 200px); padding-bottom: 24px; }
+  .beat .stats { gap: 2px 16px; margin-top: 10px; font-size: 14.5px; }
+  .beat .stats > div { padding: 0; border-left: 0; }
+  .beat .stats b { font-size: 14.5px; }
+  .beat .countdown { margin-top: 18px; padding: 26px 10px 22px; }
+  .beat .countdown.small { padding: 18px 10px 16px; }
+  .beat .clock { gap: 0 6px; }
+  .beat .clock b, .beat .clock.small b { font-size: 60px; }
+  .beat .clock .colon, .beat .clock.small .colon { font-size: 46px; }
+  .beat .clock .unit { gap: 8px; }
+  .beat .clock .unit > span { font-size: 13px; }
+  .beat .countdown .until { margin-top: 16px; font-size: 15.5px; }
+  .beat .round { margin-top: 20px; padding: 18px 14px 22px; }
+  .beat .also { margin-top: 20px; }
+  .beat .also .btn { width: 100%; }
   .beat .text { font-size: 20px; }
   .beat .scores > span:first-child { flex: 1 1 100%; }
   .beat .trio { grid-template-columns: minmax(0, 1fr); }

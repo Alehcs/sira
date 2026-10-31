@@ -1,11 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { WORDS } from '../words.js';
 
-// the agents' messages, oldest first, in their own scroll box kept on the message of the current step
-export function Thread({ lang, label, current, children }) {
+// the agents' messages, oldest first, in their own scroll box, kept on the current step's message only while it follows
+export function Thread({ lang, label, current, follow = true, children }) {
   const box = useRef(null);
   const pinned = useRef(true);
   const target = useRef(null);
+  const following = useRef(follow);
+  following.current = follow;
   const [below, setBelow] = useState(false);
   const look = () => {
     const el = box.current;
@@ -25,7 +27,7 @@ export function Thread({ lang, label, current, children }) {
   useEffect(() => {
     const el = box.current;
     // fonts and widths change the messages' heights: until the reader scrolls, follow the current one
-    const watch = new ResizeObserver(() => { if (pinned.current) pin(false); look(); });
+    const watch = new ResizeObserver(() => { if (following.current && pinned.current) pin(false); look(); });
     watch.observe(el);
     watch.observe(el.firstElementChild);
     const free = () => { pinned.current = false; };
@@ -34,12 +36,13 @@ export function Thread({ lang, label, current, children }) {
     return () => { watch.disconnect(); events.forEach((e) => el.removeEventListener(e, free)); };
   }, []);
   useLayoutEffect(() => {
+    if (!follow) { look(); return; }
     const smooth = target.current !== null && !calm();
     pinned.current = true;
     target.current = smooth ? target.current : null;
     pin(smooth);
     look();
-  }, [current]);
+  }, [current, follow]);
 
   const more = WORDS[lang].thread.more;
   const down = () => {

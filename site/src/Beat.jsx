@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
 import Photos from './ui/Photos.jsx';
@@ -11,7 +11,17 @@ const toMjd = (iso) => new Date(iso).getTime() / 86400000 + 40587;
 const ALIAS = /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.-]{2,24}$/; // the same rule the database keeps
 const WINDOW = 40; // days of light curve shown before a round opens
 const KEPT = 'practice';
+const PRACTICE = '#beat/practice';
+const POLL = 5 * 60000; // while no round is known, ask again this often
 const level = (v) => Number(Number(v).toFixed(1)); // every threshold rounds as the numbers on the page do
+
+// the next bell after t: rounds close at 21:00 UTC, as crowd.CLOSE sets it
+function bellAfter(t) {
+  const d = new Date(t);
+  d.setUTCHours(21, 0, 0, 0);
+  if (d.getTime() <= t) d.setUTCDate(d.getUTCDate() + 1);
+  return d.getTime();
+}
 
 function fields(q) {
   const m = LEVEL.exec(q.text);
@@ -22,7 +32,7 @@ function fields(q) {
 const points = (rows, shift = 0) => rows
   .map(([day, band, kind, flux, err]) => ({ day: day - shift, band: band.slice(-1), flux, err, limit: kind !== 'det' }))
   .filter((p) => p.flux > 0);
-const micro = (v, f) => `${f.num(v, Number.isInteger(v) ? 0 : 1)} µJy`;
+const micro = (v, f, unit) => `${f.num(v, Number.isInteger(v) ? 0 : 1)} ${unit}`;
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 
 function recall() {
@@ -33,12 +43,25 @@ function recall() {
   return { at: 0, said: {} };
 }
 
-function countdown(ms) {
+// hours, minutes and seconds left, ticking; read once by a screen reader, not every second
+function Clock({ ms, small, w }) {
   const s = Math.max(0, Math.ceil(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor(s / 60) % 60;
-  if (h) return `${h} h ${m} min`;
-  return m ? `${m} min ${s % 60} s` : `${s} s`;
+  const parts = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60];
+  return (
+    <div className={`clock${small ? ' small' : ''}`} role="timer" aria-label={w.left(...parts)}>
+      {parts.map((v, k) => (
+        <Fragment key={w.units[k]}>
+          {k > 0 && <span className="colon" aria-hidden="true">:</span>}
+          <span className="unit" aria-hidden="true"><b>{String(v).padStart(2, '0')}</b><span>{w.units[k]}</span></span>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
+// a figure in the row under the title: words around one bold value
+function Stat({ s }) {
+  return <div><span>{s[0]}</span><b>{s[1]}</b><span>{s[2]}</span></div>;
 }
 
 // the photos of a question, or a plain line when the build has none
@@ -61,12 +84,12 @@ const keys = (w) => [
 
 // the light curve in plain words: brightness up, days along, both bands named, the line to beat and the day it is answered
 function Chart({ ask, points, x, start, today, label, lang, w, f }) {
-  const ref = micro(ask.reference, f);
+  const ref = micro(ask.reference, f, WORDS[lang].fig.units.flux);
   return (
     <div className="fig">
       <Figure lang={lang} start={start} points={points} x={x} now={0} nowLabel={today ? undefined : w.question} mags={false} bandNames={w.bands} label={label}
         axes={{ y: w.axes.y, mag: w.axes.mag, x: today ? w.axes.today : w.axes.asked }}
-        reference={{ flux: ask.reference, label: ask.kind === 'last' ? w.lastRef(ask.band, ref) : w.levelRef(ask.band, ref) }}
+        reference={{ flux: ask.reference, label: ask.kind === 'last' ? w.lastRef(ask.band, ref) : w.levelRef(ask.band, ref), short: ref }}
         target={{ day: today ? today.day : ask.days, label: w.inDays(ask.days) }}
         legend={{ ...w.bands, lim: w.key.limit }} keys={keys(w)} />
     </div>
@@ -91,12 +114,12 @@ function Slider({ value, set, disabled, w, f }) {
   );
 }
 
-function Ask({ head, ask, f, w }) {
+function Ask({ head, ask, unit, f, w }) {
   return (
     <div className="top">
       {head}
       <p className="text">{f.question(ask)}</p>
-      <p className="plain">{w.plain({ ...ask, ref: micro(ask.reference, f) })}</p>
+      <p className="plain">{w.plain({ ...ask, ref: micro(ask.reference, f, unit) })}</p>
     </div>
   );
 }
@@ -108,7 +131,7 @@ function Live({ q, i, img, value, set, betted, closes, lang, w, f }) {
   const target = q.mjd - opens;
   return (
     <article className="ask">
-      <Ask head={<p className="nth"><b>{w.q} {i + 1}</b><span>{q.object}</span></p>} ask={ask} f={f} w={w} />
+      <Ask head={<p className="nth"><b>{w.q} {i + 1}</b><span>{q.object}</span></p>} ask={ask} unit={WORDS[lang].fig.units.flux} f={f} w={w} />
       <Shots img={img} alt={w.stampsAlt(q.object)} w={w} f={f} />
       <Chart ask={ask} points={seen} start={q.opens_at} today={{ day: target }} label={w.chart(q.object)} lang={lang} w={w} f={f}
         x={[Math.floor(Math.min(target, ...seen.map((p) => p.day))) - 1, Math.ceil(target) + 3]} />
@@ -177,7 +200,7 @@ function Practice({ bank, lang, w, f }) {
     const ask = { ...q.ask, reference: level(q.ask.reference) };
     card = (
       <article className="ask">
-        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={ask} f={f} w={w} />
+        <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={ask} unit={WORDS[lang].fig.units.flux} f={f} w={w} />
         <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} />
         <Chart ask={ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
           x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]} />
@@ -199,7 +222,7 @@ function Practice({ bank, lang, w, f }) {
   }
 
   return (
-    <section className="practice" aria-labelledby="practice">
+    <section className="practice" id="practice-box" aria-labelledby="practice" tabIndex={-1}>
       <div className="head">
         <h2 id="practice">{w.practice}</h2>
         <dl className="tally">
@@ -278,6 +301,7 @@ export default function Beat({ lang, live }) {
   const [alias, setAlias] = useState('');
   const [status, setStatus] = useState('idle');
   const [bank, setBank] = useState(null);
+  const [practicing, setPracticing] = useState(() => window.location.hash === PRACTICE);
 
   const loadMine = async (ids) => {
     const { data: session } = await supabase.auth.getSession();
@@ -308,17 +332,26 @@ export default function Beat({ lang, live }) {
   const end = questions && questions.length ? Math.min(...questions.map((q) => Date.parse(q.closes_at))) : null;
 
   useEffect(() => {
-    if (next === null) return undefined;
     const tick = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(tick);
-  }, [next]);
+  }, []);
   useEffect(() => {
-    // ask again the moment a round opens or closes
+    // ask again the moment a round opens or closes, and every few minutes while none is known
+    if (!supabase || offline || rows === null) return undefined;
     const at = [next, end].filter((t) => t !== null);
-    if (!at.length) return undefined;
-    const timer = setTimeout(load, Math.max(1000, Math.min(...at) - Date.now() + 1000));
+    const timer = setTimeout(load, at.length ? Math.max(1000, Math.min(...at) - Date.now() + 1000) : POLL);
     return () => clearTimeout(timer);
-  }, [next, end]);
+  }, [rows, offline]);
+  useEffect(() => {
+    const follow = () => setPracticing(window.location.hash === PRACTICE);
+    window.addEventListener('hashchange', follow);
+    return () => window.removeEventListener('hashchange', follow);
+  }, []);
+  useEffect(() => {
+    // the practice opens under the countdown and comes into view
+    const box = practicing && bank && document.getElementById('practice-box');
+    if (box) { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); box.focus({ preventScroll: true }); }
+  }, [practicing, bank !== null]);
 
   const send = async () => {
     const handle = alias.trim();
@@ -336,6 +369,7 @@ export default function Beat({ lang, live }) {
     loadMine(questions.map((q) => q.id));
   };
 
+
   const open = questions && questions.length > 0;
   const closes = open ? f.chile(questions[0].closes_at) : '18:00';
   const betted = open && questions.every((q) => mine[q.id] !== undefined);
@@ -350,42 +384,77 @@ export default function Beat({ lang, live }) {
     return (asked && asked.images && asked.images.stamps ? asked.images : seen && seen.images) || null;
   };
 
+  // what the clock counts to: the bell of the open round, the opening of the next one, or else the next bell
+  const bell = bellAfter(clock);
+  const goal = open ? { at: end, says: w.toBell(f.chile(new Date(end).toISOString())) }
+    : next !== null ? { at: next, says: w.toOpen(f.chile(new Date(next).toISOString())) }
+      : { at: bell, says: w.toNext(f.chile(new Date(bell).toISOString()), f.short(new Date(bell).toISOString())) };
+
+  // the row under the title, on the open round, the next one, or the last one the site has
+  const coming = rows ? rows.filter((q) => (open ? Date.parse(q.opens_at) <= clock : Date.parse(q.opens_at) > clock)) : [];
+  const id = coming.length ? coming[0].round : beat.rounds.length ? beat.rounds[0].round : null;
+  const round = id && beat.rounds.find((r) => r.round === id);
+  const asked = coming.length || (round ? round.questions.length : 0);
+  const sira = beat.board.find((r) => r.who === 'sira');
+  const stats = id ? [
+    w.stat.round(beat.rounds.filter((r) => r.round < id).length + 1, f.day(`${id}T12:00:00Z`)),
+    asked > 0 && w.stat.questions(asked),
+    round && Object.keys(round.answers).length > 0 && w.stat.players(round.players),
+    sira ? w.stat.sira(f.num(sira.mean, 2), sira.resolved) : w.stat.none,
+  ].filter(Boolean) : [];
+  const practice = bank && bank.questions.length > 0;
+
   return (
     <div className="beat">
-      <section aria-labelledby="today">
-        <div className="head">
-          <h1 id="today">{w.title}</h1>
-          {open && <p className="state">{w.closes(closes)}</p>}
+      <section className={`hero${open ? '' : ' alone'}`} aria-labelledby="today">
+        <h1 id="today">{w.title}</h1>
+        {stats.length > 0 && <div className="stats">{stats.map((s) => <Stat key={s.join('')} s={s} />)}</div>}
+        <div className={`countdown${open ? ' small' : ''}`}>
+          {questions === null ? <p className="until">{WORDS[lang].loading}</p> : (
+            <>
+              <Clock ms={goal.at - clock} small={open} w={w} />
+              <p className="until">{goal.says}</p>
+              {offline && <p className="until muted">{w.offline}</p>}
+            </>
+          )}
         </div>
-        <ol className="how" aria-label={w.how}>{w.steps.map((s, k) => <li key={s}><b>{k + 1}</b><span>{s}</span></li>)}</ol>
-        <p className="howscore">{w.howScore}</p>
-        {questions === null && <p className="next">{WORDS[lang].loading}</p>}
-        {questions !== null && !open && (
-          <p className="next">
-            {offline ? w.offline : next !== null ? w.opens(f.chile(new Date(next).toISOString())) : w.none}
-            {next !== null && !offline && <> {w.opensIn} <b>{countdown(next - clock)}</b>.</>}
-          </p>
+        {practice && (
+          <div className="also">
+            <a className={`btn${open || practicing ? '' : ' primary'}`} href={practicing ? '#beat' : PRACTICE} aria-expanded={practicing} aria-controls="practice-box">
+              {practicing ? w.closePractice : w.playPast}
+            </a>
+            <p>{w.pastCount(bank.questions.length)}</p>
+          </div>
         )}
-        {open && questions.map((q, i) => (
-          <Live key={q.id} q={q} i={i} img={images(q)} closes={closes} betted={betted} lang={lang} w={w} f={f}
-            value={mine[q.id] !== undefined ? Math.round(mine[q.id] * 100) : values[q.id] || 50}
-            set={(v) => setValues({ ...values, [q.id]: v })} />
-        ))}
         {open && (
-          <div className="seal">
-            <label>
-              <span>{w.alias}</span>
-              <input type="text" value={alias} maxLength={24} disabled={betted} onChange={(e) => setAlias(e.target.value)} />
-            </label>
-            <button type="button" className="btn primary" disabled={betted || status === 'sending'} onClick={send}>
-              {betted ? w.sent : status === 'sending' ? w.sending : w.send(questions.length)}
-            </button>
-            {notes[status] && <p className={`note ${notes[status][1]}`}>{notes[status][0]}</p>}
+          <div className="round" aria-labelledby="asked">
+            <h2 id="asked">{w.today}</h2>
+            {questions.map((q, i) => (
+              <Live key={q.id} q={q} i={i} img={images(q)} closes={closes} betted={betted} lang={lang} w={w} f={f}
+                value={mine[q.id] !== undefined ? Math.round(mine[q.id] * 100) : values[q.id] || 50}
+                set={(v) => setValues({ ...values, [q.id]: v })} />
+            ))}
+            <div className="seal">
+              <label>
+                <span>{w.alias}</span>
+                <input type="text" value={alias} maxLength={24} disabled={betted} onChange={(e) => setAlias(e.target.value)} />
+              </label>
+              <button type="button" className="btn primary" disabled={betted || status === 'sending'} onClick={send}>
+                {betted ? w.sent : status === 'sending' ? w.sending : w.send(questions.length)}
+              </button>
+              {notes[status] && <p className={`note ${notes[status][1]}`}>{notes[status][0]}</p>}
+            </div>
           </div>
         )}
       </section>
 
-      {bank && bank.questions.length > 0 && <Practice bank={bank} lang={lang} w={w} f={f} />}
+      {practice && practicing && <Practice bank={bank} lang={lang} w={w} f={f} />}
+
+      <section className="rulebook" aria-labelledby="how">
+        <h2 id="how">{w.how}</h2>
+        <ol className="how">{w.steps.map((s, k) => <li key={s}><b>{k + 1}</b><span>{s}</span></li>)}</ol>
+        <p className="howscore">{w.howScore}</p>
+      </section>
 
       <div className="trio">
         <LastRound round={lastRound} w={w} f={f} />

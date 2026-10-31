@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from .ledger import Ledger
@@ -200,6 +200,118 @@ def live(entries: list[dict], pics: dict | None = None) -> dict:
             "entries": len(entries), "telegrams": tele, "record": record(entries, tele),
             "surprises": surprises(entries), "beat": rounds(entries, pics), "candidates": candidates(entries, pics),
             "min_points": MIN_POINTS}
+
+
+ORDER = ("lookout", "reader", "theorist", "skeptic", "llm_only", "director", "senior", "forecaster")
+LENSES = ("instrument", "physics", "memory")
+
+
+def _whole(text: str | None) -> str | None:
+    # the ledger cuts its notes at 200 characters: end on the last whole sentence, or show the cut
+    if not text:
+        return None
+    text = text.strip()
+    if len(text) < 190 or text[-1] in ".!?…":
+        return text
+    cut = text.rfind(". ")
+    return text[:cut + 1] if cut > 0 else text.rstrip() + "…"
+
+
+def _team_of(entries: list[dict], bet: dict) -> list[dict]:
+    # the calls behind one nightly bet: its night's lookouts and reader, then the team that sealed it
+    from .archive import night_of
+
+    p, night = bet["payload"], night_of(bet["time"])
+    before = max((e["seq"] for e in entries if e["kind"] == "bet" and e["payload"].get("object") == p["object"]
+                  and e["seq"] < bet["seq"]), default=-1)
+    calls = [e for e in entries if e["kind"] == "event" and e["payload"].get("object") == p["object"]
+             and before < e["seq"] < bet["seq"] and "round" not in e["payload"] and e["payload"].get("role") in ORDER
+             and night_of(e["time"]) == night]
+    rank = lambda e: (ORDER.index(e["payload"]["role"]), LENSES.index(e["payload"]["lens"])
+                      if e["payload"].get("lens") in LENSES else 0, e["seq"])
+    return sorted(calls, key=rank)
+
+
+def _reason(e: dict, p: dict) -> str | None:
+    # each call's reason whole, from the bet where the ledger keeps it uncut
+    role, why = e["role"], e.get("why")
+    if role == "theorist":
+        hyp = e["decision"].replace("defends ", "")
+        why = next((t["argument"] for t in p.get("theories") or [] if t.get("hypothesis") == hyp), why)
+    elif role == "director":
+        why = (p.get("director") or {}).get("why") or why
+    elif role == "senior":
+        why = ((p.get("director") or {}).get("senior") or {}).get("why") or why
+    elif role == "forecaster":
+        why = (p.get("wording") or {}).get("text") or why
+    return _whole(why)
+
+
+def latest(entries: list[dict], pics: dict | None = None, now: datetime | None = None) -> dict | None:
+    # the Lab's default view: the team's last nightly investigation that ended in a sealed bet, with every call in order
+    from datetime import timezone
+
+    from astropy.coordinates import SkyCoord
+
+    from . import scoring
+    from .archive import EMBARGO, night_of
+
+    now = now or datetime.now(timezone.utc)
+    # the same rule as the Archive: a bet opens 48 h after it is made, or at the bell of a round that drew it
+    bells = {}
+    for e in entries:
+        if e["kind"] == "round":
+            for q in e["payload"]["questions"]:
+                bells.setdefault(q["object"], []).append(datetime.fromisoformat(e["payload"]["closes_at"]))
+    epoch = datetime(1858, 11, 17, tzinfo=timezone.utc)
+    shown = lambda p: now >= max([epoch + timedelta(days=p["made_at"]) + EMBARGO] + bells.get(p["object"], []))
+    bets = [e for e in entries if e["kind"] == "bet" and "-leap-" not in e["payload"]["bet"]
+            and e["payload"].get("model") not in (None, "v0", "leverrier") and e["payload"].get(_staked(e["payload"]))
+            and shown(e["payload"])]
+    teams = {e["seq"]: _team_of(entries, e) for e in bets}
+    bets = [e for e in bets if any(c["payload"]["role"] == "forecaster" for c in teams[e["seq"]])]
+    if not bets:
+        return None
+    # the latest night, then the bet the most calls weighed, then the first sealed
+    bet = min(bets, key=lambda e: (-int(night_of(e["time"]).replace("-", "")), -len(teams[e["seq"]]), e["seq"]))
+    p, calls, which = bet["payload"], teams[bet["seq"]], _staked(bet["payload"])
+    t0 = p["made_at"]
+    day = lambda m: round(m - t0, 3)
+    seen = p.get("seen") or []
+    dets = [r[0] for r in seen if r[2] == "det"]
+    answer = next((e["payload"] for e in entries if e["kind"] == "answer" and e["payload"]["bet"] == p["bet"]
+                   and e["payload"].get("which", "question") == which), None)
+    found = (pics or {}).get(p["object"]) or {}
+    ra, dec = found.get("ra"), found.get("dec")
+    sky = SkyCoord(ra, dec, unit="deg").galactic if ra is not None else None
+    events = []
+    for e in calls:
+        c = e["payload"]
+        row = {k: c[k] for k in ("role", "lens", "decision", "model", "effort", "seconds", "cost_usd", "priority", "why_es")
+               if c.get(k) is not None}
+        events.append(row | {"at": e["time"], "why": _reason(c, p)})
+    skeptics = {}
+    for lens, v in (p.get("skeptics") or {}).items():
+        if lens == "physics":
+            v = {"implausible": [i | {"why": _whole(i.get("why"))} for i in (v.get("implausible") or [])]}
+        elif v.get("why"):
+            v = v | {"why": _whole(v["why"])}
+        skeptics[lens] = v
+    return {
+        "object": p["object"], "bet": p["bet"], "night": night_of(bet["time"]), "model": p.get("model"),
+        "made_at": _date(t0), "first_detection": _date(min(dets)) if dets else None, "mjd": round(min(dets), 5) if dets else None,
+        "ra": ra, "dec": dec, "l": round(float(sky.l.deg), 4) if sky else None, "b": round(float(sky.b.deg), 4) if sky else None,
+        "events": events, "skeptics": skeptics,
+        "seen": [[day(r[0]), r[1][-1], "det" if r[2] == "det" else "lim", r[3], r[4]] for r in sorted(seen, key=lambda r: r[0])],
+        "fan": {b: [[day(f["mjd"]), *(round(x, 2) for x in scoring.mix_moments(f["parts"]))]
+                    for f in p.get("forecasts") or [] if f["band"] == f"ztf{b}"] for b in "gr"},
+        "question": _question(p[which]), "staked": which, "term": (p.get("wording") or {}).get("term"),
+        "hash": bet["hash"], "time": bet["time"], "sealed_at": _sealed_at(entries)(bet["seq"]),
+        "classes": p.get("classes"), "weights": p.get("weights"), "action": (p.get("decision") or {}).get("action"),
+        "answer": _answer(answer), "answer_due": _answerable(p[which]["mjd"]),
+        "cost": round(sum(e["payload"].get("cost_usd") or 0 for e in calls), 4),
+        "calls": sum(1 for e in calls if (e["payload"].get("cost_usd") or 0) > 0), "images": _images(found),
+    }
 
 
 def _lab(rows: list[dict], obj: dict) -> dict:
@@ -409,6 +521,7 @@ def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
     pics = gallery.build(asked + today + played + rest, out / "img", fresh=set(asked) | set(today))
     data = live(entries, pics)
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
+    (out / "latest.json").write_text(json.dumps(latest(entries, pics, now), separators=(",", ":"), ensure_ascii=False))
     book = archive.build(entries, pics, now)
     (out / "archive.json").write_text(json.dumps(book, separators=(",", ":"), ensure_ascii=False))
     archive.table(book, out / "archive.csv")
