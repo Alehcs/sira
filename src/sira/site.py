@@ -7,6 +7,7 @@ from .ledger import Ledger
 
 LEVEL = re.compile(r"(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?")
 READING = re.compile(r"^(real|bogus) \(([\d.]+)\)$")
+NIGHTLY = (21, 13)  # nightly.yml's cron, in UTC
 
 
 def _date(mjd: float) -> str:
@@ -34,6 +35,29 @@ def _mean(xs: list[float]) -> float | None:
     return round(sum(xs) / len(xs), 3) if xs else None
 
 
+def _staked(p: dict) -> str:
+    # the question the director put the bet on
+    risky = p.get("risky") or {}
+    return "risky" if risky and (p.get("director") or {}).get("question") == risky.get("id") else "question"
+
+
+def _answerable(mjd: float) -> str:
+    # live.resolve answers a question at the first nightly run more than 1.5 days past its time
+    from datetime import datetime, timedelta, timezone
+    ready = datetime(1858, 11, 17, tzinfo=timezone.utc) + timedelta(days=mjd + 1.5)
+    run = ready.replace(hour=NIGHTLY[0], minute=NIGHTLY[1], second=0, microsecond=0)
+    return (run if run > ready else run + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _answer(a: dict | None) -> dict | None:
+    # a void answer says so, so it is never read as a no
+    if a is None:
+        return None
+    if a.get("void"):
+        return {"void": True, "yes": None}
+    return {"void": False, "yes": a["yes"], "log_score": a["log_score"], "at": _date(a["mjd"])}
+
+
 def telegrams(entries: list[dict]) -> list[dict]:
     sealed = _sealed_at(entries)
     answers = {(e["payload"]["bet"], e["payload"].get("which", "question")): e["payload"]
@@ -41,28 +65,27 @@ def telegrams(entries: list[dict]) -> list[dict]:
     out = []
     for e in entries:
         p = e["payload"]
-        if e["kind"] != "bet" or "-leap-" in p["bet"]:
+        if e["kind"] != "bet" or "-leap-" in p["bet"] or not p.get(_staked(p)):
             continue
-        risky = p.get("risky") or {}
-        which = "risky" if risky and (p.get("director") or {}).get("question") == risky.get("id") else "question"
-        a = answers.get((p["bet"], which))
+        which = _staked(p)
         out.append({"seq": e["seq"], "bet": p["bet"], "object": p["object"], "model": p.get("model"),
                     "made_at": _date(p["made_at"]), "hash": e["hash"], "sealed_at": sealed(e["seq"]),
                     "question": _question(p[which]), "term": (p.get("wording") or {}).get("term"),
-                    "answer": None if a is None else ({"void": True} if a.get("void") else
-                                                       {"yes": a["yes"], "log_score": a["log_score"], "at": _date(a["mjd"])})})
+                    "answer": _answer(answers.get((p["bet"], which))), "answer_due": _answerable(p[which]["mjd"])})
     return out[::-1]
 
 
 def record(entries: list[dict], tele: list[dict]) -> dict:
-    done = [t["answer"] for t in tele if t["answer"] and not t["answer"].get("void")]
-    right = sum(1 for t in tele if t["answer"] and not t["answer"].get("void") and (t["question"]["p"] >= 0.5) == t["answer"]["yes"])
-    open_due = [t["question"]["due"] for t in tele if not t["answer"]]
+    done = [t for t in tele if t["answer"] and not t["answer"]["void"]]
+    right = sum((t["question"]["p"] >= 0.5) == t["answer"]["yes"] for t in done)
+    waiting = [t["answer_due"] for t in tele if not t["answer"]]
     outcomes = [e["payload"] for e in entries if e["kind"] == "outcome" and "-leap-" not in e["payload"]["bet"]]
+    # the rivals are compared only where all four forecast; paired is how many measurements that is
     paired = [o for o in outcomes if all(k in (o.get("baselines") or {}) for k in ("b0", "b1", "b2"))]
     rivals = {"sira": _mean([o["log_score"] for o in paired])}
     rivals |= {k: _mean([o["baselines"][k]["log_score"] for o in paired]) for k in ("b0", "b1", "b2")}
-    return {"sealed": len(tele), "answered": len(done), "right": right, "next_due": min(open_due) if open_due else None,
+    return {"sealed": len(tele), "answered": len(done), "void": sum(1 for t in tele if t["answer"] and t["answer"]["void"]),
+            "right": right, "next_due": min(waiting) if waiting else None,
             "outcomes": len(outcomes), "paired": len(paired), "log_score": rivals}
 
 
@@ -103,11 +126,12 @@ def rounds(entries: list[dict]) -> dict:
             by[p["round"]]["crowd"] = {q: _mean([b["p_yes"] for b in p["bets"] if b["question"] == q])
                                        for q in {b["question"] for b in p["bets"]}}
         elif e["kind"] == "crowd_answer" and p["round"] in by:
-            by[p["round"]]["results"][p["question"]] = {"void": True} if p.get("void") else {"yes": p["yes"], "scores": p["scores"]}
+            by[p["round"]]["results"][p["question"]] = ({"void": True, "yes": None} if p.get("void")
+                                                         else {"void": False, "yes": p["yes"], "scores": p["scores"]})
     table = {}
     for r in by.values():
         for res in r["results"].values():
-            if res.get("void"):
+            if res["void"]:
                 continue
             s = res["scores"]
             for who, v in [("sira", s.get("sira")), ("crowd", s.get("crowd")), ("sira_crowd", s.get("sira_crowd"))]:

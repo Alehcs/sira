@@ -30,15 +30,30 @@ def test_a_telegram_shows_the_question_the_director_staked_and_its_receipt():
     assert b["question"] | {"text": None} == {"p": 0.94, "due": "2026-10-31T00:00:00Z", "text": None, "kind": "level",
                                                "direction": "below", "reference": 400.0, "band": "r", "days": 4}
     assert b["sealed_at"] == "2026-10-30T01:05:00+00:00" and b["term"] == "very likely"
-    assert b["answer"] == {"yes": True, "log_score": -0.06, "at": "2026-10-31T04:48:00Z"}
-    assert tele["A-1"]["question"]["kind"] == "last" and tele["A-1"]["answer"] == {"void": True}
+    assert b["answer"] == {"void": False, "yes": True, "log_score": -0.06, "at": "2026-10-31T04:48:00Z"}
+    # a void answer says so, so it can never be read as a no
+    assert tele["A-1"]["question"]["kind"] == "last" and tele["A-1"]["answer"] == {"void": True, "yes": None}
+
+
+def test_an_answer_waits_for_the_first_nightly_a_day_and_a_half_after_its_question():
+    # live.resolve writes the answer once now > question time + 1.5 days, and the nightly runs at 21:13 UTC
+    assert site._answerable(61343.0) == "2026-10-31T21:13:00Z"  # question at 00:00 Oct 30, ready 12:00 Oct 31
+    assert site._answerable(61343.4) == "2026-11-01T21:13:00Z"  # ready 21:36 Oct 31, after that night's run
+    tele = {t["bet"]: t for t in site.telegrams(ledger_rows())}
+    assert tele["B-1"]["answer_due"] == "2026-11-01T21:13:00Z" and tele["A-1"]["answer_due"] == "2026-10-31T21:13:00Z"
 
 
 def test_the_record_counts_only_real_answers_and_pairs_the_rivals():
     rows = ledger_rows()
     r = site.record(rows, site.telegrams(rows))
-    assert (r["sealed"], r["answered"], r["right"], r["paired"]) == (2, 1, 1, 1)
+    assert (r["sealed"], r["answered"], r["void"], r["right"], r["paired"]) == (2, 1, 1, 1, 1)
     assert r["log_score"] == {"sira": -2.0, "b0": -3.0, "b1": -2.5, "b2": -4.0} and r["next_due"] is None
+
+
+def test_the_next_answers_are_due_when_the_ledger_can_write_them():
+    rows = ledger_rows()[:3]
+    r = site.record(rows, site.telegrams(rows))
+    assert r["answered"] == 0 and r["next_due"] == "2026-10-31T21:13:00Z"
 
 
 def test_beat_sira_ranks_everyone_by_their_mean_score():
@@ -58,7 +73,7 @@ def test_beat_sira_ranks_everyone_by_their_mean_score():
     beat = site.rounds(rows)
     r = beat["rounds"][0]
     assert r["answers"] == {q["id"]: 0.2} and r["players"] == 2 and r["crowd"] == {q["id"]: 0.6}
-    assert r["results"]["2026-10-30-2"] == {"void": True}
+    assert r["results"]["2026-10-30-2"] == {"void": True, "yes": None} and r["results"][q["id"]]["void"] is False
     assert [x["who"] for x in beat["board"]] == ["sira", "p2", "sira_crowd", "crowd", "p1"]
     assert next(x for x in beat["board"] if x["who"] == "p2")["handle"] == "leo"
 
