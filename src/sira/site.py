@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from .ledger import Ledger
@@ -254,15 +254,20 @@ def latest(entries: list[dict], pics: dict | None = None, now: datetime | None =
     from astropy.coordinates import SkyCoord
 
     from . import scoring
-    from .archive import night_of
+    from .archive import EMBARGO, night_of
 
     now = now or datetime.now(timezone.utc)
-    # an object in a Beat SIRA round that has not closed waits for the bell
-    held = {q["object"] for e in entries if e["kind"] == "round" and datetime.fromisoformat(e["payload"]["closes_at"]) > now
-            for q in e["payload"]["questions"]}
+    # the same rule as the Archive: a bet opens 48 h after it is made, or at the bell of a round that drew it
+    bells = {}
+    for e in entries:
+        if e["kind"] == "round":
+            for q in e["payload"]["questions"]:
+                bells.setdefault(q["object"], []).append(datetime.fromisoformat(e["payload"]["closes_at"]))
+    epoch = datetime(1858, 11, 17, tzinfo=timezone.utc)
+    shown = lambda p: now >= max([epoch + timedelta(days=p["made_at"]) + EMBARGO] + bells.get(p["object"], []))
     bets = [e for e in entries if e["kind"] == "bet" and "-leap-" not in e["payload"]["bet"]
             and e["payload"].get("model") not in (None, "v0", "leverrier") and e["payload"].get(_staked(e["payload"]))
-            and e["payload"]["object"] not in held]
+            and shown(e["payload"])]
     teams = {e["seq"]: _team_of(entries, e) for e in bets}
     bets = [e for e in bets if any(c["payload"]["role"] == "forecaster" for c in teams[e["seq"]])]
     if not bets:

@@ -322,7 +322,7 @@ def nightly():
 
 
 def test_the_lab_shows_the_latest_nights_bet_the_most_calls_weighed():
-    got = site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    got = site.latest(nightly(), now=datetime(2026, 11, 2, 1, tzinfo=timezone.utc))
     assert (got["object"], got["night"], got["model"]) == ("D", "2026-10-29", "v1")
     # the calls in the order the team works: lookouts, reader, theorists, skeptics, Muse alone, director, forecaster
     assert [(e["role"], e.get("lens")) for e in got["events"]] == [
@@ -334,7 +334,7 @@ def test_the_lab_shows_the_latest_nights_bet_the_most_calls_weighed():
 
 
 def test_the_latest_investigation_keeps_every_reason_whole():
-    events = {e["role"]: e for e in site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))["events"]}
+    events = {e["role"]: e for e in site.latest(nightly(), now=datetime(2026, 11, 2, 1, tzinfo=timezone.utc))["events"]}
     # the theorist's argument comes uncut from the bet, the director's and forecaster's words too
     assert events["theorist"]["why"] == LONG
     assert events["director"]["why"] == "q3 carries the most bits." and events["forecaster"]["why"] == "It is likely to fade."
@@ -346,7 +346,7 @@ def test_the_latest_investigation_keeps_every_reason_whole():
 
 
 def test_the_latest_investigation_draws_what_sira_saw_and_its_sealed_fan():
-    got = site.latest(nightly(), now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    got = site.latest(nightly(), now=datetime(2026, 11, 2, 1, tzinfo=timezone.utc))
     assert got["seen"] == [[-14.0, "g", "lim", 10.0, None], [-4.0, "r", "det", 50.0, 2.0]]
     assert got["fan"] == {"g": [[1.0, 110.0, 14.14], [2.0, 110.0, 14.14]], "r": [[1.0, 110.0, 14.14], [2.0, 110.0, 14.14]]}
     assert got["first_detection"] == "2026-10-27T00:00:00Z" and got["classes"] == {"ii": 0.6, "ia": 0.4}
@@ -354,12 +354,14 @@ def test_the_latest_investigation_draws_what_sira_saw_and_its_sealed_fan():
     assert got["images"] == {"stamps": None, "panel": None, "taken": None, "host": None} and got["ra"] is None
 
 
-def test_the_lab_skips_an_object_in_a_round_that_has_not_closed():
+def test_the_lab_waits_48_hours_and_for_the_bell_of_a_round_that_holds_the_object():
     rows = nightly()
-    rows.append(entry(len(rows), "round", {"round": "2026-10-31", "opens_at": "2026-10-31T18:00:00+00:00",
-                                           "closes_at": "2026-10-31T21:00:00+00:00", "questions": [{"object": "D"}]}))
-    assert site.latest(rows, now=datetime(2026, 10, 31, 19, tzinfo=timezone.utc))["object"] == "C"
-    assert site.latest(rows, now=datetime(2026, 10, 31, 22, tzinfo=timezone.utc))["object"] == "D"
+    # a fresh bet could still be drawn into a round, so nothing shows for two days
+    assert site.latest(rows, now=datetime(2026, 11, 1, 23, tzinfo=timezone.utc)) is None
+    rows.append(entry(len(rows), "round", {"round": "2026-11-02", "opens_at": "2026-11-02T18:00:00+00:00",
+                                           "closes_at": "2026-11-02T21:00:00+00:00", "questions": [{"object": "D"}]}))
+    assert site.latest(rows, now=datetime(2026, 11, 2, 19, tzinfo=timezone.utc))["object"] == "C"
+    assert site.latest(rows, now=datetime(2026, 11, 2, 22, tzinfo=timezone.utc))["object"] == "D"
     # with the next round holding D too, C shows, with its answer once the ledger has it
     later = rows + [entry(99, "round", {"closes_at": "2026-11-09T21:00:00+00:00", "questions": [{"object": "D"}]})]
     c = site.latest(later, now=datetime(2026, 11, 4, tzinfo=timezone.utc))
@@ -375,7 +377,7 @@ def test_export_writes_the_latest_investigation(tmp_path, monkeypatch):
     book = tmp_path / "ledger"
     book.mkdir()
     (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in nightly()) + "\n")
-    site.export(book, tmp_path / "data", now=datetime(2026, 10, 31, tzinfo=timezone.utc))
+    site.export(book, tmp_path / "data", now=datetime(2026, 11, 2, 1, tzinfo=timezone.utc))
     got = json.loads((tmp_path / "data" / "latest.json").read_text())
     assert got["object"] == "D" and got["images"]["stamps"] == "data/img/D.png" and (got["ra"], got["dec"]) == (150.1, -20.2)
     assert got["l"] is not None and got["b"] is not None

@@ -418,6 +418,14 @@ export default function Beat({ lang, live }) {
             </>
           )}
         </div>
+        {practice && (
+          <div className="also">
+            <a className={`btn${open || practicing ? '' : ' primary'}`} href={practicing ? '#beat' : PRACTICE} aria-expanded={practicing} aria-controls="practice-box">
+              {practicing ? w.closePractice : w.playPast}
+            </a>
+            <p>{w.pastCount(bank.questions.length)}</p>
+          </div>
+        )}
         {open && (
           <div className="round" aria-labelledby="asked">
             <h2 id="asked">{w.today}</h2>
@@ -436,14 +444,6 @@ export default function Beat({ lang, live }) {
               </button>
               {notes[status] && <p className={`note ${notes[status][1]}`}>{notes[status][0]}</p>}
             </div>
-          </div>
-        )}
-        {practice && (
-          <div className="also">
-            <a className={`btn${open || practicing ? '' : ' primary'}`} href={practicing ? '#beat' : PRACTICE} aria-expanded={practicing} aria-controls="practice-box">
-              {practicing ? w.closePractice : w.playPast}
-            </a>
-            <p>{w.pastCount(bank.questions.length)}</p>
           </div>
         )}
       </section>
