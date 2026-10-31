@@ -377,6 +377,22 @@ def replays(var: Path, snapshot: Path, out: Path, oid: str = "ZTF19aavisrq") -> 
     (out / "stamps.png").write_bytes(reader.draw(fits, reader.PROTOCOLS["v2"].render))
 
 
+def recent(entries: list[dict], now: datetime, days: float = 4) -> list[str]:
+    # the objects of every round still open or closed in the last few days, newest round first
+    out = []
+    for e in reversed(entries):
+        p = e["payload"]
+        if e["kind"] != "round":
+            continue
+        try:
+            late = (now - datetime.fromisoformat(p["closes_at"])).total_seconds()
+        except (KeyError, TypeError, ValueError):
+            continue
+        if late <= days * 86400:
+            out += [q["object"] for q in p.get("questions", []) if q.get("object")]
+    return list(dict.fromkeys(out))
+
+
 def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
     from datetime import timezone
 
@@ -384,14 +400,16 @@ def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
 
     entries = Ledger(ledger_dir).entries()
     out.mkdir(parents=True, exist_ok=True)
+    now = now or datetime.now(timezone.utc)
     today = [c["object"] for c in candidates(entries)]
+    asked = recent(entries, now)
     played = [q["object"] for e in entries if e["kind"] == "round" for q in e["payload"]["questions"]]
     rest = sorted({e["payload"]["object"] for e in entries if e["payload"].get("object")})
-    # tonight's candidates are read fresh; everything older comes from the cache after its first build
-    pics = gallery.build(today + played + rest, out / "img", fresh=set(today))
+    # the open and recent rounds go first and fresh, so the game always has its photos before the time limit
+    pics = gallery.build(asked + today + played + rest, out / "img", fresh=set(asked) | set(today))
     data = live(entries, pics)
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
-    book = archive.build(entries, pics, now or datetime.now(timezone.utc))
+    book = archive.build(entries, pics, now)
     (out / "archive.json").write_text(json.dumps(book, separators=(",", ":"), ensure_ascii=False))
     archive.table(book, out / "archive.csv")
     return data

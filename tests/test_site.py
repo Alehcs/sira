@@ -169,6 +169,35 @@ def test_export_draws_tonights_candidates_fresh_and_writes_every_file(tmp_path, 
     assert (tmp_path / "data" / "archive.csv").read_text().startswith("object,ra,dec,night,")
 
 
+def test_export_draws_the_open_and_recent_rounds_first_and_fresh(tmp_path, monkeypatch):
+    from sira import gallery
+
+    asked = {}
+
+    def draw(oids, out, fresh=frozenset(), seconds=0):
+        asked.update(oids=oids, fresh=fresh)
+        return {"R1": {"stamps": "R1.png", "panel": [63, 63], "taken": 61340.5, "host": "R1.jpg"}}
+
+    def round_of(seq, day, closes, oids):
+        qs = [{"id": f"{day}-{i}", "object": o, "text": STANDARD["text"], "band": "ztfr", "mjd": 61350.0,
+               "direction": "above", "reference": 50.0, "commit": "c0"} for i, o in enumerate(oids, 1)]
+        return entry(seq, "round", {"round": day, "opens_at": f"{day}T18:00:00+00:00", "closes_at": closes, "questions": qs})
+
+    monkeypatch.setattr(gallery, "build", draw)
+    rows = candidate_rows() + [round_of(7, "2026-10-20", "2026-10-20T21:00:00+00:00", ["GONE"]),
+                               round_of(8, "2026-10-29", "2026-10-29T21:00:00+00:00", ["R2"]),
+                               round_of(9, "2026-10-31", "2026-10-31T21:00:00+00:00", ["R1", "B"])]
+    book = tmp_path / "ledger"
+    book.mkdir()
+    (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in rows) + "\n")
+    data = site.export(book, tmp_path / "data", now=datetime(2026, 10, 31, 19, tzinfo=timezone.utc))
+    # the open round, then the recent one, are drawn before anything else; an old round waits its turn
+    assert asked["oids"][:3] == ["R1", "B", "R2"] and "GONE" in asked["oids"][3:]
+    assert {"R1", "B", "R2"} <= asked["fresh"] and "GONE" not in asked["fresh"]
+    q = data["beat"]["rounds"][0]["questions"][0]
+    assert q["object"] == "R1" and q["images"]["stamps"] == "data/img/R1.png" and q["images"]["host"] == "data/img/R1.jpg"
+
+
 def replay():
     # five team bets, a surprise on the second, one Le Verrier bet and the sky's verdict on it
     rows = []
