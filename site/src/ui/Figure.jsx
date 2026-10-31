@@ -121,7 +121,9 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   }
   if (target) {
     out.push(<line key="target" className="target" x1={f1(X(target.day))} x2={f1(X(target.day))} y1={T} y2={B} />);
-    if (target.label) out.push(<text key="targetl" className="refl" x={f1(X(target.day))} y={T + 16} textAnchor="middle">{target.label}</text>);
+    // the label sits beside its line, never across it
+    const right = X(target.day) + 6 + String(target.label || '').length * 8 <= R - 4;
+    if (target.label) out.push(<text key="targetl" className="refl" x={f1(X(target.day) + (right ? 6 : -6))} y={T + 16} textAnchor={right ? 'start' : 'end'}>{target.label}</text>);
   }
 
   // the measurements: one sigma bars, g circles, r squares, open triangles for upper limits
