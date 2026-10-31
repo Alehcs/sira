@@ -134,6 +134,12 @@ def test_the_skeptics_speak_from_the_result():
         f"Type II supernova: Peak before the first detection. Type Ibc supernova: {'y' * 199}. Tidal disruption: {'x' * 200}…")}
 
 
+def test_a_note_cut_on_a_decimal_point_ends_on_its_last_whole_sentence():
+    head = "Near normal Ia peak luminosity."
+    note = head + " " + "x" * (195 - len(head)) + " ~0."
+    assert len(note) == 200 and visits._clip(note) == head
+
+
 def test_the_summary_draws_the_forecast_after_now():
     bet, _ = investigate(ANSWERS)
     out = visits.summary(as_of(sn_object()[0], NOW), bet, None)

@@ -24,7 +24,7 @@ def _now() -> str:
 
 def _clip(text: str) -> str:
     # the team's notes arrive cut at 200 characters; a visitor reads them up to their last whole sentence
-    if len(text) < 200 or text.endswith("."):
+    if len(text) < 200 or (text.endswith(".") and not text[-2:-1].isdigit()):  # "slow ~0." is a number cut short
         return text
     cut = text.rfind(". ")
     return text[:cut + 1] if cut > 0 else text.rstrip() + "…"
