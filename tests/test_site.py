@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 from sira import site
 
@@ -147,7 +148,7 @@ def test_the_logbook_tells_le_verriers_ideas_whole(tmp_path):
                                                                                   ("Other idea", "Short.", False)]
 
 
-def test_export_draws_tonights_candidates_fresh(tmp_path, monkeypatch):
+def test_export_draws_tonights_candidates_fresh_and_writes_every_file(tmp_path, monkeypatch):
     from sira import gallery
 
     asked = {}
@@ -160,7 +161,9 @@ def test_export_draws_tonights_candidates_fresh(tmp_path, monkeypatch):
     book = tmp_path / "ledger"
     book.mkdir()
     (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in candidate_rows()) + "\n")
-    data = site.export(book, tmp_path / "data")
+    data = site.export(book, tmp_path / "data", now=datetime(2026, 10, 31, tzinfo=timezone.utc))
     assert asked["oids"][:2] == ["B", "C"] and set(asked["oids"]) == {"B", "C", "OLD"} and asked["fresh"] == {"B", "C"}
     assert asked["out"] == tmp_path / "data" / "img" and data["candidates"][0]["ra"] == 150.1
-    assert json.loads((tmp_path / "data" / "live.json").read_text())["record"] == data["record"]
+    saved = json.loads((tmp_path / "data" / "live.json").read_text())
+    assert saved["record"] == data["record"] and json.loads((tmp_path / "data" / "archive.json").read_text())["objects"]
+    assert (tmp_path / "data" / "archive.csv").read_text().startswith("object,ra,dec,night,")

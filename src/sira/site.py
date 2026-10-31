@@ -322,8 +322,10 @@ def replays(var: Path, snapshot: Path, out: Path, oid: str = "ZTF19aavisrq") -> 
     (out / "stamps.png").write_bytes(reader.draw(fits, reader.PROTOCOLS["v2"].render))
 
 
-def export(ledger_dir: Path, out: Path) -> dict:
-    from . import gallery
+def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
+    from datetime import timezone
+
+    from . import archive, gallery
 
     entries = Ledger(ledger_dir).entries()
     out.mkdir(parents=True, exist_ok=True)
@@ -334,4 +336,7 @@ def export(ledger_dir: Path, out: Path) -> dict:
     pics = gallery.build(today + played + rest, out / "img", fresh=set(today))
     data = live(entries, pics)
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
+    book = archive.build(entries, pics, now or datetime.now(timezone.utc))
+    (out / "archive.json").write_text(json.dumps(book, separators=(",", ":"), ensure_ascii=False))
+    archive.table(book, out / "archive.csv")
     return data

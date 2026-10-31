@@ -3,7 +3,7 @@ name: site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "src/sira/site.py", "src/sira/gallery.py", ".github/workflows/pages.yml"]
+    paths: ["site/**", "src/sira/site.py", "src/sira/gallery.py", "src/sira/archive.py", ".github/workflows/pages.yml"]
   workflow_run:
     # rebuild once the ledger changes, so the site shows the night's bets and answers
     workflows: [nightly, challenge]
