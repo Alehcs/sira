@@ -308,6 +308,9 @@ main.wrap { padding-top: 26px; }
   .beat .trio > :last-child { grid-column: 1 / -1; }
   .tele { grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; }
   .book .below { grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; }
+  .book .lane { grid-template-columns: minmax(0, 1fr); }
+  .book .lane > span { display: none; }
+  .book .node { width: min(196px, calc((100vw - 150px) / 4)); }
 }
 @media (max-width: 900px) {
   .beat .ask { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'top' 'fig' 'pick'; }
@@ -317,8 +320,6 @@ main.wrap { padding-top: 26px; }
   .beat h1, .tele h1, .book h1 { font-size: 31px; }
   .beat .text { font-size: 20px; }
   .beat .trio { grid-template-columns: minmax(0, 1fr); }
-  .book .lane { grid-template-columns: minmax(0, 1fr); }
-  .book .lane > span { display: none; }
   .book .chain { flex-direction: column; }
   .book .link { flex-direction: column; }
   .book .link > span { align-self: flex-start; width: 1px; height: 14px; margin-left: 24px; }
