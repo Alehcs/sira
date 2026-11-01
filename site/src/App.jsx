@@ -5,6 +5,7 @@ import Investigate from './Investigate.jsx';
 import Lab from './Lab.jsx';
 import Logbook from './Logbook.jsx';
 import Telegrams from './Telegrams.jsx';
+import { Credit } from './ui/Photos.jsx';
 import { WORDS } from './words.js';
 
 const TABS = ['lab', 'live', 'archive', 'beat', 'telegrams', 'logbook'];
@@ -104,7 +105,8 @@ export default function App() {
             <a href="https://github.com/Alehcs/sira/tree/ledger">{w.ledger}</a>
             <a href="https://github.com/Alehcs/sira#the-protocol">{w.protocol}</a>
           </div>
-          <p>{w.credits}</p>
+          <p>{w.built}</p>
+          <p>{w.credits.images}: <Credit />; {w.credits.ps1}; {w.credits.ztf}.</p>
         </div>
       </footer>
     </>

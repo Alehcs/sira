@@ -13,7 +13,17 @@ function Ticks({ side }) {
   );
 }
 
-function Shot({ src, size, at, side, k, label, host }) {
+// the credit the Legacy Surveys license asks for beside its images, with live links
+export function Credit({ ps1 = false }) {
+  return (
+    <>
+      <a href="https://www.legacysurvey.org/acknowledgment/">Legacy Surveys / D. Lang (Perimeter Institute)</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+      {ps1 && <>; <a href="https://outerspace.stsci.edu/display/PANSTARRS/">Pan-STARRS1</a></>}
+    </>
+  );
+}
+
+function Shot({ src, size, at, side, k, label, host, children }) {
   const style = host
     ? { width: side, height: side, backgroundImage: `url(${src})`, backgroundSize: `${side}px ${side}px` }
     : { width: side, height: side, backgroundImage: `url(${src})`, backgroundSize: `${size[0] * k}px ${size[1] * k}px`, backgroundPosition: `${-at * (size[0] / 3) * k}px 0` };
@@ -21,12 +31,13 @@ function Shot({ src, size, at, side, k, label, host }) {
     <figure className="shot" style={{ width: side }}>
       <div className="pic"><i role="img" aria-label={label} style={style} /><Ticks side={side} /></div>
       <figcaption aria-hidden="true">{label}</figcaption>
+      {children}
     </figure>
   );
 }
 
 // the three ZTF images at one whole scale, in a row when they fit and one under another on phones, then the colour image of the field
-export default function Photos({ src, panel, host, labels, alt }) {
+export default function Photos({ src, panel, host, labels, alt, ps1 = false }) {
   const [ref, W] = useWidth();
   const p = panel[0];
   const gap = 12;
@@ -42,7 +53,7 @@ export default function Photos({ src, panel, host, labels, alt }) {
           <div className={`ztf${row ? ' row' : ''}`}>
             {[0, 1, 2].map((at) => <Shot key={at} src={src} size={size} at={at} side={p * k} k={k} label={labels[at]} />)}
           </div>
-          {host && <Shot src={host} side={128 * hostScale} label={labels[3]} host />}
+          {host && <Shot src={host} side={128 * hostScale} label={labels[3]} host><p className="credit"><Credit ps1={ps1} /></p></Shot>}
         </>
       )}
     </div>

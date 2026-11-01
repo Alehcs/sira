@@ -273,6 +273,10 @@ main.wrap { padding-top: 26px; }
 .shot .ticks .tk { stroke: var(--mark); stroke-width: 1.25px; }
 .shot .ticks .halo { stroke: var(--mark-halo); stroke-width: 3.5px; stroke-opacity: 0.75; }
 .shot figcaption { margin-top: 6px; font-size: 14px; line-height: 1.35; }
+.credit { margin: 6px 0 0; font: 12px/16px 'IBM Plex Mono', monospace; color: var(--muted); }
+.credit a { color: inherit; }
+.shot .credit { max-width: 256px; }
+.ohostfig { margin: 0; }
 .beat .ask + .ask { margin-top: 30px; }
 .beat .fig { grid-area: fig; min-width: 0; }
 .beat .top { grid-area: top; min-width: 0; }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Classes, cost, flux, heard, model, say, who, whole } from './Investigate.jsx';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
+import { Credit } from './ui/Photos.jsx';
 import Stamps from './ui/Stamps.jsx';
 import { Message, Thread } from './ui/Thread.jsx';
 import { WORDS, format } from './words.js';
@@ -199,6 +200,7 @@ function List({ book, lang, w, live, hyp, f, keep }) {
           </section>
         );
       })}
+      {rows.length > 0 && <p className="credit"><Credit /></p>}
     </>
   );
 }
@@ -418,7 +420,7 @@ function Obj({ o, book, lang, w, live, hyp, f, liveData }) {
         <div className="oleft">
           {im.stamps && <Stamps src={BASE + im.stamps} size={[im.panel[0] * 3, im.panel[1]]} tile={im.panel[0]} scale={2} labels={live.panels} alt={live.stampsAlt(o.object)} arcsec={10} />}
           <div className="hostrow">
-            {im.host && <img className="ohost" src={BASE + im.host} width="256" height="256" alt={live.hostAlt(o.object)} />}
+            {im.host && <figure className="ohostfig"><img className="ohost" src={BASE + im.host} width="256" height="256" alt={live.hostAlt(o.object)} /><p className="credit"><Credit /></p></figure>}
             <section>
               {what && <h2 className="oh2">{w.what(f.short(noon(what.bet.night)))}</h2>}
               {what && <Classes odds={what.odds} hyp={hyp} f={f} />}

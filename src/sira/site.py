@@ -505,7 +505,19 @@ def recent(entries: list[dict], now: datetime, days: float = 4) -> list[str]:
     return list(dict.fromkeys(out))
 
 
-def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
+def survey() -> dict | None:
+    # the newest ZTF detection ALeRCE holds, so the site can say when the survey went quiet
+    from . import alerce, fetch
+
+    try:
+        with fetch.client() as c:
+            items = alerce.objects(c, {"order_by": "lastmjd", "order_mode": "DESC", "page_size": 1}, fresh=True)
+    except Exception:
+        return None
+    return {"ztf_last": _date(items[0]["lastmjd"])} if items else None
+
+
+def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None) -> dict:
     from datetime import timezone
 
     from . import archive, gallery
@@ -520,6 +532,8 @@ def export(ledger_dir: Path, out: Path, now: datetime | None = None) -> dict:
     # the open and recent rounds go first and fresh, so the game always has its photos before the time limit
     pics = gallery.build(asked + today + played + rest, out / "img", fresh=set(asked) | set(today))
     data = live(entries, pics)
+    if quiet:
+        data["survey"] = quiet()
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
     (out / "latest.json").write_text(json.dumps(latest(entries, pics, now), separators=(",", ":"), ensure_ascii=False))
     book = archive.build(entries, pics, now)

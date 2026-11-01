@@ -7,13 +7,13 @@ from .llm import LLM, SPARK, WONDER
 
 
 def site(args) -> None:
-    from .site import export, replays
+    from .site import export, replays, survey
 
     if args.replays:
         replays(Path("var"), Path(args.root), Path(args.out))
         print(f"replays written to {args.out}")
     else:
-        print(json.dumps(export(Path(args.ledger), Path(args.out))["record"], indent=2))
+        print(json.dumps(export(Path(args.ledger), Path(args.out), quiet=survey)["record"], indent=2))
         img = Path(args.out) / "img"
         print(f"{len(list(img.glob('*.png')))} stamp strips and {len(list(img.glob('*.jpg')))} host images in {img}")
 

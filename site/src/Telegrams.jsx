@@ -24,6 +24,8 @@ export default function Telegrams({ lang, live }) {
   const w = WORDS[lang].tele;
   const f = format(lang);
   const r = live.record;
+  // a day and a half without a single ZTF detection means the survey has gone quiet
+  const quiet = live.survey && Date.now() - Date.parse(live.survey.ztf_last) > 36 * 3600e3;
   const shown = all ? live.telegrams : live.telegrams.slice(0, 6);
   const copy = async () => {
     try { await navigator.clipboard.writeText(RECIPE); setCopied(true); } catch (e) { setCopied(false); }
@@ -50,6 +52,7 @@ export default function Telegrams({ lang, live }) {
             {r.void > 0 && <li>{w.voids(r.void)}</li>}
             <li>{w.scored(r.outcomes)}</li>
             {r.next_due && <li>{w.due2(f.day(r.next_due))}</li>}
+            {quiet && <li>{WORDS[lang].quiet(f.stamp(live.survey.ztf_last))}</li>}
           </ul>
         </section>
 

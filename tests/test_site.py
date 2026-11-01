@@ -381,3 +381,29 @@ def test_export_writes_the_latest_investigation(tmp_path, monkeypatch):
     got = json.loads((tmp_path / "data" / "latest.json").read_text())
     assert got["object"] == "D" and got["images"]["stamps"] == "data/img/D.png" and (got["ra"], got["dec"]) == (150.1, -20.2)
     assert got["l"] is not None and got["b"] is not None
+
+
+def test_export_says_when_the_survey_last_sent_a_detection_only_if_asked(tmp_path, monkeypatch):
+    from sira import gallery
+
+    monkeypatch.setattr(gallery, "build", lambda oids, out, fresh=frozenset(), seconds=0: {})
+    book = tmp_path / "ledger"
+    book.mkdir()
+    (book / "ledger.jsonl").write_text("\n".join(json.dumps(e) for e in candidate_rows()) + "\n")
+    now = datetime(2026, 10, 31, tzinfo=timezone.utc)
+    assert "survey" not in site.export(book, tmp_path / "a", now=now)
+    data = site.export(book, tmp_path / "b", now=now, quiet=lambda: {"ztf_last": "2026-10-29T13:18:00Z"})
+    assert json.loads((tmp_path / "b" / "live.json").read_text())["survey"] == {"ztf_last": "2026-10-29T13:18:00Z"} == data["survey"]
+
+
+def test_survey_reads_the_newest_detection_and_shrugs_off_a_failed_request(monkeypatch):
+    from sira import alerce
+
+    monkeypatch.setattr(alerce, "objects", lambda c, params, fresh=False: [{"oid": "ZTF26acdjxpj", "lastmjd": 61342.5546}])
+    assert site.survey() == {"ztf_last": "2026-10-29T13:18:37Z"}
+
+    def down(c, params, fresh=False):
+        raise OSError("no route")
+
+    monkeypatch.setattr(alerce, "objects", down)
+    assert site.survey() is None

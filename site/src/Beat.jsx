@@ -66,11 +66,11 @@ function Stat({ s }) {
 }
 
 // the photos of a question, or a plain line when the build has none
-function Shots({ img, alt, w, f }) {
+function Shots({ img, alt, w, f, ps1 = false }) {
   if (!img || !img.stamps) return <p className="muted">{w.noShots}</p>;
   return (
     <div className="shots">
-      <Photos src={BASE + img.stamps} panel={img.panel} host={img.host && BASE + img.host} alt={alt}
+      <Photos src={BASE + img.stamps} panel={img.panel} host={img.host && BASE + img.host} alt={alt} ps1={ps1}
         labels={w.shots(img.taken && f.short(img.taken))} />
       <p className="hint">{w.shotsNote}</p>
     </div>
@@ -202,7 +202,7 @@ function Practice({ bank, lang, w, f }) {
     card = (
       <article className="ask">
         <Ask head={<p className="nth"><b>{w.nth(at + 1, qs.length)}</b>{q.step > 1 && <span>{w.again}</span>}</p>} ask={ask} unit={WORDS[lang].fig.units.flux} f={f} w={w} />
-        <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} />
+        <Shots img={{ stamps: q.ask.stamps, panel: q.ask.panel, host: group && group.host }} alt={w.practiceStamps} w={w} f={f} ps1 />
         <Chart ask={ask} points={seen.concat(after)} label={w.practiceChart} lang={lang} w={w} f={f}
           x={[Math.floor(Math.min(...days)) - 1, Math.ceil(Math.max(...days)) + 2]} />
         <div className="pick">
@@ -382,6 +382,7 @@ export default function Beat({ lang, live }) {
   const betted = open && questions.every((q) => mine[q.id] !== undefined);
   const notes = { alias: [w.aliasNote, 'bad'], error: [w.failed, 'bad'], already: [w.already, 'bad'], sent: [w.sentNote(closes), 'ok'] };
   const beat = live ? live.beat : { rounds: [], board: [] };
+  const quiet = live && live.survey && clock - Date.parse(live.survey.ztf_last) > 36 * 3600e3;
   const lastRound = beat.rounds.find((r) => Object.keys(r.answers).length);
   // a question's images come with the site's data: from its round once the site has it, else from last night's candidates
   const images = (q) => {
@@ -422,6 +423,7 @@ export default function Beat({ lang, live }) {
               <Clock ms={goal.at - clock} small={open} w={w} />
               <p className="until">{goal.says}</p>
               {offline && <p className="until muted">{w.offline}</p>}
+              {quiet && <p className="until muted">{WORDS[lang].quiet(f.stamp(live.survey.ztf_last))}</p>}
             </>
           )}
         </div>
@@ -449,6 +451,7 @@ export default function Beat({ lang, live }) {
               <button type="button" className="btn primary" disabled={betted || status === 'sending'} onClick={send}>
                 {betted ? w.sent : status === 'sending' ? w.sending : w.send(questions.length)}
               </button>
+              {!betted && <p className="note">{w.publicNote}</p>}
               {notes[status] && <p className={`note ${notes[status][1]}`}>{notes[status][0]}</p>}
             </div>
           </div>

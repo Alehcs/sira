@@ -3,6 +3,7 @@ import Dome from './ui/Dome.jsx';
 import { lengths } from './ui/dome/script.js';
 import Figure from './ui/Figure.jsx';
 import Paper from './ui/Paper.jsx';
+import { Credit } from './ui/Photos.jsx';
 import Stamps from './ui/Stamps.jsx';
 import { Message, Thread } from './ui/Thread.jsx';
 import { supabase } from './supabase.js';
@@ -386,6 +387,7 @@ export default function Investigate({ lang, live }) {
       {cards.length > 0 && (
         <div className="cards" role="radiogroup" aria-label={w.candidates}>
           {cards.map((c) => <Card key={c.object} c={c} on={c === sel} ran={ran.get(c.object)} onPick={pick} w={w} f={f} />)}
+          <p className="credit"><Credit /></p>
         </div>
       )}
       {below}
