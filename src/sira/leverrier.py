@@ -62,7 +62,7 @@ def _rows(obj: dict, start: float, stop: float) -> list[dict]:
             and (r["kind"] != "det" or r["flux"] > 0)]
 
 
-def case(root: Path, oid: str, llm, gap: int = 10, window: int = 40, pool=None) -> dict:
+def case(root: Path, oid: str, llm, gap: int = 10, window: int = 40, pool=None, leaps: list[str] | None = None) -> dict:
     # replay as the lab lives: bet every few days with the usual hypotheses, call Le Verrier at the first surprise
     root = Path(root)
     obj = json.loads((root / "objects" / f"{oid}.json").read_text())
@@ -80,12 +80,12 @@ def case(root: Path, oid: str, llm, gap: int = 10, window: int = 40, pool=None) 
             check = {"t": round(t, 2), "weights": first["weights"], "surprise": surprised(pits)}
             report["checks"].append(check)
             if check["surprise"]["surprised"]:
-                return report | _leap(obj, ebv, llm, t + gap, first, sealed, seen, window, pool, report)
+                return report | _leap(obj, ebv, llm, t + gap, first, sealed, seen, window, pool, report, leaps or list(LEAPS))
         t += gap
     return report
 
 
-def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report) -> dict:
+def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report, leaps) -> dict:
     view = as_of(obj, now)
     old = physics(view, ebv, days=tuple(range(1, window + 1)))
     if not old:
@@ -101,14 +101,14 @@ def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report) -> dict
     failed = {k: round(v, 3) for k, v in first["weights"].items()}
     mapper = pool.map if pool else map
     blind_case = blind(view)
-    results = list(mapper(lambda leap: propose(llm, leap, blind_case, failed, misses), list(LEAPS)))
+    results = list(mapper(lambda leap: propose(llm, leap, blind_case, failed, misses), leaps))
     ph = phot(view)
     null = fit("null", ph)
     old_at = lambda r: _at(old_grid, r["mjd"], r["band"])
     out = {"now": round(now, 2), "future_points": len(later), "proposals": []}
     for proposal, event in results:
         report["events"].append(event)
-        entry = dict(proposal)
+        entry = proposal | {"cost_usd": event.get("cost_usd")}
         try:
             f = dsl.fit_spec({"components": proposal["components"]}, ph, proposal["name"] or proposal["leap"])
         except ValueError as e:
@@ -127,6 +127,7 @@ def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report) -> dict
                     ["null", NULL_SHARE, float(nm[0]), float(ns[0])]]
 
         out["proposals"].append(entry | {
+            "bic": round(f.chi2 + len(f.x) * math.log(len(ph)), 2),
             "fit": {"chi2_per_point": round(f.chi2 / max(f.ndof, 1), 2), "params": {k: round(v, 3) for k, v in f.params.items()}},
             "against_old": verdict(new_at, old_at, later)})
     judged = [p for p in out["proposals"] if "against_old" in p]
