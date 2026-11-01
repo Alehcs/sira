@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Figure from './ui/Figure.jsx';
 import { WORDS, format } from './words.js';
+
+const BASE = import.meta.env.BASE_URL;
 
 const TONE = { neptune: 'good', adopted: 'good', vulcan: 'bad' };
 const E = <span className="mono">log<sub>10</sub>{' '}<i className="v">E</i></span>;
@@ -67,7 +70,39 @@ function written(eq) {
 }
 
 // the pre-registered equation experiment: every surprise, the law the lab kept and what the sky said of it
-function Laws({ laws, w, f }) {
+// where the surprise alarm rang on the pre-registered test, by kind of object
+function Alarm({ o, w }) {
+  const sum = (k) => Object.values(o).reduce((s, x) => s + x[k], 0);
+  return <p className="lede alarm">{w.alarm({ n: sum('replayed'), rang: sum('surprised'), lens: o.microlensing.surprised, rare: o.rare.surprised,
+    sn: o.ia.replayed + o.cc.replayed, quiet: o.ia.surprised + o.cc.surprised })}</p>;
+}
+
+// the law Wonder wrote, fitted on the past, against the old hypotheses on the 40 days that followed
+function Against({ lang, w, f }) {
+  const [d, setD] = useState(null);
+  useEffect(() => {
+    fetch(`${BASE}replays/law.json`).then((r) => (r.ok ? r.json() : null)).then(setD).catch(() => setD(null));
+  }, []);
+  if (!d) return null;
+  const pt = ([day, band, flux, err]) => ({ day, band, flux, err });
+  const line = (rows) => rows.map(([day, mu]) => [day, mu, 0]);
+  const forecasts = [
+    { band: 'g', rows: line(d.curves.old.g), style: 'rival' },
+    { band: 'r', rows: line(d.curves.old.r), style: 'rival', label: w.againstOld, place: 'lower' },
+    { band: 'g', rows: line(d.curves.law.g), style: 'sealed' },
+    { band: 'r', rows: line(d.curves.law.r), style: 'sealed', label: w.againstLaw },
+  ];
+  return (
+    <figure className="against">
+      <h3>{w.against(d.object)}</h3>
+      <Figure lang={lang} start={null} points={d.past.concat(d.later).map(pt)} forecasts={forecasts} now={0} nowLabel={w.fitted}
+        label={w.againstLabel(d.object)} />
+      <figcaption>{w.againstNote(d.later.length, d.verdict.log10_e, f)}</figcaption>
+    </figure>
+  );
+}
+
+function Laws({ laws, lang, w, f }) {
   const l = laws.lenses;
   const o = laws.others;
   return (
@@ -78,6 +113,7 @@ function Laws({ laws, w, f }) {
           won: l.verdicts.neptune, pieces: (l.pieces_verdicts || {}).neptune, m: o.surprised, c: o.verdicts.neptune })}
       </p>
       <p className="muted mono">{w.stamped(f.stamp(laws.tsa_time))}</p>
+      <Against lang={lang} w={w} f={f} />
       <ol className="lawlist">
         {laws.rows.map((r) => {
           const c = r.chosen;
@@ -137,7 +173,8 @@ export default function Logbook({ lang, lanes, live }) {
   return (
     <div className="book">
       <h1>{w.lanes}</h1>
-      {live && live.laws && <Laws laws={live.laws} w={w} f={f} />}
+      {live && live.laws && live.laws.objects && <Alarm o={live.laws.objects} w={w} />}
+      {live && live.laws && <Laws laws={live.laws} lang={lang} w={w} f={f} />}
       <section className="lanes" aria-label={w.lanes}>
         {rows.map((r) => (
           <div key={r.key} className="lane">

@@ -104,3 +104,12 @@ def test_the_equation_experiment_keeps_the_lowest_bic_and_counts_lens_laws_apart
     assert out["lenses"]["verdicts"] == {"neptune": 1, "abstain": 1, "vulcan": 0, "not_fitted": 0}
     assert out["others"]["verdicts"]["neptune"] == 1 and out["lenses"]["pieces_verdicts"] == {"neptune": 1, "abstain": 0, "vulcan": 1}
     assert out["usd"] == pytest.approx(0.6)
+
+
+def test_the_memory_probe_counts_what_each_model_remembered_by_group(tmp_path):
+    rows = [{"name": f"SN{i}", "group": g, "peak_mjd": 60000 + i, "remembered": r}
+            for i, (g, r) in enumerate([("bright", True), ("bright", False), ("faint", False), ("star", False), ("bright", True)])]
+    (tmp_path / "wonder.json").write_text(json.dumps({"model": "wonder", "code": "abc", "n": 5, "usd": 0.1234, "rows": rows}))
+    got = evidence.memory(tmp_path)["wonder"]
+    assert got["groups"] == {"bright": {"n": 3, "remembered": 2}, "faint": {"n": 1, "remembered": 0}, "star": {"n": 1, "remembered": 0}}
+    assert got["remembered"] == ["SN0", "SN4"] and got["newest"] == {"name": "SN4", "peak_mjd": 60004} and got["usd"] == 0.123

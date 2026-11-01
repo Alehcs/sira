@@ -517,3 +517,7 @@ main.wrap { padding-top: 26px; }
   .ctrl .btn { flex: 1 1 0; padding: 0 8px; }
   .state { margin-left: 0; flex: 1 1 100%; }
 }
+.book .against { margin: 18px 0 6px; }
+.book .against h3 { margin: 0 0 8px; font-size: 16px; }
+.book .against figcaption { max-width: 78ch; margin-top: 8px; font-size: 14.5px; color: var(--muted); }
+.book .alarm { max-width: 78ch; margin: 6px 0 4px; font-size: 16.5px; line-height: 1.5; }

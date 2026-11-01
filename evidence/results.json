@@ -4032,6 +4032,66 @@
    "p": 0.263
   }
  },
+ "memory": {
+  "spark": {
+   "code": "c274e0eba081b825374d4b3121d8705cf4717f53",
+   "n": 40,
+   "groups": {
+    "star": {
+     "n": 8,
+     "remembered": 0
+    },
+    "bright": {
+     "n": 16,
+     "remembered": 3
+    },
+    "faint": {
+     "n": 16,
+     "remembered": 0
+    }
+   },
+   "remembered": [
+    "SN2018hna",
+    "SN2022hrs",
+    "SN2023ixf"
+   ],
+   "newest": {
+    "name": "SN2023ixf",
+    "peak_mjd": 60118.26
+   },
+   "usd": 0.085
+  },
+  "wonder": {
+   "code": "c274e0eba081b825374d4b3121d8705cf4717f53",
+   "n": 40,
+   "groups": {
+    "star": {
+     "n": 8,
+     "remembered": 0
+    },
+    "bright": {
+     "n": 16,
+     "remembered": 5
+    },
+    "faint": {
+     "n": 16,
+     "remembered": 0
+    }
+   },
+   "remembered": [
+    "SN2019np",
+    "SN2020nlb",
+    "SN2020hvf",
+    "SN2023ixf",
+    "SN2025rbs"
+   ],
+   "newest": {
+    "name": "SN2025rbs",
+    "peak_mjd": 60884.33
+   },
+   "usd": 0.251
+  }
+ },
  "equations": {
   "plan": {
    "sha256": "d327748a017b8adefb964baab0ccbb1887af2f500bda55162c057b4fc532dda1",

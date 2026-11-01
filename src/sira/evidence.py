@@ -235,6 +235,24 @@ def readers(folder: Path) -> dict:
     return out
 
 
+def memory(folder: Path) -> dict:
+    # what each Muse model remembers of real supernovae, asked by name and by sky position before the firewall was built
+    out = {}
+    for path in sorted(Path(folder).glob("*.json")):
+        d = json.loads(path.read_text())
+        groups = {}
+        for r in d["rows"]:
+            g = groups.setdefault(r["group"], {"n": 0, "remembered": 0})
+            g["n"] += 1
+            g["remembered"] += bool(r["remembered"])
+        known = [r for r in d["rows"] if r["remembered"]]
+        newest = max(known, key=lambda r: r["peak_mjd"]) if known else None
+        out[d["model"]] = {"code": d["code"], "n": d["n"], "groups": groups, "remembered": [r["name"] for r in known],
+                           "newest": {"name": newest["name"], "peak_mjd": newest["peak_mjd"]} if newest else None,
+                           "usd": round(d["usd"], 3)}
+    return out
+
+
 def leverriers(folder: Path, kinds: dict[str, list[str]]) -> dict:
     # k Le Verriers are the first k proposals; the lab keeps the lowest BIC on the past, and only its verdict counts
     rows = []
@@ -500,6 +518,8 @@ def collect(root: Path, ledger_dir: Path | None, seq: int | None = None) -> dict
         results["physics"] = json.loads((root / "physics.json").read_text())
     if (root / "reader").exists():
         results["reader"] = readers(root / "reader")
+    if (root / "memory").exists():
+        results["memory"] = memory(root / "memory")
     if (root / "equations" / "plan.json").exists():
         results["equations"] = equations(root / "equations", (results.get("leverrier") or {}).get("rows"))
     if ledger_dir:

@@ -3,6 +3,8 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import numpy as np
+
 from .ledger import Ledger
 
 LEVEL = re.compile(r"(Brighter|Fainter) than ([\d.]+) microjansky in (\w) (\d+) days from now\?")
@@ -487,6 +489,40 @@ def replays(var: Path, snapshot: Path, out: Path, oid: str = "ZTF19aavisrq") -> 
     with httpx.Client(timeout=30) as c:
         fits = [alerce.stamp(c, oid, first["candid"], k) for k in reader.KINDS]
     (out / "stamps.png").write_bytes(reader.draw(fits, reader.PROTOCOLS["v2"].render))
+    (out / "law.json").write_text(json.dumps(law(snapshot, Path("evidence/equations")), separators=(",", ":"), ensure_ascii=False))
+
+
+def law(snapshot: Path, folder: Path, oid: str = "ZTF19abftuld", window: int = 40) -> dict:
+    # the chosen written law against the old hypotheses, refitted exactly as the experiment did, with what the sky did next
+    from . import catalogs, equation
+    from .fetch import client
+    from .firewall import as_of
+    from .leverrier import _rows
+    from .live import BANDS, _at, assemble, physics
+    from .models import phot
+    from .scoring import mix_moments
+
+    run = json.loads((folder / f"leverrier-{oid}.json").read_text())
+    chosen = min((p for p in run["proposals"] if p.get("bic") is not None), key=lambda p: p["bic"])
+    obj = json.loads((snapshot / "objects" / f"{oid}.json").read_text())
+    now = run["now"]
+    view = as_of(obj, now)
+    ph = phot(view)
+    old = physics(view, catalogs.mw_ebv(client(), obj["ra"], obj["dec"]), days=tuple(range(1, window + 1)))
+    grid = assemble(old, old["weights"], view)["forecasts"]
+    f = equation.fit(chosen["equation"], ph, now, chosen["name"])
+    past = [r for r in obj["photometry"] if r["band"] in BANDS and r["mjd"] <= now and r["kind"] == "det" and r["flux"] > 0]
+    later = _rows(obj, now, now + window)
+    point = lambda r: [round(r["mjd"] - now, 2), r["band"][-1], round(r["flux"], 1), round(r["flux_err"], 1)]
+    days = np.arange(0, window + 0.5, 0.5)
+    curves = {"law": {}, "old": {}}
+    for b in BANDS:
+        mu, sd = f.predict(now + days, [b] * len(days))
+        curves["law"][b[-1]] = [[float(d), round(float(m), 1), round(float(s), 1)] for d, m, s in zip(days, mu, sd)]
+        curves["old"][b[-1]] = [[d, *[round(v, 1) for v in mix_moments(_at(grid, now + d, b))]] for d in range(1, window + 1)]
+    return {"object": oid, "name": chosen["name"], "equation": chosen["equation"], "verdict": chosen["against_old"],
+            "weights": {k: round(v, 3) for k, v in old["weights"].items()},
+            "past": [point(r) for r in past], "later": [point(r) for r in later if r["kind"] == "det"], "curves": curves}
 
 
 def recent(entries: list[dict], now: datetime, days: float = 4) -> list[str]:
@@ -536,7 +572,7 @@ def laws(results: Path) -> dict | None:
     rows = [{k: r[k] for k in ("object", "kind", "written", "lens_laws", "chosen")} for r in found["rows"] if r["surprised"]]
     # the lensing events first, a written lens law before the rest, the strongest verdict first
     rows.sort(key=lambda r: (r["kind"] != "microlensing", not (r["chosen"] or {}).get("lens_law"), -((r["chosen"] or {}).get("log10_e") or 0)))
-    return {"lenses": found["lenses"], "others": found["others"], "tsa_time": found["plan"]["tsa_time"],
+    return {"objects": found["objects"], "lenses": found["lenses"], "others": found["others"], "tsa_time": found["plan"]["tsa_time"],
             "usd": found["usd"], "rows": rows}
 
 
