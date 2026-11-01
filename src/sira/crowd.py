@@ -6,7 +6,7 @@ import math
 import os
 from datetime import date, datetime, time, timedelta, timezone
 
-from . import live, photometry
+from . import alerce, live, photometry
 from .firewall import as_of
 from .ledger import Ledger, jcs, mjd
 
@@ -17,6 +17,7 @@ LAST_OPEN = time(20, 30)  # GitHub can start the job hours late; a round this ne
 OPEN_DELAY = timedelta(minutes=5)  # bets open a little after SIRA's answers are sealed
 MIN_DETS, MIN_R = 10, 4  # a light curve worth betting on
 FRESH = 5  # days since the last r detection; ZTF can skip a field for a few nights
+QUIET = max(live.DAYS) + 2  # an object SIRA bet on this recently has a public forecast that would give its answer away
 SENIORS = 1  # Wonder at max effort, at most once a round
 TEXT = "Brighter in r three days from now than at its last r detection?"
 
@@ -148,19 +149,25 @@ def fetch_bets(c, ids: list[str], page: int = 1000) -> list[dict]:
             return out
 
 
-def picks(entries: list[dict], c, now: float, look=None) -> list[dict]:
-    # the latest night's team bets, still active and well sampled, best sampled first
+def pool(c, now: float) -> list[str]:
+    # supernovae still being detected, up to three months old: a wider net than the nightly's, which bets on the young
+    params = [("classifier", "stamp_classifier"), ("class", "SN"), ("probability", 0.5),
+              ("firstmjd", now - 90), ("firstmjd", now), ("lastmjd", now - FRESH), ("lastmjd", now),
+              ("ndet", MIN_DETS), ("ndet", 1000), ("page_size", 100), ("order_by", "lastmjd"), ("order_mode", "DESC")]
+    return [i["oid"] for i in sorted(alerce.objects(c, params, fresh=True), key=lambda i: -i["ndet"])]
+
+
+def picks(entries: list[dict], c, now: float, look=None, candidates: list[str] | None = None) -> list[dict]:
+    # tonight's young transients that SIRA has no public forecast for, best sampled first
     look = look or (lambda oid, t: live.observe(c, oid, t))
-    bets = [e["payload"] for e in entries if e["kind"] == "bet" and e["payload"].get("model") not in (None, "leverrier")
-            and e["payload"]["made_at"] > now - 2]
-    bets.sort(key=lambda b: (b.get("model") not in TEAM, -(b.get("n_points") or 0)))
-    views, tried = [], set()
-    for b in bets:
-        if b["object"] in tried or len(views) >= 2 * PER_ROUND:
+    public = {e["payload"]["object"] for e in entries if e["kind"] == "bet" and e["payload"].get("object")
+              and e["payload"]["made_at"] > now - QUIET}
+    views = []
+    for oid in pool(c, now) if candidates is None else candidates:
+        if oid in public or len(views) >= 2 * PER_ROUND:
             continue
-        tried.add(b["object"])
         try:
-            view = as_of(look(b["object"], now), now)
+            view = as_of(look(oid, now), now)
         except Exception:
             continue
         dets = [r for r in view["photometry"] if r["kind"] == "det" and r["band"] in live.BANDS]

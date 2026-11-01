@@ -62,7 +62,8 @@ def lab(tmp_path, monkeypatch):
 
     monkeypatch.setattr(team, "investigate", investigate)
     book = Ledger(tmp_path)
-    book.append("bet", {"bet": "ZTF26crowd-1", "object": "ZTF26crowd", "model": "v1", "made_at": OPEN_MJD - 0.41,
+    monkeypatch.setattr(crowd, "pool", lambda c, now: ["ZTF26other", "ZTF26crowd"])
+    book.append("bet", {"bet": "ZTF26other-1", "object": "ZTF26other", "model": "v1", "made_at": OPEN_MJD - 0.41,
                         "n_points": 24, "forecasts": [{"mjd": OPEN_MJD + 1, "band": "ztfr", "parts": [["ia", 1.0, 50.0, 5.0]]}]})
     book.anchor(None)
     return {"book": book, "clock": clock, "obj": obj, "root": tmp_path}
@@ -228,3 +229,12 @@ def test_a_round_takes_objects_whose_last_r_detection_is_up_to_five_days_old(lab
     assert crowd.picks(lab["book"].entries(), None, OPEN_MJD, lambda oid, t: stale)
     older = dict(obj, photometry=[dict(r, mjd=r["mjd"] - 5, available_at=r["available_at"] - 5) for r in obj["photometry"]])
     assert not crowd.picks(lab["book"].entries(), None, OPEN_MJD, lambda oid, t: older)
+
+
+def test_a_round_never_asks_about_an_object_whose_forecast_is_already_public(lab):
+    entries = lab["book"].entries()
+    look = lambda oid, t: lab["obj"] | {"oid": oid}
+    assert [v["oid"] for v in crowd.picks(entries, None, OPEN_MJD, look)] == ["ZTF26crowd"]
+    old = [dict(e, payload=e["payload"] | {"made_at": OPEN_MJD - crowd.QUIET - 0.1}) if e["kind"] == "bet" else e
+           for e in entries]
+    assert [v["oid"] for v in crowd.picks(old, None, OPEN_MJD, look)] == ["ZTF26other", "ZTF26crowd"]
