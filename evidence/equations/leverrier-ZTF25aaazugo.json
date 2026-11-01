@@ -1,0 +1,74 @@
+{
+ "oid": "ZTF25aaazugo",
+ "checks": [
+  {
+   "t": 60699.56,
+   "weights": {
+    "ia": 0.8847343379231256,
+    "tde": 0.015265532797363557,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60709.56,
+   "weights": {
+    "ia": 0.8870449217420293,
+    "tde": 0.012954935223928876,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60719.56,
+   "weights": {
+    "ia": 0.8943836410005086,
+    "tde": 0.0056163379617334,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60729.56,
+   "weights": {
+    "ia": 0.8999999996191825,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60739.56,
+   "weights": {
+    "ia": 0.899999999995938,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

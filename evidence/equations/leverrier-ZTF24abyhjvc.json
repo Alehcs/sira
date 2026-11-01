@@ -1,0 +1,112 @@
+{
+ "oid": "ZTF24abyhjvc",
+ "checks": [
+  {
+   "t": 60669.56,
+   "weights": {
+    "ia": 0.6877280575305519,
+    "tde": 0.21227187748048243,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60679.56,
+   "weights": {
+    "ia": 0.0020513057713793825,
+    "tde": 0.8979486942286208,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60689.56,
+   "weights": {
+    "tde": 0.8998994066594658,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60699.56,
+   "weights": {
+    "tde": 0.8999999999492279,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60709.56,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60719.56,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60729.56,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60739.56,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

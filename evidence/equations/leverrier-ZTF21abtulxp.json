@@ -1,0 +1,267 @@
+{
+ "oid": "ZTF21abtulxp",
+ "checks": [
+  {
+   "t": 59448.39,
+   "weights": {
+    "ia": 0.3610915778763288,
+    "ii": 0.34018581108514107,
+    "ibc": 0.19872261103853017,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59458.39,
+   "weights": {
+    "ia": 0.8999535477254095,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 6,
+    "p_value": 4.4032000000000004e-10,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.10511,
+   "seconds": 42.7,
+   "leap": "equation",
+   "decision": "writes Unseen lens microlensing peak",
+   "why": "A previously unseen foreground object at low Galactic latitude is microlensing a red background star, causing the accelerating, roughly colour-constant rise that a Type Ia template mistook for post-pe"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.16435,
+   "seconds": 65.4,
+   "leap": "equation",
+   "decision": "writes Close-approach inverse-square brightening",
+   "why": "A luminous or sun-reflecting body is passing the observer at nearly constant velocity with a small impact parameter, so its distance is shrinking almost linearly and its flux grows geometrically as 1/"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.1832,
+   "seconds": 84.0,
+   "leap": "equation",
+   "decision": "writes Magnetar delayed diffusion peak",
+   "why": "A magnetar central engine heats massive ejecta, but photons diffuse out slowly so the transient is still on its steep rising branch about a month after explosion. The faint early flux is host light pl"
+  }
+ ],
+ "now": 59468.39,
+ "future_points": 23,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Unseen lens microlensing peak",
+   "idea": "A previously unseen foreground object at low Galactic latitude is microlensing a red background star, causing the accelerating, roughly colour-constant rise that a Type Ia template mistook for post-peak fading. The magnification grows geometrically as the alignment improves, so the steep late rise is lensing rather than an explosion.",
+   "equation": {
+    "flux": "base_b + src_b * amp",
+    "helpers": {
+     "u2": "u0^2 + ((t - t_peak) / t_E)^2",
+     "amp": "(u2 + 2) / (sqrt(u2) * sqrt(u2 + 4))"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": 3.0,
+      "low": -1.0,
+      "high": 25.0,
+      "meaning": "time of closest lens-source alignment in days from now"
+     },
+     "t_E": {
+      "guess": 40.0,
+      "low": 15.0,
+      "high": 150.0,
+      "meaning": "Einstein-radius crossing time in days"
+     },
+     "u0": {
+      "guess": 0.06,
+      "low": 0.01,
+      "high": 0.4,
+      "meaning": "minimum impact parameter in Einstein-radius units"
+     },
+     "src_b": {
+      "guess": 25.0,
+      "low": 1.0,
+      "high": 200.0,
+      "meaning": "unlensed flux of the red source star in band b"
+     },
+     "base_b": {
+      "guess": 3.0,
+      "low": 0.0,
+      "high": 80.0,
+      "meaning": "unlensed blend and background flux in band b"
+     }
+    }
+   },
+   "lens_law": true,
+   "predicts": "It predicts an imminent achromatic peak near t_peak followed by a decline time-symmetric to the rise at constant colour, not the failed Ia model's already-underway asymmetric fading.",
+   "cost_usd": 0.10511,
+   "bic": 23.89,
+   "fit": {
+    "chi2_per_point": 0.62,
+    "params": {
+     "t_peak": -1.0,
+     "t_E": 150.0,
+     "u0": 0.016,
+     "src_g": 6.033,
+     "src_r": 19.408,
+     "base_g": 0.0,
+     "base_r": 0.0
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": 3.98,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Close-approach inverse-square brightening",
+   "idea": "A luminous or sun-reflecting body is passing the observer at nearly constant velocity with a small impact parameter, so its distance is shrinking almost linearly and its flux grows geometrically as 1/distance^2. The nearly constant, very red g-r colour and accelerating rise are therefore achromatic approach brightening, not an expanding, cooling supernova.",
+   "equation": {
+    "flux": "base_b + amp_b / dist2",
+    "helpers": {
+     "dist2": "1 + ((t - t_close) / tau) ^ 2"
+    },
+    "parameters": {
+     "t_close": {
+      "guess": 9.0,
+      "low": 2.0,
+      "high": 25.0,
+      "meaning": "time in days of closest approach"
+     },
+     "tau": {
+      "guess": 2.2,
+      "low": 0.5,
+      "high": 8.0,
+      "meaning": "impact parameter divided by approach speed, in days"
+     },
+     "amp_b": {
+      "guess": 9000.0,
+      "low": 100.0,
+      "high": 200000.0,
+      "meaning": "peak approach flux above baseline in band b in microjansky"
+     },
+     "base_b": {
+      "guess": 4.0,
+      "low": 0.0,
+      "high": 40.0,
+      "meaning": "constant blended or background flux in band b in microjansky"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It will keep brightening at constant colour to a sharp multi-thousand-microjansky peak near t_close and then decline symmetrically in time, unlike the failed SN Ia hypotheses that already have it fading and colour-evolving.",
+   "cost_usd": 0.16435,
+   "bic": 17.41,
+   "fit": {
+    "chi2_per_point": 0.13,
+    "params": {
+     "t_close": 7.911,
+     "tau": 0.7,
+     "amp_g": 64607.797,
+     "amp_r": 200000.0,
+     "base_g": 5.772,
+     "base_r": 16.78
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": -25.19,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Magnetar delayed diffusion peak",
+   "idea": "A magnetar central engine heats massive ejecta, but photons diffuse out slowly so the transient is still on its steep rising branch about a month after explosion. The faint early flux is host light plus the first diffusing emission, not a normal Type Ia maximum.",
+   "equation": {
+    "flux": "host_b + amp_b * shape",
+    "helpers": {
+     "age": "max(t - t_exp, 0.01)",
+     "x": "age / t_diff",
+     "shape": "x^p_rise * exp(p_rise * (1 - x))"
+    },
+    "parameters": {
+     "t_exp": {
+      "guess": -38,
+      "low": -80,
+      "high": -25,
+      "meaning": "explosion time in days relative to now"
+     },
+     "t_diff": {
+      "guess": 90,
+      "low": 25,
+      "high": 250,
+      "meaning": "diffusion time from explosion to bolometric peak"
+     },
+     "p_rise": {
+      "guess": 4.5,
+      "low": 1,
+      "high": 9,
+      "meaning": "steepness of the diffusion-limited rise"
+     },
+     "amp_b": {
+      "guess": 1400,
+      "low": 10,
+      "high": 30000,
+      "meaning": "peak source flux in this band"
+     },
+     "host_b": {
+      "guess": 20,
+      "low": 0,
+      "high": 300,
+      "meaning": "constant host and precursor flux in this band"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts continued brightening for weeks to a broad luminous maximum near t_exp+t_diff followed by a slow decline, rather than the immediate post-peak fade of the failed Ia model.",
+   "cost_usd": 0.1832,
+   "bic": 29.71,
+   "fit": {
+    "chi2_per_point": 1.34,
+    "params": {
+     "t_exp": -43.569,
+     "t_diff": 121.222,
+     "p_rise": 9.0,
+     "amp_g": 11621.474,
+     "amp_r": 30000.0,
+     "host_g": 30.776,
+     "host_r": 124.459
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": -28.97,
+    "verdict": "vulcan"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Unseen lens microlensing peak",
+  "verdict": "neptune",
+  "log10_e": 3.98,
+  "margin_log10_e": 29.17
+ }
+}

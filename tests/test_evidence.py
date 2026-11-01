@@ -83,3 +83,24 @@ def test_the_reader_is_scored_from_its_own_reads_and_the_protocols_are_compared_
     out = evidence.readers(tmp_path)
     assert out["v2"]["balanced_accuracy"] == 1.0 and out["v1"]["balanced_accuracy"] == 0.75 and out["v2"]["auc"] == 1.0
     assert out["v2_vs_v1"] == {"gained": 2, "lost": 0, "p": 0.5}
+
+
+def test_the_equation_experiment_keeps_the_lowest_bic_and_counts_lens_laws_apart_from_verdicts(tmp_path):
+    (tmp_path / "plan.json").write_text(json.dumps({"objects": {"microlensing": ["L1", "L2", "L9"], "ia": ["I1"], "rare": ["R1"]}}))
+    law = lambda name, bic, lens, verdict, e: {"name": name, "bic": bic, "lens_law": lens, "cost_usd": 0.1, "equation": {"flux": name},
+                                               "against_old": {"verdict": verdict, "log10_e": e}}
+    files = {"L1": {"checks": [{}], "proposals": [law("lens", 20, True, "neptune", 30.0), law("nova", 25, False, "neptune", 40.0),
+                                                  {"name": "bad", "fit": "not fitted: x", "cost_usd": 0.1}]},
+             "L2": {"checks": [{}], "proposals": [law("nova", 10, False, "abstain", 0.5), law("lens", 12, True, "neptune", 9.0)]},
+             "I1": {"checks": [{}, {}]},
+             "R1": {"checks": [{}], "proposals": [law("magnetar", 30, False, "neptune", 5.0)]}}
+    for oid, data in files.items():
+        (tmp_path / f"leverrier-{oid}.json").write_text(json.dumps(data))
+    pieces = [{"object": "L1", "kind": "microlensing", "surprised": True, "3": {"verdict": "neptune"}},
+              {"object": "L2", "kind": "microlensing", "surprised": True, "3": {"verdict": "vulcan"}}]
+    out = evidence.equations(tmp_path, pieces)
+    assert out["objects"]["microlensing"] == {"n": 3, "replayed": 2, "surprised": 2} and out["objects"]["ia"]["surprised"] == 0
+    assert out["lenses"]["chosen_lens_law"] == 1 and out["lenses"]["any_lens_law"] == 2 and out["lenses"]["lens_laws_written"] == 2
+    assert out["lenses"]["verdicts"] == {"neptune": 1, "abstain": 1, "vulcan": 0, "not_fitted": 0}
+    assert out["others"]["verdicts"]["neptune"] == 1 and out["lenses"]["pieces_verdicts"] == {"neptune": 1, "abstain": 0, "vulcan": 1}
+    assert out["usd"] == pytest.approx(0.6)

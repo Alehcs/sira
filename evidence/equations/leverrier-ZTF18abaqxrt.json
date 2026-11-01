@@ -1,0 +1,34 @@
+{
+ "oid": "ZTF18abaqxrt",
+ "checks": [
+  {
+   "t": 58293.4,
+   "weights": {
+    "ia": 0.05743084774601806,
+    "ibc": 0.09703397804624626,
+    "tde": 0.7455328971190041,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 58303.4,
+   "weights": {
+    "tde": 0.8991786547213574,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 9,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

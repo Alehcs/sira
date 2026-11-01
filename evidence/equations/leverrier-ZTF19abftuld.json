@@ -1,0 +1,292 @@
+{
+ "oid": "ZTF19abftuld",
+ "checks": [
+  {
+   "t": 58689.43,
+   "weights": {
+    "ia": 0.5491406881743429,
+    "ii": 0.008606883340785337,
+    "ibc": 0.34225242848487186,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 58699.43,
+   "weights": {
+    "ia": 0.23694640648856083,
+    "ii": 0.004242991305931406,
+    "ibc": 0.008711002476588467,
+    "tde": 0.6500995997289194,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 58709.43,
+   "weights": {
+    "ia": 0.3426694947274801,
+    "tde": 0.5573305049908349,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 15,
+    "misses": 3,
+    "p_value": 0.0030393745632011308,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.08123,
+   "seconds": 28.5,
+   "leap": "equation",
+   "decision": "writes Galactic microlensing approach",
+   "why": "A foreground star in the low-latitude Galactic disk is crossing the line of sight to a distant red source star, gravitationally microlensing it. The achromatic Paczynski amplification is still increas"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06087,
+   "seconds": 24.9,
+   "leap": "equation",
+   "decision": "writes Galactic microlensing approach",
+   "why": "A foreground compact object is lensing a red background star at low Galactic latitude, so the flux has risen achromatically and with accelerating curvature for 50 days without a supernova-like peak. T"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.10837,
+   "seconds": 49.7,
+   "leap": "equation",
+   "decision": "writes Galactic microlensing peak",
+   "why": "A foreground Galactic object is crossing in front of a red background star at low Galactic latitude, gravitationally magnifying it. The magnification is achromatic, explaining the nearly constant g-r "
+  }
+ ],
+ "now": 58719.43,
+ "future_points": 234,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Galactic microlensing approach",
+   "idea": "A foreground star in the low-latitude Galactic disk is crossing the line of sight to a distant red source star, gravitationally microlensing it. The achromatic Paczynski amplification is still increasing toward closest approach, so the red colour is the source's intrinsic colour while both bands rise together in fixed proportion.",
+   "equation": {
+    "flux": "src_b * ampl + blend_b",
+    "helpers": {
+     "u": "sqrt(u0^2 + ((t - t_peak) / t_einst)^2)",
+     "ampl": "(u^2 + 2) / (u * sqrt(u^2 + 4))"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": 8,
+      "low": -5,
+      "high": 60,
+      "meaning": "time of closest approach and maximum magnification in days from now"
+     },
+     "t_einst": {
+      "guess": 45,
+      "low": 10,
+      "high": 180,
+      "meaning": "Einstein radius crossing time setting the event duration"
+     },
+     "u0": {
+      "guess": 0.3,
+      "low": 0.03,
+      "high": 1.5,
+      "meaning": "minimum lens-source separation in Einstein radii"
+     },
+     "src_b": {
+      "guess": 25,
+      "low": 0.1,
+      "high": 200,
+      "meaning": "unmagnified source flux per band in microjansky"
+     },
+     "blend_b": {
+      "guess": 4,
+      "low": 0,
+      "high": 100,
+      "meaning": "unmagnified blended flux per band in microjansky"
+     }
+    }
+   },
+   "lens_law": true,
+   "predicts": "Flux will continue rising achromatically with constant g-r colour to a peak after now, then decline symmetrically mirroring the 50-day rise back to baseline, unlike the immediate monotonic post-peak fade predicted by the supernova and TDE hypotheses.",
+   "cost_usd": 0.08123,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "t_peak": 8.029,
+     "t_einst": 180.0,
+     "u0": 0.072,
+     "src_g": 2.787,
+     "src_r": 9.599,
+     "blend_g": 2.31,
+     "blend_r": 0.0
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 143.32,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Galactic microlensing approach",
+   "idea": "A foreground compact object is lensing a red background star at low Galactic latitude, so the flux has risen achromatically and with accelerating curvature for 50 days without a supernova-like peak. The per-band amplitudes encode the red source colour, while the magnification history is common to both bands.",
+   "equation": {
+    "flux": "blend_b + source_b * mag_amp",
+    "helpers": {
+     "tau": "(t - t_peak) / t_E",
+     "u2": "u0^2 + tau^2",
+     "mag_amp": "(u2 + 2.0) / (sqrt(u2) * sqrt(u2 + 4.0))"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": 12.0,
+      "low": 0.0,
+      "high": 90.0,
+      "meaning": "day of closest lens-source approach and maximum magnification"
+     },
+     "t_E": {
+      "guess": 38.0,
+      "low": 5.0,
+      "high": 150.0,
+      "meaning": "Einstein crossing time in days"
+     },
+     "u0": {
+      "guess": 0.2,
+      "low": 0.01,
+      "high": 1.0,
+      "meaning": "minimum lens-source separation in Einstein radii"
+     },
+     "source_b": {
+      "guess": 25.0,
+      "low": 0.5,
+      "high": 150.0,
+      "meaning": "unmagnified flux of the lensed red source in microjansky"
+     },
+     "blend_b": {
+      "guess": 4.0,
+      "low": 0.0,
+      "high": 80.0,
+      "meaning": "unlensed blended and background flux in microjansky"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "Flux will peak near t_peak at constant g-r colour and then decline symmetrically as the time reverse of the rise, unlike the asymmetric fading and colour evolution of the failed Ia and TDE hypotheses.",
+   "cost_usd": 0.06087,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "t_peak": 7.481,
+     "t_E": 150.0,
+     "u0": 0.087,
+     "source_g": 3.275,
+     "source_r": 11.277,
+     "blend_g": 2.301,
+     "blend_r": 0.0
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 148.18,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Galactic microlensing peak",
+   "idea": "A foreground Galactic object is crossing in front of a red background star at low Galactic latitude, gravitationally magnifying it. The magnification is achromatic, explaining the nearly constant g-r color during the slow, smooth, 50-day brightening toward a rounded peak.",
+   "equation": {
+    "flux": "blend_b + source_b * magn",
+    "helpers": {
+     "u2": "u0^2 + ((t - t_peak)/t_E)^2",
+     "magn": "(u2 + 2)/(sqrt(u2)*sqrt(u2 + 4))"
+    },
+    "parameters": {
+     "blend_b": {
+      "guess": 5,
+      "low": 0,
+      "high": 100,
+      "meaning": "unmagnified blend and unrelated flux in band b"
+     },
+     "source_b": {
+      "guess": 25,
+      "low": 1,
+      "high": 200,
+      "meaning": "unmagnified flux of the red lensed source in band b"
+     },
+     "u0": {
+      "guess": 0.35,
+      "low": 0.02,
+      "high": 1.5,
+      "meaning": "minimum lens-source separation in Einstein-radius units"
+     },
+     "t_peak": {
+      "guess": 3,
+      "low": -10,
+      "high": 30,
+      "meaning": "time of closest approach and maximum magnification in days"
+     },
+     "t_E": {
+      "guess": 38,
+      "low": 10,
+      "high": 120,
+      "meaning": "Einstein-radius crossing time in days"
+     }
+    }
+   },
+   "lens_law": true,
+   "predicts": "After a rounded near-current peak, both bands will decline symmetrically and achromatically, approximately mirroring the preceding 50-day rise and returning toward baseline within about two months, unlike the asymmetric declines of the failed supernova and tidal-disruption models.",
+   "cost_usd": 0.10837,
+   "bic": 26.19,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "blend_g": 2.289,
+     "blend_r": 0.0,
+     "source_g": 3.953,
+     "source_r": 13.606,
+     "u0": 0.108,
+     "t_peak": 6.612,
+     "t_E": 120.0
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 171.0,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Galactic microlensing peak",
+  "verdict": "neptune",
+  "log10_e": 171.0,
+  "margin_log10_e": 22.82
+ }
+}

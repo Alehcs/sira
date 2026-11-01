@@ -1,0 +1,75 @@
+{
+ "oid": "ZTF25acamzgr",
+ "checks": [
+  {
+   "t": 60983.45,
+   "weights": {
+    "ia": 0.8801376946417758,
+    "ii": 0.005373809340336979,
+    "tde": 0.014476788913315265,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 9,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60993.45,
+   "weights": {
+    "ia": 0.8843149168341351,
+    "tde": 0.01568508316586501,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61003.45,
+   "weights": {
+    "ia": 0.8843149168341351,
+    "tde": 0.01568508316586501,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61013.45,
+   "weights": {
+    "ia": 0.8999999999999994,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61023.45,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 12,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

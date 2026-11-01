@@ -1,0 +1,63 @@
+{
+ "oid": "ZTF21abdikzn",
+ "checks": [
+  {
+   "t": 59386.38,
+   "weights": {
+    "ia": 0.6372144245206509,
+    "ibc": 0.26278557446496525,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59396.38,
+   "weights": {
+    "ia": 0.6372144245206509,
+    "ibc": 0.26278557446496525,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59406.38,
+   "weights": {
+    "ia": 0.06229225286981174,
+    "ibc": 0.004612669142128837,
+    "tde": 0.8330950779880596,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59416.38,
+   "weights": {
+    "ia": 0.003264248116554385,
+    "tde": 0.8967310144310642,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

@@ -1,0 +1,341 @@
+{
+ "oid": "ZTF21aadrxrx",
+ "checks": [
+  {
+   "t": 59236.56,
+   "weights": {
+    "ia": 0.002752889294426028,
+    "tde": 0.8972471048423111,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59246.56,
+   "weights": {
+    "ia": 0.002752889294426028,
+    "tde": 0.8972471048423111,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 5,
+    "p_value": 3.2000000000000005e-09,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.08176,
+   "seconds": 37.5,
+   "leap": "equation",
+   "decision": "writes Peaked cooling stellar outburst",
+   "why": "The early r-band rise was the approach to a finite outburst maximum, not the indefinite brightening of a supernova or TDE. After maximum the ejecta or accretion disk cools and fades toward a faint red"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0896,
+   "seconds": 31.6,
+   "leap": "equation",
+   "decision": "writes Dusty luminous red nova",
+   "why": "A stellar-merger luminous red nova expanded and peaked near day -22, after which its ejecta cooled and recombined, producing a rapid optical decline. Dust then condensed in the ejecta, preferentially "
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07912,
+   "seconds": 31.7,
+   "leap": "equation",
+   "decision": "writes Dust-dip nova decline",
+   "why": "The early exponential brightening was an expanding nova fireball approaching maximum, not a still-rising TDE or supernova. Around maximum its cooling ejecta condensed dust, causing a sharp, wavelength"
+  }
+ ],
+ "now": 59256.56,
+ "future_points": 24,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Peaked cooling stellar outburst",
+   "idea": "The early r-band rise was the approach to a finite outburst maximum, not the indefinite brightening of a supernova or TDE. After maximum the ejecta or accretion disk cools and fades toward a faint red quiescent source, with the blue band fading faster than the red band.",
+   "equation": {
+    "flux": "base_b + amp_b * (exp(dt / tau_rise) * (1 - step(dt)) + exp(-dt / tau_dec_b) * step(dt))",
+    "helpers": {
+     "dt": "t - t_peak"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": -21.0,
+      "low": -26.0,
+      "high": -10.0,
+      "meaning": "day of outburst maximum"
+     },
+     "tau_rise": {
+      "guess": 5.5,
+      "low": 0.5,
+      "high": 20.0,
+      "meaning": "exponential rise timescale in days"
+     },
+     "tau_dec_b": {
+      "guess": 7.0,
+      "low": 1.5,
+      "high": 30.0,
+      "meaning": "post-peak exponential cooling decay timescale per band in days"
+     },
+     "amp_b": {
+      "guess": 9000.0,
+      "low": 500.0,
+      "high": 100000.0,
+      "meaning": "transient flux above baseline at peak per band"
+     },
+     "base_b": {
+      "guess": 800.0,
+      "low": 0.0,
+      "high": 2500.0,
+      "meaning": "constant red quiescent source flux per band"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts a continued monotonic fade toward a constant red baseline with g decaying faster than r and g-r remaining near or above one magnitude, rather than brightening toward tenth magnitude or maintaining a blue TDE-like plateau.",
+   "cost_usd": 0.08176,
+   "bic": 38.51,
+   "fit": {
+    "chi2_per_point": 0.35,
+    "params": {
+     "t_peak": -21.061,
+     "tau_rise": 4.305,
+     "tau_dec_g": 6.863,
+     "tau_dec_r": 4.397,
+     "amp_g": 7991.505,
+     "amp_r": 20502.274,
+     "base_g": 422.131,
+     "base_r": 2500.0
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -9.72,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Dusty luminous red nova",
+   "idea": "A stellar-merger luminous red nova expanded and peaked near day -22, after which its ejecta cooled and recombined, producing a rapid optical decline. Dust then condensed in the ejecta, preferentially extinguishing blue light and leaving a very red, slowly fading tail.",
+   "equation": {
+    "flux": "amp_b * expand * cool * exp(-dust_b * dustsig) + floor_b",
+    "helpers": {
+     "xp": "max(t - t_peak, 0)",
+     "expand": "min((max(t - t0, 0) / max(t_peak - t0, 1))^2, 1)",
+     "cool": "(fast_w * exp(-xp / tau_fast) + (1 - fast_w) * (1 + xp / tau_slow)^(-alpha))",
+     "dustsig": "0.5 * (1 + tanh((t - t_dust) / tau_dust))"
+    },
+    "parameters": {
+     "amp_b": {
+      "guess": 22000,
+      "low": 1000,
+      "high": 200000,
+      "meaning": "intrinsic peak flux of each band before dust extinction"
+     },
+     "dust_b": {
+      "guess": 1.0,
+      "low": 0,
+      "high": 4,
+      "meaning": "final dust optical depth of each band, larger in g than r"
+     },
+     "floor_b": {
+      "guess": 200,
+      "low": 0,
+      "high": 3000,
+      "meaning": "constant residual host or companion flux in each band"
+     },
+     "t0": {
+      "guess": -40,
+      "low": -55,
+      "high": -32,
+      "meaning": "start time of photospheric expansion"
+     },
+     "t_peak": {
+      "guess": -22,
+      "low": -27,
+      "high": -15,
+      "meaning": "time of maximum photospheric area and start of decline"
+     },
+     "fast_w": {
+      "guess": 0.7,
+      "low": 0.3,
+      "high": 0.95,
+      "meaning": "fraction of flux in the rapidly cooling component"
+     },
+     "tau_fast": {
+      "guess": 4,
+      "low": 1,
+      "high": 10,
+      "meaning": "e-folding time of rapid post-peak cooling in days"
+     },
+     "tau_slow": {
+      "guess": 20,
+      "low": 5,
+      "high": 80,
+      "meaning": "timescale of the slow recombination tail in days"
+     },
+     "alpha": {
+      "guess": 1.5,
+      "low": 0.5,
+      "high": 3,
+      "meaning": "power-law index of the slow tail decline"
+     },
+     "t_dust": {
+      "guess": -18,
+      "low": -24,
+      "high": -5,
+      "meaning": "central time of dust condensation"
+     },
+     "tau_dust": {
+      "guess": 3,
+      "low": 0.5,
+      "high": 10,
+      "meaning": "duration of dust formation in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts continued monotonic reddening with g fading faster than r and a flattening low-luminosity r tail, with no rebrightening toward the roughly 100000 microjansky peak expected by the failed SN and TDE hypotheses.",
+   "cost_usd": 0.0896,
+   "bic": 76.46,
+   "fit": {
+    "chi2_per_point": 1.19,
+    "params": {
+     "amp_g": 103842.334,
+     "amp_r": 11846.09,
+     "dust_g": 0.306,
+     "dust_r": 3.979,
+     "floor_g": 879.878,
+     "floor_r": 2921.962,
+     "t0": -35.105,
+     "t_peak": -22.589,
+     "fast_w": 0.95,
+     "tau_fast": 2.906,
+     "tau_slow": 5.007,
+     "alpha": 2.999,
+     "t_dust": -6.545,
+     "tau_dust": 0.914
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -17.86,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Dust-dip nova decline",
+   "idea": "The early exponential brightening was an expanding nova fireball approaching maximum, not a still-rising TDE or supernova. Around maximum its cooling ejecta condensed dust, causing a sharp, wavelength-dependent optical dip and rapid reddening.",
+   "equation": {
+    "flux": "base_b + amp_b * shape * dust",
+    "helpers": {
+     "shape": "exp(-max(t_peak - t, 0)/tau_rise - max(t - t_peak, 0)/tau_fall)",
+     "dust": "exp(-dust_b*0.5*(1+tanh((t - t_dust)/w_dust)))"
+    },
+    "parameters": {
+     "base_b": {
+      "guess": 300,
+      "low": 0,
+      "high": 2000,
+      "meaning": "quiescent progenitor plus host flux per band"
+     },
+     "amp_b": {
+      "guess": 22000,
+      "low": 1000,
+      "high": 100000,
+      "meaning": "unextinguished peak flux per band"
+     },
+     "tau_rise": {
+      "guess": 6,
+      "low": 1,
+      "high": 20,
+      "meaning": "exponential rise timescale in days"
+     },
+     "tau_fall": {
+      "guess": 14,
+      "low": 4,
+      "high": 60,
+      "meaning": "post-maximum decline timescale in days"
+     },
+     "t_peak": {
+      "guess": -21,
+      "low": -28,
+      "high": -12,
+      "meaning": "day of optical maximum"
+     },
+     "t_dust": {
+      "guess": -18,
+      "low": -26,
+      "high": -5,
+      "meaning": "day dust extinction switches on"
+     },
+     "w_dust": {
+      "guess": 3,
+      "low": 0.5,
+      "high": 10,
+      "meaning": "width in days of dust formation transition"
+     },
+     "dust_b": {
+      "guess": 1.2,
+      "low": 0,
+      "high": 4,
+      "meaning": "added dust optical depth per band, larger in g than r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts a continued red, dust-suppressed fade toward base_b with g falling faster than r and no rebrightening to the smooth blue hundred-thousand-microjansky level forecast by the TDE and Ia models.",
+   "cost_usd": 0.07912,
+   "bic": 51.22,
+   "fit": {
+    "chi2_per_point": 0.47,
+    "params": {
+     "base_g": 218.097,
+     "base_r": 2000.0,
+     "amp_g": 8264.868,
+     "amp_r": 30373.372,
+     "tau_rise": 4.734,
+     "tau_fall": 15.384,
+     "t_peak": -19.085,
+     "t_dust": -8.426,
+     "w_dust": 0.535,
+     "dust_g": 1.315,
+     "dust_r": 2.544
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.64,
+    "verdict": "vulcan"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Dust-dip nova decline",
+  "verdict": "vulcan",
+  "log10_e": -8.64,
+  "margin_log10_e": 1.08
+ }
+}

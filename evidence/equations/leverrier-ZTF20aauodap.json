@@ -1,0 +1,19 @@
+{
+ "oid": "ZTF20aauodap",
+ "checks": [
+  {
+   "t": 58971.5,
+   "weights": {
+    "ia": 0.8999988436522987,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

@@ -1,0 +1,21 @@
+{
+ "oid": "ZTF22aauvkpi",
+ "checks": [
+  {
+   "t": 59801.33,
+   "weights": {
+    "ia": 0.4703853913601587,
+    "ibc": 0.08342538572635566,
+    "tde": 0.3461545069529465,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

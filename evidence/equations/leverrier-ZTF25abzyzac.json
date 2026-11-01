@@ -1,0 +1,348 @@
+{
+ "oid": "ZTF25abzyzac",
+ "checks": [
+  {
+   "t": 60982.25,
+   "weights": {
+    "ia": 0.5378214105653908,
+    "ii": 0.2581714874244945,
+    "ibc": 0.08764812401230962,
+    "tde": 0.01635897799780518,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 14,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60992.25,
+   "weights": {
+    "ia": 0.8573761765494811,
+    "tde": 0.042623823437301,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61002.25,
+   "weights": {
+    "ia": 0.8573761765494811,
+    "tde": 0.042623823437301,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61012.25,
+   "weights": {
+    "tde": 0.8999999999541242,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 2,
+    "p_value": 0.005687123520000001,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-dd63150509",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07904,
+   "seconds": 33.1,
+   "leap": "equation",
+   "decision": "writes Cooling merger ejecta shell",
+   "why": "A stellar-merger luminous red nova ejected a shell that expanded to a roughly constant optical plateau. The shell is now cooling and forming dust, shifting its emission redward so the Wien-side g flux"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-dd63150509",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.05256,
+   "seconds": 20.3,
+   "leap": "equation",
+   "decision": "writes Cooling SN plateau exit",
+   "why": "This is a hydrogen-rich core-collapse supernova, not a TDE: expanding ejecta rose slowly, stayed near recombination-plateau brightness, then began cooling and fading after about day -10. As the photos"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-dd63150509",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0664,
+   "seconds": 24.9,
+   "leap": "equation",
+   "decision": "writes Cooling plateau supernova cobalt tail",
+   "why": "This is a hydrogen-rich core-collapse supernova, not a blue persistent TDE: expanding ejecta produce the ~20 day rise and flat recombination plateau, after which the photosphere recedes and cools so t"
+  }
+ ],
+ "now": 61022.25,
+ "future_points": 7,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Cooling merger ejecta shell",
+   "idea": "A stellar-merger luminous red nova ejected a shell that expanded to a roughly constant optical plateau. The shell is now cooling and forming dust, shifting its emission redward so the Wien-side g flux collapses faster than the r flux.",
+   "equation": {
+    "flux": "A_b * rise * exp(-s_b * late)",
+    "helpers": {
+     "dt": "t - t0",
+     "rise": "step(dt) * (1 - exp(-max(dt, 0.001) / t_rise))^2",
+     "late": "max(t - t_cool, 0)"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -54,
+      "low": -70,
+      "high": -48,
+      "meaning": "ejection onset time in days"
+     },
+     "t_rise": {
+      "guess": 6,
+      "low": 1,
+      "high": 20,
+      "meaning": "photospheric expansion rise timescale in days"
+     },
+     "t_cool": {
+      "guess": -20,
+      "low": -35,
+      "high": -8,
+      "meaning": "time when cooling and reddening begin"
+     },
+     "A_b": {
+      "guess": 130,
+      "low": 20,
+      "high": 400,
+      "meaning": "plateau flux of band b in microjansky"
+     },
+     "s_b": {
+      "guess": 0.03,
+      "low": 0,
+      "high": 0.15,
+      "meaning": "post-cooling exponential fading rate of band b per day, larger in g than r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "Unlike the flat blue TDE plateau, g will keep fading exponentially faster than r with continuing reddening, and r will subsequently fade toward zero without a blue recovery or second plateau.",
+   "cost_usd": 0.07904,
+   "bic": 31.46,
+   "fit": {
+    "chi2_per_point": 0.29,
+    "params": {
+     "t0": -54.26,
+     "t_rise": 10.739,
+     "t_cool": -20.348,
+     "A_g": 161.821,
+     "A_r": 147.752,
+     "s_g": 0.05,
+     "s_r": 0.028
+    }
+   },
+   "against_old": {
+    "n": 7,
+    "log10_e": 3.37,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Cooling SN plateau exit",
+   "idea": "This is a hydrogen-rich core-collapse supernova, not a TDE: expanding ejecta rose slowly, stayed near recombination-plateau brightness, then began cooling and fading after about day -10. As the photosphere cools and recedes, blue light is suppressed much faster than red light.",
+   "equation": {
+    "flux": "amp_b * step(dt) * rise * cool * (tail_frac + (1 - tail_frac) * exp(-max(dt - t_plateau, 0.0) / tau_b))",
+    "helpers": {
+     "dt": "max(t - t_exp, 0.0)",
+     "rise": "1 - exp(-dt / t_rise)",
+     "cool": "(1 + dt / t_cool) ^ (-alpha)"
+    },
+    "parameters": {
+     "t_exp": {
+      "guess": -54,
+      "low": -70,
+      "high": -45,
+      "meaning": "explosion time in days"
+     },
+     "t_rise": {
+      "guess": 9,
+      "low": 2,
+      "high": 20,
+      "meaning": "ejecta rise timescale in days"
+     },
+     "t_cool": {
+      "guess": 30,
+      "low": 10,
+      "high": 100,
+      "meaning": "photospheric cooling timescale in days"
+     },
+     "alpha": {
+      "guess": 0.2,
+      "low": 0,
+      "high": 1.5,
+      "meaning": "cooling power-law exponent"
+     },
+     "t_plateau": {
+      "guess": 44,
+      "low": 25,
+      "high": 60,
+      "meaning": "plateau duration after explosion in days"
+     },
+     "tail_frac": {
+      "guess": 0.35,
+      "low": 0.05,
+      "high": 0.8,
+      "meaning": "fractional flux remaining on radioactive tail"
+     },
+     "amp_b": {
+      "guess": 130,
+      "low": 10,
+      "high": 500,
+      "meaning": "plateau flux per band in microjansky"
+     },
+     "tau_b": {
+      "guess": 18,
+      "low": 5,
+      "high": 60,
+      "meaning": "post-plateau decay time per band in days, shorter in g than r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "After the plateau ends the g band will keep fading substantially faster than r, producing continued reddening and a transition to a slower faint tail, unlike the nearly flat blue plateau predicted by the TDE hypothesis.",
+   "cost_usd": 0.05256,
+   "bic": 43.82,
+   "fit": {
+    "chi2_per_point": 0.42,
+    "params": {
+     "t_exp": -51.644,
+     "t_rise": 20.0,
+     "t_cool": 98.616,
+     "alpha": 0.0,
+     "t_plateau": 30.122,
+     "tail_frac": 0.05,
+     "amp_g": 197.504,
+     "amp_r": 180.15,
+     "tau_g": 17.25,
+     "tau_r": 27.956
+    }
+   },
+   "against_old": {
+    "n": 7,
+    "log10_e": 3.52,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Cooling plateau supernova cobalt tail",
+   "idea": "This is a hydrogen-rich core-collapse supernova, not a blue persistent TDE: expanding ejecta produce the ~20 day rise and flat recombination plateau, after which the photosphere recedes and cools so the flux falls faster in g than in r. At late times the ejecta become powered mainly by radioactive cobalt decay, so the steep post-plateau fall must flatten.",
+   "equation": {
+    "flux": "step(dt) * A_b * rise * ((1 - f_tail) * exp(-decl / tau_cool_b) + f_tail * exp(-decl / tau_tail))",
+    "helpers": {
+     "dt": "t - t0",
+     "rise": "(1 - exp(-max(dt, 0) / tau_rise))^2",
+     "decl": "w_smooth * log(1 + exp((t - t_break) / w_smooth))"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -56,
+      "low": -68,
+      "high": -49,
+      "meaning": "explosion time in days relative to now"
+     },
+     "tau_rise": {
+      "guess": 10,
+      "low": 2,
+      "high": 20,
+      "meaning": "photospheric expansion rise timescale in days"
+     },
+     "t_break": {
+      "guess": -18,
+      "low": -30,
+      "high": -8,
+      "meaning": "end of recombination plateau and start of cooling decline"
+     },
+     "w_smooth": {
+      "guess": 4,
+      "low": 1,
+      "high": 8,
+      "meaning": "smoothness in days of plateau to decline transition"
+     },
+     "A_b": {
+      "guess": 130,
+      "low": 50,
+      "high": 300,
+      "meaning": "plateau flux per band in microjansky"
+     },
+     "tau_cool_b": {
+      "guess": 35,
+      "low": 12,
+      "high": 80,
+      "meaning": "post-plateau cooling decay time per band in days, shorter in g than r"
+     },
+     "f_tail": {
+      "guess": 0.25,
+      "low": 0.05,
+      "high": 0.6,
+      "meaning": "fraction of plateau flux entering the slow radioactive tail"
+     },
+     "tau_tail": {
+      "guess": 90,
+      "low": 50,
+      "high": 150,
+      "meaning": "radioactive cobalt tail decay time in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "The g band will keep fading faster than r so the source reddens, but both bands will flatten onto a ~90 day cobalt tail instead of remaining constant and blue as the TDE and null forecasts predicted.",
+   "cost_usd": 0.0664,
+   "bic": 41.85,
+   "fit": {
+    "chi2_per_point": 0.33,
+    "params": {
+     "t0": -54.276,
+     "tau_rise": 10.775,
+     "t_break": -20.109,
+     "w_smooth": 1.365,
+     "A_g": 162.009,
+     "A_r": 148.154,
+     "tau_cool_g": 18.812,
+     "tau_cool_r": 34.276,
+     "f_tail": 0.05,
+     "tau_tail": 50.0
+    }
+   },
+   "against_old": {
+    "n": 7,
+    "log10_e": 3.47,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Cooling SN plateau exit",
+  "verdict": "neptune",
+  "log10_e": 3.52,
+  "margin_log10_e": 0.05
+ }
+}

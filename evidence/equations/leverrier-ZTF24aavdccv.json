@@ -1,0 +1,273 @@
+{
+ "oid": "ZTF24aavdccv",
+ "checks": [
+  {
+   "t": 60512.2,
+   "weights": {
+    "ia": 0.17080339568197792,
+    "ii": 0.6204917700811536,
+    "ibc": 0.10870483129412474,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 3,
+    "p_value": 7.761920000000002e-05,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-884b27e88f",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07889,
+   "seconds": 35.3,
+   "leap": "equation",
+   "decision": "writes Early CSM dust obscuration",
+   "why": "The transient is an interacting supernova whose intrinsic plateau evolves slowly, but dust rapidly condenses in the cold dense post-shock circumstellar shell beginning near optical peak. The growing w"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-884b27e88f",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0814,
+   "seconds": 29.7,
+   "leap": "equation",
+   "decision": "writes Cooling Wien-tail fireball",
+   "why": "An expanding ejecta photosphere cools as a power law in time with no sustained radioactive or plateau heating, so its radius growth first raises the flux and then the falling temperature drives each b"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-884b27e88f",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.1606,
+   "seconds": 68.4,
+   "leap": "equation",
+   "decision": "writes luminous red nova merger",
+   "why": "A stellar merger ejecting a common envelope produces an expanding, cooling photosphere with no radioactive reheating to sustain the blue light. As the temperature falls, g-band emission on the Wien ta"
+  }
+ ],
+ "now": 60522.2,
+ "future_points": 13,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Early CSM dust obscuration",
+   "idea": "The transient is an interacting supernova whose intrinsic plateau evolves slowly, but dust rapidly condenses in the cold dense post-shock circumstellar shell beginning near optical peak. The growing wavelength-dependent extinction preferentially suppresses the g band, producing the unexpectedly fast blue fading without requiring equally fast intrinsic fading.",
+   "equation": {
+    "flux": "host_b + step(age - 0.01) * amp_b * rise * fade * exp(-dust_b * dust_on)",
+    "helpers": {
+     "age": "max(t - t0, 0.0)",
+     "rise": "((1 - exp(-age / tau_rise)) ^ 2)",
+     "fade": "((1 + age / 25.0) ^ (-beta))",
+     "dust_on": "(0.5 + 0.5 * tanh((t - t_dust) / w_dust))"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -27.0,
+      "low": -32.0,
+      "high": -21.0,
+      "meaning": "explosion time in days relative to now"
+     },
+     "tau_rise": {
+      "guess": 3.5,
+      "low": 0.5,
+      "high": 10.0,
+      "meaning": "intrinsic rise timescale in days"
+     },
+     "beta": {
+      "guess": 0.7,
+      "low": 0.0,
+      "high": 2.5,
+      "meaning": "slow intrinsic plateau decline exponent"
+     },
+     "t_dust": {
+      "guess": -11.0,
+      "low": -18.0,
+      "high": 2.0,
+      "meaning": "midpoint time of rapid dust formation"
+     },
+     "w_dust": {
+      "guess": 3.0,
+      "low": 0.5,
+      "high": 7.0,
+      "meaning": "duration of the dust-formation transition in days"
+     },
+     "amp_b": {
+      "guess": 650.0,
+      "low": 100.0,
+      "high": 2000.0,
+      "meaning": "unextincted peak flux scale per band in microjansky"
+     },
+     "dust_b": {
+      "guess": 0.8,
+      "low": 0.0,
+      "high": 3.5,
+      "meaning": "final dust optical depth per band, expected larger in g than r"
+     },
+     "host_b": {
+      "guess": 3.0,
+      "low": 0.0,
+      "high": 30.0,
+      "meaning": "constant host or background flux per band in microjansky"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts the g-band decline will flatten to a dust-attenuated level after condensation completes, accompanied by a smaller delayed r-band step and saturation at a red g-r color, rather than the smooth parallel color evolution of the failed supernova hypotheses.",
+   "cost_usd": 0.07889,
+   "fit": "not fitted: too little data"
+  },
+  {
+   "leap": "equation",
+   "name": "Cooling Wien-tail fireball",
+   "idea": "An expanding ejecta photosphere cools as a power law in time with no sustained radioactive or plateau heating, so its radius growth first raises the flux and then the falling temperature drives each band onto the exponential Wien tail. The bluer g band is suppressed earlier and faster than r, producing the observed rapid reddening and accelerated g-band fade that standard supernova templates miss.",
+   "equation": {
+    "flux": "amp_b * growth * exp(-wien_b * ((age / tau_cool) ^ alpha))",
+    "helpers": {
+     "age": "max(t - t0, 0.01)",
+     "growth": "(age ^ 2) / (age ^ 2 + tau_rise ^ 2)"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -26,
+      "low": -31,
+      "high": -20,
+      "meaning": "explosion time in days relative to now"
+     },
+     "tau_rise": {
+      "guess": 5,
+      "low": 0.5,
+      "high": 12,
+      "meaning": "photospheric expansion rise timescale in days"
+     },
+     "tau_cool": {
+      "guess": 20,
+      "low": 7,
+      "high": 50,
+      "meaning": "temperature cooling timescale in days"
+     },
+     "alpha": {
+      "guess": 1.8,
+      "low": 0.5,
+      "high": 3.5,
+      "meaning": "power-law index of temperature decline"
+     },
+     "amp_b": {
+      "guess": 900,
+      "low": 50,
+      "high": 5000,
+      "meaning": "per-band flux scale in microjansky before Wien suppression"
+     },
+     "wien_b": {
+      "guess": 0.7,
+      "low": 0.02,
+      "high": 3.0,
+      "meaning": "per-band Wien-tail coefficient, larger for g than r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "The r band will soon follow g into an accelerating exponential decline with monotonically reddening g-r color and no supernova plateau or cobalt-powered tail flattening.",
+   "cost_usd": 0.0814,
+   "bic": 21.52,
+   "fit": {
+    "chi2_per_point": 0.41,
+    "params": {
+     "t0": -25.691,
+     "tau_rise": 7.37,
+     "tau_cool": 15.734,
+     "alpha": 1.879,
+     "amp_g": 1166.755,
+     "amp_r": 1142.799,
+     "wien_g": 0.978,
+     "wien_r": 0.468
+    }
+   },
+   "against_old": {
+    "n": 13,
+    "log10_e": 4.35,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "luminous red nova merger",
+   "idea": "A stellar merger ejecting a common envelope produces an expanding, cooling photosphere with no radioactive reheating to sustain the blue light. As the temperature falls, g-band emission on the Wien tail collapses rapidly while r-band emission is sustained much longer by the cool, large photosphere.",
+   "equation": {
+    "flux": "rise * (hot_b * (age / 10)^area_pow * exp(-sens_b * (cool_factor - 1)) + cool_b * (age / 10)^(-tail_pow))",
+    "helpers": {
+     "age": "max(t - t_exp, 0.05)",
+     "rise": "1 - exp(-age / tau_rise)",
+     "cool_factor": "(age / 10)^cool_pow"
+    },
+    "parameters": {
+     "t_exp": {
+      "guess": -24,
+      "low": -31,
+      "high": -19,
+      "meaning": "merger and envelope ejection time in days"
+     },
+     "tau_rise": {
+      "guess": 3.5,
+      "low": 0.3,
+      "high": 12,
+      "meaning": "rise time of the expanding envelope in days"
+     },
+     "area_pow": {
+      "guess": 0.2,
+      "low": -1,
+      "high": 1.5,
+      "meaning": "power-law growth of photospheric emitting area"
+     },
+     "cool_pow": {
+      "guess": 1.4,
+      "low": 0.4,
+      "high": 2.5,
+      "meaning": "power-law index for photospheric cooling with age"
+     },
+     "tail_pow": {
+      "guess": 0.7,
+      "low": 0,
+      "high": 2.5,
+      "meaning": "power-law decay index of the cool red tail"
+     },
+     "hot_b": {
+      "guess": 400,
+      "low": 0,
+      "high": 2000,
+      "meaning": "hot photosphere flux per band at age 10 days in microjansky"
+     },
+     "sens_b": {
+      "guess": 0.6,
+      "low": 0,
+      "high": 3,
+      "meaning": "per-band Wien-tail sensitivity to cooling, larger in g than r"
+     },
+     "cool_b": {
+      "guess": 80,
+      "low": 0,
+      "high": 1000,
+      "meaning": "cool red-tail flux per band at age 10 days in microjansky"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts g continues fading steeply with g-r reddening beyond about 1.5 mag while r follows a slow power-law plateau for weeks, with no supernova-like rebrightening or abrupt plateau end.",
+   "cost_usd": 0.1606,
+   "fit": "not fitted: too little data"
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Cooling Wien-tail fireball",
+  "verdict": "neptune",
+  "log10_e": 4.35,
+  "margin_log10_e": null
+ }
+}

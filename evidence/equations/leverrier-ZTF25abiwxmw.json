@@ -1,0 +1,357 @@
+{
+ "oid": "ZTF25abiwxmw",
+ "checks": [
+  {
+   "t": 60911.22,
+   "weights": {
+    "ia": 0.8872025048363499,
+    "ii": 0.005819922819812612,
+    "tde": 0.0068317216967195855,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 5,
+    "p_value": 6.497920000000001e-08,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-0dc8fadf26",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06434,
+   "seconds": 27.2,
+   "leap": "equation",
+   "decision": "writes Ia-CSM shell interaction",
+   "why": "A thermonuclear explosion began about 24 days ago and rose like a SN Ia, but its ejecta struck a detached hydrogen-rich shell around day -9. The shock adds sustained interaction luminosity, especially"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-0dc8fadf26",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0691,
+   "seconds": 25.0,
+   "leap": "equation",
+   "decision": "writes Detached CSM shell interaction",
+   "why": "The ejecta from an explosion beginning near t0 have struck a dense, detached circumstellar shell, so shock interaction rather than radioactive decay powers the emission. The growing shocked area produ"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-0dc8fadf26",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06052,
+   "seconds": 23.0,
+   "leap": "equation",
+   "decision": "writes Delayed Ia-CSM H-alpha interaction",
+   "why": "An initially normal supernova is overtaken after about 17 days by shock interaction with a detached hydrogen-rich circumstellar shell. The interaction adds a slowly rising, long-lived continuum plus s"
+  }
+ ],
+ "now": 60921.22,
+ "future_points": 31,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Ia-CSM shell interaction",
+   "idea": "A thermonuclear explosion began about 24 days ago and rose like a SN Ia, but its ejecta struck a detached hydrogen-rich shell around day -9. The shock adds sustained interaction luminosity, especially H-alpha in r, that arrests the decline and produces the late excess in both bands.",
+   "equation": {
+    "flux": "A_sn_b * sn + A_csm_b * csm",
+    "helpers": {
+     "x": "max(t - t0, 0.001)",
+     "sn": "(x^2 / (x^2 + t_rise^2)) * exp(-max(x - t_peak, 0) / t_decl)",
+     "csm": "0.5 * (1 + tanh((t - t_hit) / t_width)) * (1 - exp(-max(t - t_hit, 0) / t_crise)) * exp(-max(t - t_hit, 0) / t_cdec)"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -24,
+      "low": -32,
+      "high": -19,
+      "meaning": "explosion time in days relative to now"
+     },
+     "t_rise": {
+      "guess": 6,
+      "low": 2,
+      "high": 12,
+      "meaning": "SN rise timescale in days"
+     },
+     "t_peak": {
+      "guess": 16,
+      "low": 8,
+      "high": 25,
+      "meaning": "days from explosion to underlying SN peak"
+     },
+     "t_decl": {
+      "guess": 30,
+      "low": 10,
+      "high": 80,
+      "meaning": "underlying SN post-peak decline timescale in days"
+     },
+     "t_hit": {
+      "guess": -9,
+      "low": -16,
+      "high": -2,
+      "meaning": "time ejecta reach the CSM shell"
+     },
+     "t_width": {
+      "guess": 1.5,
+      "low": 0.3,
+      "high": 4,
+      "meaning": "width of interaction turn-on in days"
+     },
+     "t_crise": {
+      "guess": 6,
+      "low": 1,
+      "high": 15,
+      "meaning": "interaction luminosity rise timescale in days"
+     },
+     "t_cdec": {
+      "guess": 70,
+      "low": 25,
+      "high": 250,
+      "meaning": "interaction luminosity decay timescale in days"
+     },
+     "A_sn_b": {
+      "guess": 65,
+      "low": 0,
+      "high": 180,
+      "meaning": "peak underlying SN flux per band in microjansky"
+     },
+     "A_csm_b": {
+      "guess": 55,
+      "low": 0,
+      "high": 250,
+      "meaning": "interaction flux scale per band in microjansky, expected larger in r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts a weeks-long plateau or slow rebrightening with r persistently above g from shocked H-alpha emission, rather than the smooth post-peak decline expected for a normal Ia, II, or TDE.",
+   "cost_usd": 0.06434,
+   "bic": 35.05,
+   "fit": {
+    "chi2_per_point": 0.45,
+    "params": {
+     "t0": -31.977,
+     "t_rise": 2.043,
+     "t_peak": 18.993,
+     "t_decl": 78.393,
+     "t_hit": -15.715,
+     "t_width": 4.0,
+     "t_crise": 15.0,
+     "t_cdec": 248.83,
+     "A_sn_g": 25.276,
+     "A_sn_r": 29.919,
+     "A_csm_g": 113.83,
+     "A_csm_r": 146.551
+    }
+   },
+   "against_old": {
+    "n": 31,
+    "log10_e": 31.93,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Detached CSM shell interaction",
+   "idea": "The ejecta from an explosion beginning near t0 have struck a dense, detached circumstellar shell, so shock interaction rather than radioactive decay powers the emission. The growing shocked area produces a slow, red, still-rising light curve until the shock crosses the shell and the interaction luminosity collapses.",
+   "equation": {
+    "flux": "amp_b * rise * (tail_frac*post + (1-tail_frac)*cut)",
+    "helpers": {
+     "age": "max(t - t0, 0.001)",
+     "rise": "((age/tau_rise)^p)/(1+(age/tau_rise)^p)",
+     "cut": "0.5*(1-tanh((age-t_shell)/w_shell))",
+     "post": "exp(-max(age-t_shell, 0.0)/tau_tail)"
+    },
+    "parameters": {
+     "amp_b": {
+      "guess": 220,
+      "low": 40,
+      "high": 1200,
+      "meaning": "peak interaction flux in microjansky for each band"
+     },
+     "t0": {
+      "guess": -26,
+      "low": -40,
+      "high": -21,
+      "meaning": "explosion start time in days relative to now"
+     },
+     "tau_rise": {
+      "guess": 28,
+      "low": 5,
+      "high": 90,
+      "meaning": "shock interaction rise timescale in days"
+     },
+     "p": {
+      "guess": 1.3,
+      "low": 0.4,
+      "high": 3.0,
+      "meaning": "power-law index of the interaction rise"
+     },
+     "t_shell": {
+      "guess": 55,
+      "low": 30,
+      "high": 140,
+      "meaning": "age in days when shock exits the dense CSM shell"
+     },
+     "w_shell": {
+      "guess": 4,
+      "low": 0.5,
+      "high": 15,
+      "meaning": "width in days of the shell-exit transition"
+     },
+     "tail_frac": {
+      "guess": 0.15,
+      "low": 0.01,
+      "high": 0.6,
+      "meaning": "fraction of peak flux remaining in the post-shell tail"
+     },
+     "tau_tail": {
+      "guess": 25,
+      "low": 5,
+      "high": 120,
+      "meaning": "post-shell exponential decay timescale in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts the flux keeps rising for weeks to a late broad peak near t=+29 d, reddens as it rises, then drops sharply within several days to a faint tail, unlike the smooth decline already predicted by the failed Ia, II and TDE hypotheses.",
+   "cost_usd": 0.0691,
+   "bic": 29.39,
+   "fit": {
+    "chi2_per_point": 0.63,
+    "params": {
+     "amp_g": 915.121,
+     "amp_r": 1129.3,
+     "t0": -40.0,
+     "tau_rise": 90.0,
+     "p": 2.516,
+     "t_shell": 41.129,
+     "w_shell": 3.04,
+     "tail_frac": 0.6,
+     "tau_tail": 26.707
+    }
+   },
+   "against_old": {
+    "n": 31,
+    "log10_e": 15.73,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Delayed Ia-CSM H-alpha interaction",
+   "idea": "An initially normal supernova is overtaken after about 17 days by shock interaction with a detached hydrogen-rich circumstellar shell. The interaction adds a slowly rising, long-lived continuum plus strong H-alpha emission that falls in the r band, explaining the late excess and increasing redness missed by single-component Ia, II and TDE models.",
+   "equation": {
+    "flux": "sn_b * sn_shape + csm_b * csm_shape + host_b",
+    "helpers": {
+     "age": "max(t - t0, 0.0)",
+     "sn_shape": "(1 - exp(-age / tau_rise)) * exp(-max(age - age_peak, 0.0) / tau_fall)",
+     "csm_age": "max(t - t_hit, 0.0)",
+     "csm_shape": "step(t - t_hit) * (1 - exp(-csm_age / tau_csm)) * exp(-csm_age / tau_csm_fall)"
+    },
+    "parameters": {
+     "sn_b": {
+      "guess": 50,
+      "low": 0,
+      "high": 300,
+      "meaning": "peak flux of the underlying supernova in band b"
+     },
+     "csm_b": {
+      "guess": 70,
+      "low": 0,
+      "high": 400,
+      "meaning": "flux scale of CSM interaction in band b, expected much larger in r due to H-alpha"
+     },
+     "host_b": {
+      "guess": 5,
+      "low": 0,
+      "high": 30,
+      "meaning": "constant host galaxy flux in band b"
+     },
+     "t0": {
+      "guess": -26,
+      "low": -45,
+      "high": -20,
+      "meaning": "explosion time in days relative to now"
+     },
+     "tau_rise": {
+      "guess": 10,
+      "low": 2,
+      "high": 30,
+      "meaning": "rise timescale of the underlying supernova in days"
+     },
+     "age_peak": {
+      "guess": 18,
+      "low": 5,
+      "high": 40,
+      "meaning": "age in days at which the underlying supernova peaks"
+     },
+     "tau_fall": {
+      "guess": 30,
+      "low": 10,
+      "high": 100,
+      "meaning": "decline timescale of the underlying supernova in days"
+     },
+     "t_hit": {
+      "guess": -9,
+      "low": -16,
+      "high": -3,
+      "meaning": "time the ejecta reach the detached CSM shell"
+     },
+     "tau_csm": {
+      "guess": 7,
+      "low": 1,
+      "high": 30,
+      "meaning": "turn-on timescale of CSM interaction power in days"
+     },
+     "tau_csm_fall": {
+      "guess": 120,
+      "low": 40,
+      "high": 400,
+      "meaning": "slow decay timescale of CSM interaction in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "The r band will remain brighter than g and plateau or rise for weeks before a very slow decline over ~100 days, with g-r continuing to redden, rather than the rapid post-peak fade predicted by the failed single-component hypotheses.",
+   "cost_usd": 0.06052,
+   "bic": 37.26,
+   "fit": {
+    "chi2_per_point": 0.4,
+    "params": {
+     "sn_g": 0.0,
+     "sn_r": 14.567,
+     "csm_g": 175.597,
+     "csm_r": 214.42,
+     "host_g": 24.767,
+     "host_r": 27.096,
+     "t0": -21.885,
+     "tau_rise": 30.0,
+     "age_peak": 8.901,
+     "tau_fall": 100.0,
+     "t_hit": -15.901,
+     "tau_csm": 29.999,
+     "tau_csm_fall": 400.0
+    }
+   },
+   "against_old": {
+    "n": 31,
+    "log10_e": 14.51,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Ia-CSM shell interaction",
+  "verdict": "neptune",
+  "log10_e": 31.93,
+  "margin_log10_e": 16.2
+ }
+}

@@ -1,0 +1,273 @@
+{
+ "oid": "ZTF25abxfsza",
+ "checks": [
+  {
+   "t": 60968.18,
+   "weights": {
+    "ia": 0.749932570699233,
+    "ibc": 0.12786082198523624,
+    "tde": 0.022206607045823595,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 2,
+    "p_value": 0.005687123520000001,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-d196fe10b0",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.10836,
+   "seconds": 47.6,
+   "leap": "equation",
+   "decision": "writes Detached shell CSM rebrightening",
+   "why": "The roughly constant early flux is the slowly fading tail of the original supernova, not its peak. At about t_hit the ejecta reached a detached circumstellar shell, adding a second shock-powered compo"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-d196fe10b0",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.05536,
+   "seconds": 20.1,
+   "leap": "equation",
+   "decision": "writes Dark-lens microlensing event",
+   "why": "An unseen compact dark lens is transiting in front of a background star in or behind the host, gravitationally magnifying it. The long near-constant baseline followed by a slow, nearly achromatic acce"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-d196fe10b0",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.05394,
+   "seconds": 18.9,
+   "leap": "equation",
+   "decision": "writes Precursor plateau plus late ignition",
+   "why": "A near-constant ~30 microJy plateau for over 20 days is a separate progenitor outburst or circumstellar interaction, not a supernova peak. A second expanding-ejecta component ignited about 11 days ago"
+  }
+ ],
+ "now": 60978.18,
+ "future_points": 1,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Detached shell CSM rebrightening",
+   "idea": "The roughly constant early flux is the slowly fading tail of the original supernova, not its peak. At about t_hit the ejecta reached a detached circumstellar shell, adding a second shock-powered component that is now rising toward its own maximum.",
+   "equation": {
+    "flux": "old_b * exp(-(t+30)/tau_old) + new_b * (age/dur_peak)^alpha * exp(alpha*(1-age/dur_peak))",
+    "helpers": {
+     "age": "max(t - t_hit, 0.001)"
+    },
+    "parameters": {
+     "old_b": {
+      "guess": 33,
+      "low": 0,
+      "high": 200,
+      "meaning": "fading pre-interaction supernova flux per band at day -30 in microjansky"
+     },
+     "new_b": {
+      "guess": 55,
+      "low": 0,
+      "high": 500,
+      "meaning": "peak flux of the new CSM shock component per band in microjansky"
+     },
+     "tau_old": {
+      "guess": 80,
+      "low": 20,
+      "high": 500,
+      "meaning": "exponential fading timescale of the original supernova tail in days"
+     },
+     "t_hit": {
+      "guess": -11,
+      "low": -20,
+      "high": -2,
+      "meaning": "day the ejecta struck the detached shell"
+     },
+     "dur_peak": {
+      "guess": 18,
+      "low": 5,
+      "high": 60,
+      "meaning": "days from shell impact to maximum of the interaction component"
+     },
+     "alpha": {
+      "guess": 2,
+      "low": 0.5,
+      "high": 4,
+      "meaning": "power-law rise index of the interaction component"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "A second, nearly achromatic maximum near t_hit+dur_peak, about +7 days at roughly 70 microjansky, followed by a decline, instead of the monotonic fading predicted by the single-peak hypotheses.",
+   "cost_usd": 0.10836,
+   "bic": 20.66,
+   "fit": {
+    "chi2_per_point": 0.49,
+    "params": {
+     "old_g": 26.359,
+     "old_r": 28.648,
+     "new_g": 163.549,
+     "new_r": 158.208,
+     "tau_old": 500.0,
+     "t_hit": -20.0,
+     "dur_peak": 60.0,
+     "alpha": 3.086
+    }
+   },
+   "against_old": {
+    "n": 1,
+    "log10_e": 0.77,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Dark-lens microlensing event",
+   "idea": "An unseen compact dark lens is transiting in front of a background star in or behind the host, gravitationally magnifying it. The long near-constant baseline followed by a slow, nearly achromatic accelerating rise is the approach to closest alignment, not an explosion.",
+   "equation": {
+    "flux": "base_b + src_b * ampl",
+    "helpers": {
+     "u2": "u0^2 + ((t - t_peak)/t_E)^2",
+     "ampl": "(u2 + 2)/(sqrt(u2)*sqrt(u2 + 4))"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": 5,
+      "low": -10,
+      "high": 50,
+      "meaning": "day of closest lens-source alignment relative to now"
+     },
+     "t_E": {
+      "guess": 20,
+      "low": 5,
+      "high": 80,
+      "meaning": "Einstein-radius crossing time in days"
+     },
+     "u0": {
+      "guess": 0.4,
+      "low": 0.05,
+      "high": 1.5,
+      "meaning": "minimum impact parameter in Einstein-radius units"
+     },
+     "src_b": {
+      "guess": 24,
+      "low": 0,
+      "high": 100,
+      "meaning": "unmagnified flux of the lensed source in this band"
+     },
+     "base_b": {
+      "guess": 6,
+      "low": 0,
+      "high": 80,
+      "meaning": "unlensed blend and host flux in this band"
+     }
+    }
+   },
+   "lens_law": true,
+   "predicts": "It predicts an achromatic, time-symmetric decline after t_peak mirroring the rise toward the constant source colour, with no supernova-like cooling, reddening, or spectral evolution.",
+   "cost_usd": 0.05536,
+   "bic": 17.83,
+   "fit": {
+    "chi2_per_point": 0.26,
+    "params": {
+     "t_peak": -0.551,
+     "t_E": 62.264,
+     "u0": 0.05,
+     "src_g": 3.016,
+     "src_r": 2.142,
+     "base_g": 14.722,
+     "base_r": 22.618
+    }
+   },
+   "against_old": {
+    "n": 1,
+    "log10_e": 0.1,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Precursor plateau plus late ignition",
+   "idea": "A near-constant ~30 microJy plateau for over 20 days is a separate progenitor outburst or circumstellar interaction, not a supernova peak. A second expanding-ejecta component ignited about 11 days ago and is now rising on top of that plateau, so the single-component Ia, Ibc and TDE fits mistook the plateau for a fading peak.",
+   "equation": {
+    "flux": "base_b + amp_b * (dt / (dt + tau_rise))^n_rise * exp(-dt / tau_decay)",
+    "helpers": {
+     "dt": "max(t - t0, 0)"
+    },
+    "parameters": {
+     "base_b": {
+      "guess": 32,
+      "low": 0,
+      "high": 80,
+      "meaning": "constant precursor and host flux per band in microJy"
+     },
+     "amp_b": {
+      "guess": 180,
+      "low": 20,
+      "high": 1000,
+      "meaning": "peak scale of the newly ignited component per band in microJy"
+     },
+     "t0": {
+      "guess": -11,
+      "low": -25,
+      "high": -4,
+      "meaning": "ignition day of the second component relative to now"
+     },
+     "tau_rise": {
+      "guess": 12,
+      "low": 3,
+      "high": 40,
+      "meaning": "rise timescale of the new component in days"
+     },
+     "n_rise": {
+      "guess": 2,
+      "low": 1,
+      "high": 4,
+      "meaning": "power-law index of the early fireball rise"
+     },
+     "tau_decay": {
+      "guess": 80,
+      "low": 20,
+      "high": 300,
+      "meaning": "eventual decay timescale of the new component in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts the flux will keep rising for the next 1-3 weeks, reaching well above 150 microJy before turning over, instead of fading to about 20 microJy as the failed hypotheses forecast.",
+   "cost_usd": 0.05394,
+   "bic": 20.61,
+   "fit": {
+    "chi2_per_point": 0.47,
+    "params": {
+     "base_g": 26.236,
+     "base_r": 28.321,
+     "amp_g": 1000.0,
+     "amp_r": 992.818,
+     "t0": -20.441,
+     "tau_rise": 24.448,
+     "n_rise": 4.0,
+     "tau_decay": 300.0
+    }
+   },
+   "against_old": {
+    "n": 1,
+    "log10_e": 0.8,
+    "verdict": "abstain"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Precursor plateau plus late ignition",
+  "verdict": "abstain",
+  "log10_e": 0.8,
+  "margin_log10_e": 0.03
+ }
+}

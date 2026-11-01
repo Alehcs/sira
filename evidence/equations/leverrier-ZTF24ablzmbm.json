@@ -1,0 +1,62 @@
+{
+ "oid": "ZTF24ablzmbm",
+ "checks": [
+  {
+   "t": 60603.46,
+   "weights": {
+    "ia": 0.6459099520406828,
+    "ibc": 0.25407625009640955,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60613.46,
+   "weights": {
+    "ia": 0.8973877955261648,
+    "ibc": 0.002612204473835209,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60623.46,
+   "weights": {
+    "ia": 0.49532300845754074,
+    "ibc": 0.4046769915424593,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60633.46,
+   "weights": {
+    "ia": 0.891197679784182,
+    "ibc": 0.008802320215818032,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

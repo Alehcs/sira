@@ -1,0 +1,20 @@
+{
+ "oid": "ZTF21abmnkml",
+ "checks": [
+  {
+   "t": 59454.29,
+   "weights": {
+    "ia": 0.8548836459112478,
+    "ibc": 0.045116354088752295,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

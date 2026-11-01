@@ -1,0 +1,47 @@
+{
+ "oid": "ZTF25aacmgnn",
+ "checks": [
+  {
+   "t": 60734.54,
+   "weights": {
+    "ia": 0.16689375792898817,
+    "ii": 0.7331061873808667,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60744.54,
+   "weights": {
+    "ia": 0.32528700237349484,
+    "ii": 0.5747129747461451,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60754.54,
+   "weights": {
+    "ii": 0.899545671852334,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

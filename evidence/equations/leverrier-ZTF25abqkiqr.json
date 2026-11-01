@@ -1,0 +1,49 @@
+{
+ "oid": "ZTF25abqkiqr",
+ "checks": [
+  {
+   "t": 60942.23,
+   "weights": {
+    "ia": 0.5600750836256514,
+    "ii": 0.2847004803725228,
+    "ibc": 0.04955643814363792,
+    "tde": 0.00566799785818792,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60952.23,
+   "weights": {
+    "ia": 0.8975313931546486,
+    "tde": 0.0024452404678706875,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60962.23,
+   "weights": {
+    "ia": 0.8999907697533339,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

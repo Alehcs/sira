@@ -445,6 +445,46 @@ def figures(results: dict, out: Path) -> list[str]:
     return made
 
 
+def equations(folder: Path, pieces: list[dict] | None = None) -> dict:
+    # the pre-registered equation experiment: what Wonder wrote with no pieces, what the lab kept and what the future said
+    folder = Path(folder)
+    plan = json.loads((folder / "plan.json").read_text())
+    rows = []
+    for kind, oids in plan["objects"].items():
+        for oid in oids:
+            path = folder / f"leverrier-{oid}.json"
+            data = json.loads(path.read_text()) if path.exists() else None
+            written = (data or {}).get("proposals")
+            fitted = [p for p in written or [] if p.get("bic") is not None]
+            pick = min(fitted, key=lambda p: p["bic"]) if fitted else None
+            rows.append({"object": oid, "kind": kind, "replayed": bool(data and "checks" in data),
+                         "surprised": written is not None, "written": len(written or []),
+                         "lens_laws": sum(bool(p.get("lens_law")) for p in written or []),
+                         "usd": round(sum(p.get("cost_usd") or 0 for p in written or []), 4),
+                         "chosen": {"name": pick["name"], "lens_law": pick["lens_law"], "verdict": pick["against_old"]["verdict"],
+                                    "log10_e": pick["against_old"]["log10_e"], "equation": pick["equation"]} if pick else None})
+    count = lambda rs, test: sum(1 for r in rs if test(r))
+    verdicts = lambda rs: {v: count(rs, lambda r: r["chosen"] and r["chosen"]["verdict"] == v) for v in ("neptune", "abstain", "vulcan")} | {
+        "not_fitted": count(rs, lambda r: not r["chosen"])}
+    lenses = [r for r in rows if r["kind"] == "microlensing" and r["surprised"]]
+    others = [r for r in rows if r["kind"] != "microlensing" and r["surprised"]]
+    out = {"plan": stamped(folder / "plan.json"),
+           "objects": {k: {"n": len(v), "replayed": count(rows, lambda r, k=k: r["kind"] == k and r["replayed"]),
+                           "surprised": count(rows, lambda r, k=k: r["kind"] == k and r["surprised"])} for k, v in plan["objects"].items()},
+           "lenses": {"surprised": len(lenses), "chosen_lens_law": count(lenses, lambda r: r["chosen"] and r["chosen"]["lens_law"]),
+                      "any_lens_law": count(lenses, lambda r: r["lens_laws"] > 0),
+                      "lens_laws_written": sum(r["lens_laws"] for r in lenses), "equations_written": sum(r["written"] for r in lenses),
+                      "verdicts": verdicts(lenses)},
+           "others": {"surprised": len(others), "chosen_lens_law": count(others, lambda r: r["chosen"] and r["chosen"]["lens_law"]),
+                      "verdicts": verdicts(others)},
+           "usd": round(sum(r["usd"] for r in rows), 2), "rows": rows}
+    if pieces:
+        # the same lens surprises with three pieces-built proposals, from the team-size experiment
+        same = {r["object"]: r["3"]["verdict"] for r in pieces if r["kind"] == "microlensing" and r["surprised"]}
+        out["lenses"]["pieces_verdicts"] = {v: sum(1 for r in lenses if same.get(r["object"]) == v) for v in ("neptune", "abstain", "vulcan")}
+    return out
+
+
 def collect(root: Path, ledger_dir: Path | None, seq: int | None = None) -> dict:
     root = Path(root)
     plan = json.loads((root / "plan.json").read_text())
@@ -460,6 +500,8 @@ def collect(root: Path, ledger_dir: Path | None, seq: int | None = None) -> dict
         results["physics"] = json.loads((root / "physics.json").read_text())
     if (root / "reader").exists():
         results["reader"] = readers(root / "reader")
+    if (root / "equations" / "plan.json").exists():
+        results["equations"] = equations(root / "equations", (results.get("leverrier") or {}).get("rows"))
     if ledger_dir:
         results["live"] = live(Ledger(ledger_dir).entries(), seq)
     return results

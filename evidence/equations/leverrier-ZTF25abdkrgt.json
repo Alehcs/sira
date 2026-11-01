@@ -1,0 +1,86 @@
+{
+ "oid": "ZTF25abdkrgt",
+ "checks": [
+  {
+   "t": 60890.3,
+   "weights": {
+    "tde": 0.8993704854655872,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60900.3,
+   "weights": {
+    "ia": 0.8030116272999628,
+    "tde": 0.09698837039251215,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 4,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60910.3,
+   "weights": {
+    "tde": 0.8999953083777127,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60920.3,
+   "weights": {
+    "ia": 0.05477311008532261,
+    "ii": 0.8452268899146774,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 9,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60930.3,
+   "weights": {
+    "ii": 0.8999938334816515,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60940.3,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

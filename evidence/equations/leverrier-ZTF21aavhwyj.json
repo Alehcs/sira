@@ -1,0 +1,402 @@
+{
+ "oid": "ZTF21aavhwyj",
+ "checks": [
+  {
+   "t": 59337.46,
+   "weights": {
+    "tde": 0.8999791187201731,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59347.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59357.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59367.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 4,
+    "p_value": 7.872000000000002e-07,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.10544,
+   "seconds": 43.2,
+   "leap": "equation",
+   "decision": "writes Dusty slow nova reddening",
+   "why": "A slowly rising hot photosphere peaked in g about 25 days ago and then expanded and cooled. Dust then condensed while a cool, H-alpha-bright photosphere emerged, preferentially extinguishing g and pro"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.09856,
+   "seconds": 42.6,
+   "leap": "equation",
+   "decision": "writes dust-forming stellar merger",
+   "why": "Expanding luminous-red-nova ejecta first produce a hot, weeks-long optical rise. After maximum the ejecta cool below the condensation temperature, rapidly forming dust that preferentially extinguishes"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.19247,
+   "seconds": 83.4,
+   "leap": "equation",
+   "decision": "writes Luminous red nova merger",
+   "why": "A Galactic stellar merger, consistent with the low Galactic latitude, produced a hot blue first peak from expanding ejecta that is now fading exponentially. As the ejecta cool, recombine and form dust"
+  }
+ ],
+ "now": 59377.46,
+ "future_points": 9,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Dusty slow nova reddening",
+   "idea": "A slowly rising hot photosphere peaked in g about 25 days ago and then expanded and cooled. Dust then condensed while a cool, H-alpha-bright photosphere emerged, preferentially extinguishing g and producing the abrupt late reddening and r-band turn-on rather than a persistently blue TDE.",
+   "equation": {
+    "flux": "amp_hot_b*blue_shape*exp(-tau_dust_b*dust)+amp_red_b*red_shape",
+    "helpers": {
+     "dt_peak": "t-t_peak",
+     "blue_shape": "step(-dt_peak)*exp(dt_peak/tau_rise)+step(dt_peak)*exp(-dt_peak/tau_fall)",
+     "dust": "0.5*(1+tanh((t-t_dust)/w_dust))",
+     "red_shape": "0.5*(1+tanh((t-t_red)/w_red))*exp(-max(t-t_red,0)/tau_red_fall)"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": -25,
+      "low": -35,
+      "high": -15,
+      "meaning": "time of hot blue photospheric peak"
+     },
+     "tau_rise": {
+      "guess": 17,
+      "low": 5,
+      "high": 40,
+      "meaning": "exponential rise time of hot component in days"
+     },
+     "tau_fall": {
+      "guess": 12,
+      "low": 3,
+      "high": 40,
+      "meaning": "intrinsic decline time of hot component in days"
+     },
+     "amp_hot_b": {
+      "guess": 500,
+      "low": 0,
+      "high": 2000,
+      "meaning": "peak hot-component flux in each band in microjansky"
+     },
+     "t_dust": {
+      "guess": -16,
+      "low": -23,
+      "high": -9,
+      "meaning": "time of dust condensation onset"
+     },
+     "w_dust": {
+      "guess": 4,
+      "low": 0.5,
+      "high": 10,
+      "meaning": "width in days of dust formation transition"
+     },
+     "tau_dust_b": {
+      "guess": 1.0,
+      "low": 0,
+      "high": 4,
+      "meaning": "dust optical depth in each band, expected larger in g than r"
+     },
+     "t_red": {
+      "guess": -2,
+      "low": -12,
+      "high": 10,
+      "meaning": "emergence time of cool red and H-alpha component"
+     },
+     "w_red": {
+      "guess": 3,
+      "low": 0.5,
+      "high": 12,
+      "meaning": "rise width in days of red component"
+     },
+     "tau_red_fall": {
+      "guess": 30,
+      "low": 8,
+      "high": 120,
+      "meaning": "slow decline time of red component in days"
+     },
+     "amp_red_b": {
+      "guess": 200,
+      "low": 0,
+      "high": 1500,
+      "meaning": "red-component flux scale in each band in microjansky, expected much larger in r than g"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "Unlike a blue TDE, g will keep fading rapidly while r peaks days to weeks later and declines slowly, so g-r continues reddening by more than a magnitude with no blue rebrightening.",
+   "cost_usd": 0.10544,
+   "bic": 43.82,
+   "fit": {
+    "chi2_per_point": 0.84,
+    "params": {
+     "t_peak": -23.897,
+     "tau_rise": 14.73,
+     "tau_fall": 5.124,
+     "amp_hot_g": 803.711,
+     "amp_hot_r": 1711.92,
+     "t_dust": -9.0,
+     "w_dust": 0.5,
+     "tau_dust_g": 4.0,
+     "tau_dust_r": 0.001,
+     "t_red": -12.0,
+     "w_red": 12.0,
+     "tau_red_fall": 9.571,
+     "amp_red_g": 497.958,
+     "amp_red_r": 1153.747
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": -2.02,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "dust-forming stellar merger",
+   "idea": "Expanding luminous-red-nova ejecta first produce a hot, weeks-long optical rise. After maximum the ejecta cool below the condensation temperature, rapidly forming dust that preferentially extinguishes the blue light while a cooler, redder photosphere emerges.",
+   "equation": {
+    "flux": "amp_hot_b*hot*exp(-ext_b*dust) + amp_cool_b*cool*dust",
+    "helpers": {
+     "age": "max(t - t0, 0.05)",
+     "dust": "0.5*(1+tanh((t - t_dust)/w_dust))",
+     "hot": "(age/t_hot)^p_hot * exp(p_hot*(1 - age/t_hot))",
+     "cool": "(age/t_cool)^p_cool * exp(p_cool*(1 - age/t_cool))"
+    },
+    "parameters": {
+     "t0": {
+      "guess": -68,
+      "low": -90,
+      "high": -55,
+      "meaning": "eruption start time in days"
+     },
+     "t_hot": {
+      "guess": 42,
+      "low": 20,
+      "high": 70,
+      "meaning": "age in days at hot-component maximum"
+     },
+     "p_hot": {
+      "guess": 2.5,
+      "low": 0.5,
+      "high": 6,
+      "meaning": "hot-component rise and decline sharpness"
+     },
+     "t_cool": {
+      "guess": 75,
+      "low": 45,
+      "high": 140,
+      "meaning": "age in days at cool-component maximum"
+     },
+     "p_cool": {
+      "guess": 1.5,
+      "low": 0.3,
+      "high": 5,
+      "meaning": "cool-component rise and decline sharpness"
+     },
+     "t_dust": {
+      "guess": -18,
+      "low": -30,
+      "high": -5,
+      "meaning": "dust-condensation time in days"
+     },
+     "w_dust": {
+      "guess": 4,
+      "low": 1,
+      "high": 10,
+      "meaning": "dust-formation transition width in days"
+     },
+     "amp_hot_b": {
+      "guess": 700,
+      "low": 0,
+      "high": 5000,
+      "meaning": "hot-component peak flux per band in microjansky"
+     },
+     "amp_cool_b": {
+      "guess": 250,
+      "low": 0,
+      "high": 3000,
+      "meaning": "cool-component peak flux per band in microjansky"
+     },
+     "ext_b": {
+      "guess": 1.5,
+      "low": 0,
+      "high": 6,
+      "meaning": "dust optical depth per band, larger in g than r"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "The r band will show a delayed plateau or second maximum around and after now while g continues fading rapidly and the colour remains very red, unlike the persistently blue, slowly declining emission expected from a TDE.",
+   "cost_usd": 0.09856,
+   "bic": 129.38,
+   "fit": {
+    "chi2_per_point": 18.36,
+    "params": {
+     "t0": -77.814,
+     "t_hot": 70.0,
+     "p_hot": 4.946,
+     "t_cool": 45.0,
+     "p_cool": 5.0,
+     "t_dust": -9.726,
+     "w_dust": 4.113,
+     "amp_hot_g": 688.75,
+     "amp_hot_r": 590.893,
+     "amp_cool_g": 199.447,
+     "amp_cool_r": 410.851,
+     "ext_g": 2.387,
+     "ext_r": 1.261
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": 0.22,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Luminous red nova merger",
+   "idea": "A Galactic stellar merger, consistent with the low Galactic latitude, produced a hot blue first peak from expanding ejecta that is now fading exponentially. As the ejecta cool, recombine and form dust, a second intrinsically red peak is emerging in r while the g-band continuum continues to fade.",
+   "equation": {
+    "flux": "amp_hot_b * hot_shape + amp_red_b * red_shape",
+    "helpers": {
+     "hot_shape": "exp(-max(t_peak - t, 0) / tau_rise - max(t - t_peak, 0) / tau_fade)",
+     "red_shape": "(1 / (1 + exp(-(t - t_red) / tau_red))) * exp(-max(t - t_red, 0) / tau_red_decay)"
+    },
+    "parameters": {
+     "t_peak": {
+      "guess": -24,
+      "low": -30,
+      "high": -18,
+      "meaning": "day of the first blue maximum"
+     },
+     "tau_rise": {
+      "guess": 15,
+      "low": 8,
+      "high": 25,
+      "meaning": "exponential rise time to first peak in days"
+     },
+     "tau_fade": {
+      "guess": 14,
+      "low": 8,
+      "high": 25,
+      "meaning": "exponential fade time of the blue ejecta in days"
+     },
+     "amp_hot_b": {
+      "guess": 900,
+      "low": 0,
+      "high": 3000,
+      "meaning": "peak flux of the hot blue component in band b"
+     },
+     "t_red": {
+      "guess": -1,
+      "low": -5,
+      "high": 4,
+      "meaning": "onset day of the second red recombination peak"
+     },
+     "tau_red": {
+      "guess": 1.2,
+      "low": 0.3,
+      "high": 4,
+      "meaning": "rise width of the red peak in days"
+     },
+     "tau_red_decay": {
+      "guess": 14,
+      "low": 5,
+      "high": 40,
+      "meaning": "decay time of the red peak in days"
+     },
+     "amp_red_b": {
+      "guess": 300,
+      "low": 0,
+      "high": 2000,
+      "meaning": "peak flux of the cool red component in band b"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "The r band will turn over and fade within about two weeks while remaining brighter and much redder than g, and g will keep fading exponentially rather than rebrightening to the TDE forecast.",
+   "cost_usd": 0.19247,
+   "bic": 32.96,
+   "fit": {
+    "chi2_per_point": 0.51,
+    "params": {
+     "t_peak": -24.249,
+     "tau_rise": 14.294,
+     "tau_fade": 11.542,
+     "amp_hot_g": 829.597,
+     "amp_hot_r": 1302.042,
+     "t_red": -3.643,
+     "tau_red": 4.0,
+     "tau_red_decay": 5.0,
+     "amp_red_g": 62.783,
+     "amp_red_r": 412.938
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": 0.98,
+    "verdict": "abstain"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Luminous red nova merger",
+  "verdict": "abstain",
+  "log10_e": 0.98,
+  "margin_log10_e": 0.76
+ }
+}

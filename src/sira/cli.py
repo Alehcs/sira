@@ -180,9 +180,15 @@ def evidence(args) -> None:
         ev.physics(Path(args.snapshot), root)
     results = ev.collect(root, Path(args.ledger) if Path(args.ledger).exists() else None, args.until)
     if args.check:
-        # the Bitcoin proof matures after the fact, so only it may differ from the committed numbers
+        # the Bitcoin proofs mature after the fact, so only they may differ from the committed numbers
+        def same(r):
+            r = json.loads(json.dumps(r))
+            for part in (r, r.get("equations") or {}):
+                if "plan" in part:
+                    part["plan"]["ots"] = None
+            return r
+
         saved = json.loads((root / "results.json").read_text())
-        same = lambda r: json.loads(json.dumps(r | {"plan": r["plan"] | {"ots": None}}))
         if same(saved) != same(results):
             raise SystemExit("evidence/results.json does not match what the files give")
         print(f"every number in {root / 'results.json'} was recomputed and matches")
@@ -192,7 +198,9 @@ def evidence(args) -> None:
         made = ev.figures(results, root / "figures")
     except ImportError:
         made = []
-    brief = {k: v for k, v in results.items() if k not in ("test", "leverrier", "physics")}
+    brief = {k: v for k, v in results.items() if k not in ("test", "leverrier", "physics", "equations")}
+    if "equations" in results:
+        brief["equations"] = {k: v for k, v in results["equations"].items() if k != "rows"}
     if "test" in results:
         brief["test"] = {k: results["test"][k] for k in ("cases", "failed", "outcomes", "cost_usd", "primary", "forecasters")}
     if "live" in results:

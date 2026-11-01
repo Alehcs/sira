@@ -1,0 +1,306 @@
+{
+ "oid": "ZTF21abqhbuh",
+ "checks": [
+  {
+   "t": 59442.39,
+   "weights": {
+    "ia": 0.8982016386445739,
+    "ibc": 0.0017983613554094777,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59452.39,
+   "weights": {
+    "ia": 0.8999999946682876,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59462.39,
+   "weights": {
+    "ia": 0.8999999999779175,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59472.39,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 3,
+    "p_value": 0.0004154574330623999,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.09586,
+   "seconds": 41.5,
+   "leap": "equation",
+   "decision": "writes Runaway luminous red nova",
+   "why": "A stellar merger in the Galactic plane undergoes runaway common-envelope ejection, so the cool expanding photosphere brightens almost exponentially at nearly constant red color. Once the envelope reac"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.19333,
+   "seconds": 76.8,
+   "leap": "equation",
+   "decision": "writes Long-rising interacting supernova",
+   "why": "This is a heavily reddened, CSM-interacting or magnetar-powered supernova diffusing through a massive envelope, not a Type Ia. Its luminosity rises approximately exponentially for tens of days toward "
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07233,
+   "seconds": 23.9,
+   "leap": "equation",
+   "decision": "writes slow red accretion outburst",
+   "why": "At low galactic latitude this is a Galactic FU Orionis-type accretion outburst, not a supernova: a heating front spreading through a circumstellar disk gives a months-long, roughly exponential and per"
+  }
+ ],
+ "now": 59482.39,
+ "future_points": 19,
+ "proposals": [
+  {
+   "leap": "equation",
+   "name": "Runaway luminous red nova",
+   "idea": "A stellar merger in the Galactic plane undergoes runaway common-envelope ejection, so the cool expanding photosphere brightens almost exponentially at nearly constant red color. Once the envelope reaches its maximum radius the rise saturates into a long-lived red plateau rather than a supernova peak and decline.",
+   "equation": {
+    "flux": "base_b + plateau_b*sig",
+    "helpers": {
+     "sig": "1/(1+exp(-(t-t_mid)/tau_rise))"
+    },
+    "parameters": {
+     "plateau_b": {
+      "guess": 2500,
+      "low": 400,
+      "high": 30000,
+      "meaning": "plateau flux of band b in microjansky"
+     },
+     "base_b": {
+      "guess": 5,
+      "low": 0,
+      "high": 50,
+      "meaning": "quiescent baseline flux of band b in microjansky"
+     },
+     "t_mid": {
+      "guess": 15,
+      "low": -20,
+      "high": 120,
+      "meaning": "day when flux reaches half its plateau value"
+     },
+     "tau_rise": {
+      "guess": 23,
+      "low": 5,
+      "high": 60,
+      "meaning": "exponential e-folding rise time in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "Flux will keep rising nearly exponentially with constant g-r near 1.5 mag, exceed about 1500 microjansky in r, and then flatten into a months-long plateau instead of declining like a Type Ia supernova.",
+   "cost_usd": 0.09586,
+   "bic": 34.5,
+   "fit": {
+    "chi2_per_point": 0.7,
+    "params": {
+     "plateau_g": 7296.368,
+     "plateau_r": 30000.0,
+     "base_g": 1.951,
+     "base_r": 32.975,
+     "t_mid": 75.196,
+     "tau_rise": 24.165
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 395.37,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "Long-rising interacting supernova",
+   "idea": "This is a heavily reddened, CSM-interacting or magnetar-powered supernova diffusing through a massive envelope, not a Type Ia. Its luminosity rises approximately exponentially for tens of days toward a broad peak still in the future, with nearly constant red color.",
+   "equation": {
+    "flux": "base_b + amp_b*step(dt)*rise*fall",
+    "helpers": {
+     "dt": "t - t_exp",
+     "rise": "1/(1+exp(-(t-t_peak)/tau_r))",
+     "fall": "exp(-max(t-t_peak,0)/tau_d)"
+    },
+    "parameters": {
+     "t_exp": {
+      "guess": -63,
+      "low": -72,
+      "high": -55,
+      "meaning": "explosion or shock-emergence time in days"
+     },
+     "t_peak": {
+      "guess": 18,
+      "low": -10,
+      "high": 90,
+      "meaning": "midpoint of the prolonged rise and start of turnover in days"
+     },
+     "tau_r": {
+      "guess": 24,
+      "low": 6,
+      "high": 60,
+      "meaning": "exponential diffusion rise timescale in days"
+     },
+     "tau_d": {
+      "guess": 95,
+      "low": 25,
+      "high": 400,
+      "meaning": "slow post-peak decline timescale in days"
+     },
+     "amp_b": {
+      "guess": 3200,
+      "low": 20,
+      "high": 20000,
+      "meaning": "band amplitude in microjansky before the decline factor"
+     },
+     "base_b": {
+      "guess": 5,
+      "low": 0,
+      "high": 80,
+      "meaning": "pre-explosion baseline flux in microjansky per band"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "It predicts the transient keeps rising for several more weeks to a broad red peak about 1.5-3 times brighter than at t=-2, then declines slowly over months, instead of already fading as the Ia model forecast.",
+   "cost_usd": 0.19333,
+   "bic": 41.19,
+   "fit": {
+    "chi2_per_point": 0.78,
+    "params": {
+     "t_exp": -62.145,
+     "t_peak": 63.915,
+     "tau_r": 23.781,
+     "tau_d": 214.0,
+     "amp_g": 4863.032,
+     "amp_r": 20000.0,
+     "base_g": 2.685,
+     "base_r": 35.858
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 434.03,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "equation",
+   "name": "slow red accretion outburst",
+   "idea": "At low galactic latitude this is a Galactic FU Orionis-type accretion outburst, not a supernova: a heating front spreading through a circumstellar disk gives a months-long, roughly exponential and persistently very red rise. The outburst then saturates into a years-long plateau rather than peaking and decaying in weeks.",
+   "equation": {
+    "flux": "base_b + amp_b * rise * fade",
+    "helpers": {
+     "rise": "1/(1+exp(-(t-t_mid)/tau_rise))",
+     "fade": "exp(-max(0,t-t_mid-plateau_len)/tau_decay)"
+    },
+    "parameters": {
+     "amp_b": {
+      "guess": 2000,
+      "low": 100,
+      "high": 30000,
+      "meaning": "plateau flux in this band, much smaller in g than r"
+     },
+     "base_b": {
+      "guess": 3,
+      "low": 0,
+      "high": 50,
+      "meaning": "pre-outburst quiescent flux in this band"
+     },
+     "t_mid": {
+      "guess": 5,
+      "low": -40,
+      "high": 120,
+      "meaning": "midpoint day of the slow rise"
+     },
+     "tau_rise": {
+      "guess": 24,
+      "low": 5,
+      "high": 80,
+      "meaning": "e-folding time of heating-front rise in days"
+     },
+     "plateau_len": {
+      "guess": 300,
+      "low": 50,
+      "high": 3000,
+      "meaning": "duration of near-constant plateau in days"
+     },
+     "tau_decay": {
+      "guess": 900,
+      "low": 200,
+      "high": 6000,
+      "meaning": "slow post-plateau decay time in days"
+     }
+    }
+   },
+   "lens_law": false,
+   "predicts": "Flux will keep rising for weeks, then flatten to a red plateau with an almost constant g-to-r ratio for hundreds of days instead of turning over and fading like a Type Ia supernova.",
+   "cost_usd": 0.07233,
+   "bic": 41.09,
+   "fit": {
+    "chi2_per_point": 0.77,
+    "params": {
+     "amp_g": 7296.368,
+     "amp_r": 30000.0,
+     "base_g": 1.951,
+     "base_r": 32.976,
+     "t_mid": 75.196,
+     "tau_rise": 24.165,
+     "plateau_len": 244.943,
+     "tau_decay": 5079.64
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 396.93,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "equation",
+  "name": "Long-rising interacting supernova",
+  "verdict": "neptune",
+  "log10_e": 434.03,
+  "margin_log10_e": 37.1
+ }
+}

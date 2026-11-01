@@ -1,0 +1,169 @@
+{
+ "oid": "ZTF25aatmfzy",
+ "checks": [
+  {
+   "t": 60941.52,
+   "weights": {
+    "ia": 0.3108975873660213,
+    "ii": 0.42581695949918197,
+    "ibc": 0.16328545313479675,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60951.52,
+   "weights": {
+    "ia": 0.27869328948400296,
+    "ii": 0.3344640364188143,
+    "ibc": 0.27767113900012774,
+    "tde": 0.009171535097055176,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60961.52,
+   "weights": {
+    "ia": 0.11029167896691558,
+    "ii": 0.7880962494924363,
+    "tde": 0.0013604938826420087,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60971.52,
+   "weights": {
+    "ii": 0.8999842618135692,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 9,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60981.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60991.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61001.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61011.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61021.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61031.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61041.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 61051.52,
+   "weights": {
+    "ii": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}
