@@ -29,8 +29,8 @@
 <text x="516" y="120" font-size="16" font-weight="bold" fill="#10151b">Lookouts</text>
 <rect x="516" y="132" width="125" height="22" rx="11" fill="#ffffff" stroke="#0b6b74" stroke-width="1.2"/>
 <text x="526" y="147.5" font-size="13" fill="#0b6b74">Muse Spark Open</text>
-<text x="516" y="178" font-size="14" fill="#4a5462">pick ~15 of 30–40</text>
-<text x="516" y="200" font-size="14" fill="#4a5462">candidates</text>
+<text x="516" y="178" font-size="14" fill="#4a5462">pick up to 15</text>
+<text x="516" y="200" font-size="14" fill="#4a5462">candidates a night</text>
 <text x="516" y="222" font-size="14" fill="#4a5462">vote of three</text>
 <text x="516" y="244" font-size="14" fill="#4a5462">when unsure</text>
 </g>
@@ -39,10 +39,10 @@
 <text x="746" y="120" font-size="16" font-weight="bold" fill="#10151b">Physics</text>
 <rect x="746" y="132" width="48" height="22" rx="11" fill="#ffffff" stroke="#4a5462" stroke-width="1.2"/>
 <text x="756" y="147.5" font-size="13" fill="#4a5462">code</text>
-<text x="746" y="178" font-size="14" fill="#4a5462">9 hypotheses fitted</text>
-<text x="746" y="200" font-size="14" fill="#4a5462">SN Ia, II, Ibc, IIn,</text>
-<text x="746" y="222" font-size="14" fill="#4a5462">lens, TDE, AGN,</text>
-<text x="746" y="244" font-size="14" fill="#4a5462">instrument, null</text>
+<text x="746" y="178" font-size="14" fill="#4a5462">4 hypotheses fitted</text>
+<text x="746" y="200" font-size="14" fill="#4a5462">SN Ia, II, Ibc, TDE,</text>
+<text x="746" y="222" font-size="14" fill="#4a5462">plus none of the above</text>
+<text x="746" y="244" font-size="14" fill="#4a5462">no lens among them</text>
 </g>
 <g>
 <rect x="960" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
