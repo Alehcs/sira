@@ -272,7 +272,7 @@ def main() -> None:
     leap.add_argument("--root", default="data/snapshot")
     leap.add_argument("--gap", type=int, default=10)
     leap.add_argument("--window", type=int, default=40)
-    leap.add_argument("--leaps", nargs="+", choices=["hidden", "new", "instrument"], help="the proposals to ask for, in order")
+    leap.add_argument("--leaps", nargs="+", choices=["hidden", "new", "instrument", "equation"], help="the proposals to ask for, in order")
     leap.add_argument("--out", default="var")
     leap.set_defaults(run=leverrier)
     best = sub.add_parser("highlights", help="list the ledger's best moments, for the video and posts")

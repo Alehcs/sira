@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-from . import agents, catalogs, dsl, photometry, scoring
+from . import agents, catalogs, dsl, equation, photometry, scoring
 from .fetch import client
 from .firewall import as_of, blind
 from .live import BANDS, _at, assemble, measure, physics
@@ -16,6 +16,16 @@ LEAPS = {
     "new": "a new physical model: a mechanism outside the lab's list of hypotheses",
     "instrument": "the instrument: calibration, template or subtraction problems that would mimic this behaviour",
 }
+# with no pieces and no hint of a mechanism: Le Verrier writes its own law, which code reads, fits and the future judges
+EQUATION = ("You are Le Verrier. The lab's hypotheses were fitted to this transient and their sealed forecasts failed on the "
+            "measurements listed. Propose one new physical explanation "
+            "and write it as a closed-form equation for the flux in each band as a function of time, which the lab's code "
+            "will fit. Write expressions with numbers, t (days from now), your parameter and helper names, + - * / ^ ( ) and "
+            "the functions sqrt, exp, log, abs, tanh, step, min, max; a parameter whose name ends in _b takes one value per "
+            "band. Give every parameter a guess and a range. Say what your model predicts that the failed hypotheses do not. "
+            'JSON: {"name": "a few words", "idea": "two sentences", "flux": "the flux of band b in microjansky", '
+            '"helpers": {"name": "expression"}, "parameters": {"name": {"guess": number, "low": number, "high": number, '
+            '"meaning": "words"}}, "predicts": "one sentence"}')
 TAIL = 0.01  # a PIT this far out counts as a miss
 SURPRISE_P = 0.01  # misses this improbable under a calibrated forecast mean the hypotheses are failing
 DECISIVE = math.log(20)  # e >= 20 rejects the rival at the 5% level (Ville's inequality); below, the lab abstains
@@ -55,6 +65,19 @@ def propose(llm, leap: str, case: dict, failed: dict, misses: list[dict]) -> tup
            "components": [{"type": str(c.get("type"))} for c in parts if isinstance(c, dict)][: dsl.MAX_PARTS],
            "predicts": str(data.get("predicts", ""))[:300]}
     return out, event | {"leap": leap, "decision": f"proposes {out['name'] or 'nothing'}", "why": out["idea"][:200]}
+
+
+def write(llm, leap: str, case: dict, failed: dict, misses: list[dict]) -> tuple[dict, dict]:
+    payload = {"case": case, "failed_hypotheses": failed, "misses": misses}
+    data, event = agents.call(llm, "leverrier", EQUATION, payload, case["case"])
+    params = data.get("parameters") if isinstance(data.get("parameters"), dict) else {}
+    helpers = data.get("helpers") if isinstance(data.get("helpers"), dict) else {}
+    law = {"flux": str(data.get("flux", ""))[:equation.MAX_TEXT],
+           "helpers": {str(k)[:40]: str(v)[:equation.MAX_TEXT] for k, v in list(helpers.items())[:equation.MAX_HELPERS]},
+           "parameters": {str(k)[:40]: v for k, v in list(params.items())[:equation.MAX_PARAMS]}}
+    out = {"leap": leap, "name": str(data.get("name", ""))[:80], "idea": str(data.get("idea", ""))[:400],
+           "equation": law, "lens_law": equation.lens_law(law), "predicts": str(data.get("predicts", ""))[:300]}
+    return out, event | {"leap": leap, "decision": f"writes {out['name'] or 'nothing'}", "why": out["idea"][:200]}
 
 
 def _rows(obj: dict, start: float, stop: float) -> list[dict]:
@@ -101,7 +124,7 @@ def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report, leaps) 
     failed = {k: round(v, 3) for k, v in first["weights"].items()}
     mapper = pool.map if pool else map
     blind_case = blind(view)
-    results = list(mapper(lambda leap: propose(llm, leap, blind_case, failed, misses), leaps))
+    results = list(mapper(lambda leap: (write if leap == "equation" else propose)(llm, leap, blind_case, failed, misses), leaps))
     ph = phot(view)
     null = fit("null", ph)
     old_at = lambda r: _at(old_grid, r["mjd"], r["band"])
@@ -110,7 +133,8 @@ def _leap(obj, ebv, llm, now, first, sealed, seen, window, pool, report, leaps) 
         report["events"].append(event)
         entry = proposal | {"cost_usd": event.get("cost_usd")}
         try:
-            f = dsl.fit_spec({"components": proposal["components"]}, ph, proposal["name"] or proposal["leap"])
+            f = (equation.fit(proposal["equation"], ph, now, proposal["name"] or "equation") if "equation" in proposal
+                 else dsl.fit_spec({"components": proposal["components"]}, ph, proposal["name"] or proposal["leap"]))
         except ValueError as e:
             out["proposals"].append(entry | {"fit": f"not fitted: {e}"})
             continue
