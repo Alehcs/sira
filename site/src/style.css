@@ -49,6 +49,7 @@ main.wrap { padding-top: 26px; }
 .seg button { min-height: 40px; min-width: 44px; padding: 0 12px; background: transparent; border: 0; color: var(--muted); font-size: 14px; font-weight: 500; }
 .seg button + button { border-left: 1px solid var(--muted); }
 .seg button[aria-pressed='true'] { color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 600; }
+.seg button.icon { display: inline-flex; align-items: center; justify-content: center; padding: 0 11px; }
 .foot { margin-top: 44px; padding: 18px 0 30px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
 .foot .links { display: flex; flex-wrap: wrap; gap: 0 22px; font-size: 14px; }
 .foot .links a { min-height: 32px; display: inline-flex; align-items: center; color: var(--text); }
@@ -206,17 +207,20 @@ main.wrap { padding-top: 26px; }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .state { margin-left: auto; display: flex; flex-wrap: wrap; gap: 4px 18px; font: 14px 'IBM Plex Mono', monospace; color: var(--muted); }
 .state b { color: var(--text); font-weight: 500; }
-.scrub { display: flex; flex-wrap: wrap; gap: 10px 10px; margin-top: 16px; }
-.grp { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.grp div { display: flex; gap: 4px; }
-.grp span, .pscrub span { font: 12px/18px 'IBM Plex Mono', monospace; color: var(--muted); }
-.grp span { white-space: nowrap; }
-.grp button, .pscrub button { width: 38px; height: 40px; padding: 0; border: 1px solid var(--muted); border-radius: 2px; background: transparent; color: var(--muted); font: 13px 'IBM Plex Mono', monospace; }
-.grp button.past, .pscrub button.past { color: var(--text); background: var(--track); }
-.grp button[aria-current='step'], .pscrub button[aria-current='step'] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
-.pscrub { display: none; grid-template-columns: repeat(7, minmax(0, 44px)); justify-content: space-between; gap: 4px 2px; margin-top: 16px; }
-.pscrub button { width: 100%; height: 44px; }
-.pscrub span { text-align: center; margin-bottom: 8px; }
+.timeline { margin-top: 18px; }
+.timeline .track { display: flex; gap: 3px; }
+.timeline button { flex: 1 1 0; min-width: 6px; height: 28px; padding: 0; position: relative; background: transparent; border: 0; }
+.timeline button::before, .timeline i { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 8px; border-radius: 1px; background: var(--track); }
+.timeline button.past::before { background: var(--accent); }
+.timeline button[aria-current='step']::before { background: var(--track); }
+.timeline i { display: block; background: var(--accent); }
+.timeline i.filling { right: auto; width: 0; animation: filling linear forwards; }
+.timeline button:not(.past):hover::before { background: var(--muted); }
+.timeline button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.timeline .marks { position: relative; height: 18px; }
+.timeline .marks span { position: absolute; top: 0; white-space: nowrap; font: 12px/18px 'IBM Plex Mono', monospace; color: var(--muted); }
+@keyframes filling { to { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .timeline i.filling { animation: none; width: 100%; } }
 
 /* Beat SIRA, the forecasts and the logbook */
 .beat .head, .tele .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 30px; }
@@ -499,6 +503,4 @@ main.wrap { padding-top: 26px; }
   .more { right: 22px; }
   .ctrl .btn { flex: 1 1 0; padding: 0 8px; }
   .state { margin-left: 0; flex: 1 1 100%; }
-  .scrub { display: none; }
-  .pscrub { display: grid; }
 }

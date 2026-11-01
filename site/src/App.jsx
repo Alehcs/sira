@@ -10,6 +10,21 @@ import { WORDS } from './words.js';
 const TABS = ['lab', 'live', 'archive', 'beat', 'telegrams', 'logbook'];
 const fromHash = () => (TABS.includes(window.location.hash.slice(1).split('/')[0]) ? window.location.hash.slice(1).split('/')[0] : 'lab');
 
+// a sun for light, a moon for dark
+const ICONS = {
+  light: (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+      <circle cx="9" cy="9" r="3.4" />
+      <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4" />
+    </svg>
+  ),
+  dark: (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+      <path d="M14.8 11.2A6.2 6.2 0 0 1 6.8 3.2a6.2 6.2 0 1 0 8 8z" />
+    </svg>
+  ),
+};
+
 function firstLang() {
   try {
     const saved = localStorage.getItem('lang');
@@ -68,7 +83,9 @@ export default function App() {
             {['en', 'es'].map((l) => <button key={l} type="button" lang={l} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}
           </div>
           <div className="seg" role="group" aria-label={w.theme}>
-            {['dark', 'light'].map((t) => <button key={t} type="button" aria-pressed={theme === t} onClick={() => setTheme(t)}>{w.themes[t]}</button>)}
+            {['light', 'dark'].map((t) => (
+              <button key={t} type="button" className="icon" aria-pressed={theme === t} aria-label={w.themes[t]} title={w.themes[t]} onClick={() => setTheme(t)}>{ICONS[t]}</button>
+            ))}
           </div>
         </div>
       </header>

@@ -7,6 +7,7 @@ import Paper from './ui/Paper.jsx';
 import Photos from './ui/Photos.jsx';
 import Stamps from './ui/Stamps.jsx';
 import { Message, Thread } from './ui/Thread.jsx';
+import Timeline from './ui/Timeline.jsx';
 import { WORDS, format } from './words.js';
 import './lab.css';
 
@@ -223,9 +224,9 @@ function attachment(i, d, step, w, f) {
 }
 
 // a replay opens on the given step with its thread from the top; the thread follows once the visitor plays or picks a step
-function useSteps(last, pace, first = last) {
+function useSteps(last, pace, first = last, auto = false) {
   const [step, setStep] = useState(first);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(() => auto && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [follow, setFollow] = useState(false);
 
   // playing, each step lasts as long as the observatory takes to play it
@@ -246,14 +247,14 @@ function useSteps(last, pace, first = last) {
   return { step, playing, follow, go, play };
 }
 
-function Controls({ step, last, playing, go, play, w, children }) {
+function Controls({ step, last, playing, go, play, w, name, children }) {
   return (
     <div className="ctrl">
       <button type="button" className="btn" disabled={step === 0} onClick={() => go(step - 1)}>{w.back}</button>
       <button type="button" className="btn primary" onClick={play}>{playing ? w.pause : w.play}</button>
       <button type="button" className="btn" disabled={step === last} onClick={() => go(step + 1)}>{w.next}</button>
       <div className="state">
-        <span>{w.stepOf[0]} <b>{step + 1}</b> {w.stepOf[1]} {last + 1}</span>
+        <span>{w.stepOf[0]} <b>{step + 1}</b> {w.stepOf[1]} {last + 1}: <b>{name}</b></span>
         {children}
       </div>
     </div>
@@ -269,7 +270,7 @@ function Featured({ lang, data: d }) {
   const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
   const scenes = useMemo(() => beats(d, text.says), [d, lang]);
   const pace = useMemo(() => lengths(scenes), [scenes]);
-  const { step, playing, follow, go, play } = useSteps(last, pace, 0);
+  const { step, playing, follow, go, play } = useSteps(last, pace, 0, true);
 
   // the figure at this step: what the sky had shown by then and the forecast sealed last
   const now = d.now[step];
@@ -287,26 +288,9 @@ function Featured({ lang, data: d }) {
   }[SHOWN[step]];
   const missed = step >= 6 && step <= 8;
 
-  // the steps grouped under their dates, in one row on wide screens and two rows of seven on phones
+  // under the bar, each date where its first step starts
   const dates = ROLES.map((r, i) => f.short(at(d.now[i])));
-  const button = (i) => (
-    <button key={i} type="button" className={i < step ? 'past' : undefined} aria-current={i === step ? 'step' : undefined}
-      aria-label={`${w.step} ${i + 1}: ${w.names[ROLES[i]]}`} onClick={() => go(i)}>{i + 1}</button>
-  );
-  const groups = [];
-  dates.forEach((label, i) => {
-    if (!groups.length || groups[groups.length - 1].label !== label) groups.push({ label, items: [] });
-    groups[groups.length - 1].items.push(i);
-  });
-  const halves = [[0, 7], [7, 14]].map(([a, b]) => {
-    const ids = ROLES.map((r, i) => i).slice(a, b);
-    const spans = [];
-    ids.forEach((i) => {
-      if (spans.length && spans[spans.length - 1].label === dates[i]) spans[spans.length - 1].n += 1;
-      else spans.push({ label: dates[i], n: 1, i });
-    });
-    return { ids, spans };
-  });
+  const marks = dates.map((text, i) => ({ i, text })).filter((m) => m.i === 0 || dates[m.i - 1] !== m.text);
 
   return (
     <>
@@ -336,16 +320,12 @@ function Featured({ lang, data: d }) {
             rings={missed ? d.misses.map(([day, , flux]) => ({ day, flux })) : []}
             note={missed ? { text: w.outside(k.surprise.misses, k.surprise.n), sub: `${w.fan.ia} ${h8(d.bets[1].hash)}` } : null}
             label={w.chartLabel(d.object)} />
-          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w}>
+          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w} name={w.names[ROLES[step]]}>
             <b>{f.day(at(now))}</b>
             <b>{f.money(d.spent[step])}</b>
           </Controls>
-          <div className="scrub" role="group" aria-label={w.timeMachine}>
-            {groups.map((g) => <div key={g.label} className="grp"><div>{g.items.map(button)}</div><span>{g.label}</span></div>)}
-          </div>
-          <div className="pscrub" role="group" aria-label={w.timeMachine}>
-            {halves.flatMap((h) => [...h.ids.map(button), ...h.spans.map((s) => <span key={`d${s.i}`} style={{ gridColumn: `span ${s.n}` }}>{s.label}</span>)])}
-          </div>
+          <Timeline step={step} playing={playing} pace={pace} parts={ROLES.map((r) => w.names[r])} marks={marks} go={go}
+            label={w.timeMachine} stepWord={w.step} />
         </section>
       </div>
     </>
@@ -417,10 +397,6 @@ function Latest({ lang, d }) {
   // from a week before the first detection to just past the question's day
   const firstDay = Math.min(0, ...points.filter((p) => !p.limit).map((p) => p.day));
   const span = [Math.max(-40, Math.floor(firstDay) - 7), q.days + 2];
-  const button = (i) => (
-    <button key={i} type="button" className={i < step ? 'past' : undefined} aria-current={i === step ? 'step' : undefined}
-      aria-label={`${w.step} ${i + 1}: ${w.stages[stages[i].roles[0]]}`} onClick={() => go(i)}>{i + 1}</button>
-  );
 
   return (
     <>
@@ -449,14 +425,12 @@ function Latest({ lang, d }) {
           <Figure lang={lang} start={d.made_at} points={points} forecasts={forecasts} now={0} nowLabel={w.sealed} x={span}
             reference={{ flux: q.reference, label: live.at(fluxText(f, q.reference), q.band) }} target={{ day: q.days, label: f.short(q.due) }}
             label={live.chart(d.object)} />
-          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w}>
+          <Controls step={step} last={last} playing={playing} go={go} play={play} w={w} name={w.stages[stages[step].roles[0]]}>
             <b>{f.day(sealedAt)}</b>
             <b>{f.money(spent)}</b>
           </Controls>
-          <div className="scrub" role="group" aria-label={w.timeMachine}>
-            {stages.map((s, i) => <div key={s.roles[0]} className="grp"><div>{button(i)}</div><span>{w.stages[s.roles[0]]}</span></div>)}
-          </div>
-          <div className="pscrub" role="group" aria-label={w.timeMachine}>{stages.map((s, i) => button(i))}</div>
+          <Timeline step={step} playing={playing} pace={pace} parts={stages.map((s) => w.stages[s.roles[0]])}
+            marks={stages.map((s, i) => ({ i, text: w.stages[s.roles[0]] }))} go={go} label={w.timeMachine} stepWord={w.step} />
         </section>
       </div>
       {im.stamps && (
