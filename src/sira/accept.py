@@ -15,9 +15,9 @@ BANDS = ("ztfg", "ztfr", "ztfi")
 DECISIVE = 3.0  # the losing hypothesis must do this many times worse on the future
 
 
-def _objects(root: Path, category: str) -> list[dict]:
+def _objects(root: Path, category: str, split: str | None = None) -> list[dict]:
     manifest = json.loads((root / "manifest.json").read_text())
-    return [o for o in manifest["objects"] if o["category"] == category]
+    return [o for o in manifest["objects"] if o["category"] == category and split in (None, o["split"])]
 
 
 def _load(root: Path, oid: str) -> dict:
@@ -40,11 +40,11 @@ def _distance(job: tuple) -> tuple[str, dict | None]:
     return oid, ia_distance(phot(as_of(_load(root, oid), float("inf"))), ebv)
 
 
-def at1(root: Path, workers: int = 6, splits: int = 200, seed: int = 0) -> dict:
+def at1(root: Path, workers: int = 6, splits: int = 200, seed: int = 0, split: str | None = None) -> dict:
     # F7: Ia light curves predict their host redshift; the same recipe on other types must miss badly
     root = Path(root)
     truth = json.loads((root / "truth.json").read_text())
-    ia, cc = [o["oid"] for o in _objects(root, "ia")], [o["oid"] for o in _objects(root, "cc")]
+    ia, cc = [o["oid"] for o in _objects(root, "ia", split)], [o["oid"] for o in _objects(root, "cc", split)]
     ebv = _reddening(root, ia + cc)
     with ProcessPoolExecutor(workers) as pool:
         dist = dict(pool.map(_distance, [(root, o, ebv[o]) for o in ia + cc]))
@@ -54,7 +54,18 @@ def at1(root: Path, workers: int = 6, splits: int = 200, seed: int = 0) -> dict:
               "good_fits": _f7(good(fitted(ia)), good(fitted(cc)), dist, truth, splits, seed)}
     # the pass mark uses every fit, so the quality cuts can never be what makes it pass
     result["passes"] = result["all"]["ia"]["median_abs_err"] <= 0.10 and abs(result["all"]["control"]["median_bias"]) >= 0.30
-    return result | {"code": code_version()}
+    return result | {"code": code_version(), "rows": _points(fitted(ia), fitted(cc), dist, truth)}
+
+
+def _points(ia: list[str], cc: list[str], dist: dict, truth: dict) -> list[dict]:
+    # each object's redshift with the absolute magnitude calibrated on every other SN Ia, for a figure
+    mu = {o: dist[o]["mu_no_m"] - Planck18.distmod(truth[o]["redshift"]).value for o in ia}
+    rows = []
+    for o in ia + cc:
+        m = np.median([v for k, v in mu.items() if k != o])
+        rows.append({"oid": o, "ia": o in mu, "good": dist[o]["good"], "z": truth[o]["redshift"],
+                     "z_pred": round(float(z_from_mu(dist[o]["mu_no_m"] - m)), 4)})
+    return rows
 
 
 def _f7(ia: list[str], cc: list[str], dist: dict, truth: dict, splits: int, seed: int) -> dict:
@@ -102,12 +113,12 @@ def _verdict(job: tuple) -> dict | None:
             "n_past": len(past), "n_future": len(future), "verdict": winner if ratio >= DECISIVE else "abstain"}
 
 
-def at2(root: Path, workers: int = 6) -> dict:
+def at2(root: Path, workers: int = 6, split: str | None = None) -> dict:
     # Neptune or Vulcan: rivals fitted on the past only, judged on the future they never saw
     root = Path(root)
     truth = json.loads((root / "truth.json").read_text())
-    jobs = [("lens", o["oid"], truth[o["oid"]]["t0_mjd"]) for o in _objects(root, "microlensing")]
-    jobs += [("ia", o["oid"], truth[o["oid"]]["peak_mjd"]) for o in _objects(root, "ia")]
+    jobs = [("lens", o["oid"], truth[o["oid"]]["t0_mjd"]) for o in _objects(root, "microlensing", split)]
+    jobs += [("ia", o["oid"], truth[o["oid"]]["peak_mjd"]) for o in _objects(root, "ia", split)]
     ebv = _reddening(root, [oid for _, oid, _ in jobs])
     with ProcessPoolExecutor(workers) as pool:
         rows = [r for r in pool.map(_verdict, [(root, oid, kind, cut, ebv[oid]) for kind, oid, cut in jobs]) if r]

@@ -35,3 +35,6 @@ data/snapshot/
 site/public/data/
 site/dist/
 .claude/
+
+# The ledger branch, checked out beside the code
+ledger/

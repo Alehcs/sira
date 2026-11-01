@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 806" width="1200" height="806" font-family="Helvetica, Arial, sans-serif">
+<title>SIRA architecture</title>
+<defs><marker id="ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#10151b"/></marker><marker id="orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a35200"/></marker><marker id="muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4a5462"/></marker></defs>
+<rect width="1200" height="806" fill="#ffffff"/>
+<text x="40" y="54" font-size="28" font-weight="bold" fill="#10151b">SIRA</text>
+<text x="122.92" y="54" font-size="17" fill="#4a5462">An AI astronomer built to be proven wrong in public.</text>
+<g>
+<rect x="40" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="56" y="120" font-size="16" font-weight="bold" fill="#10151b">Sky</text>
+<rect x="56" y="132" width="45" height="22" rx="11" fill="#ffffff" stroke="#4a5462" stroke-width="1.2"/>
+<text x="66" y="147.5" font-size="13" fill="#4a5462">data</text>
+<text x="56" y="178" font-size="14" fill="#4a5462">ZTF alerts</text>
+<text x="56" y="200" font-size="14" fill="#4a5462">via the ALeRCE broker</text>
+<text x="56" y="222" font-size="14" fill="#4a5462">light curves</text>
+<text x="56" y="244" font-size="14" fill="#4a5462">image stamps</text>
+</g>
+<g>
+<rect x="270" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="286" y="120" font-size="16" font-weight="bold" fill="#10151b">Reader</text>
+<rect x="286" y="132" width="125" height="22" rx="11" fill="#ffffff" stroke="#0b6b74" stroke-width="1.2"/>
+<text x="296" y="147.5" font-size="13" fill="#0b6b74">Muse Spark Open</text>
+<text x="286" y="178" font-size="14" fill="#4a5462">on Baseten</text>
+<text x="286" y="200" font-size="14" fill="#4a5462">reads first-detection</text>
+<text x="286" y="222" font-size="14" fill="#4a5462">image stamps</text>
+<text x="286" y="244" font-size="14" fill="#4a5462">real or bogus</text>
+</g>
+<g>
+<rect x="500" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="516" y="120" font-size="16" font-weight="bold" fill="#10151b">Lookouts</text>
+<rect x="516" y="132" width="125" height="22" rx="11" fill="#ffffff" stroke="#0b6b74" stroke-width="1.2"/>
+<text x="526" y="147.5" font-size="13" fill="#0b6b74">Muse Spark Open</text>
+<text x="516" y="178" font-size="14" fill="#4a5462">pick ~15 of 30–40</text>
+<text x="516" y="200" font-size="14" fill="#4a5462">candidates</text>
+<text x="516" y="222" font-size="14" fill="#4a5462">vote of three</text>
+<text x="516" y="244" font-size="14" fill="#4a5462">when unsure</text>
+</g>
+<g>
+<rect x="730" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="746" y="120" font-size="16" font-weight="bold" fill="#10151b">Physics</text>
+<rect x="746" y="132" width="48" height="22" rx="11" fill="#ffffff" stroke="#4a5462" stroke-width="1.2"/>
+<text x="756" y="147.5" font-size="13" fill="#4a5462">code</text>
+<text x="746" y="178" font-size="14" fill="#4a5462">9 hypotheses fitted</text>
+<text x="746" y="200" font-size="14" fill="#4a5462">SN Ia, II, Ibc, IIn,</text>
+<text x="746" y="222" font-size="14" fill="#4a5462">lens, TDE, AGN,</text>
+<text x="746" y="244" font-size="14" fill="#4a5462">instrument, null</text>
+</g>
+<g>
+<rect x="960" y="90" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="976" y="120" font-size="16" font-weight="bold" fill="#10151b">Theorists + Skeptics</text>
+<rect x="976" y="132" width="90" height="22" rx="11" fill="#ffffff" stroke="#0a7559" stroke-width="1.2"/>
+<text x="986" y="147.5" font-size="13" fill="#0a7559">Muse Spark</text>
+<text x="976" y="178" font-size="14" fill="#4a5462">arguments, weak points</text>
+<text x="976" y="200" font-size="14" fill="#4a5462">refutation tests</text>
+<text x="976" y="222" font-size="14" fill="#4a5462">skeptics: instrument,</text>
+<text x="976" y="244" font-size="14" fill="#4a5462">physics, memory</text>
+</g>
+<g>
+<rect x="960" y="450" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="976" y="480" font-size="16" font-weight="bold" fill="#10151b">Director</text>
+<rect x="976" y="492" width="124" height="22" rx="11" fill="#ffffff" stroke="#0a7559" stroke-width="1.2"/>
+<text x="986" y="507.5" font-size="13" fill="#0a7559">Muse Spark xhigh</text>
+<text x="976" y="538" font-size="14" fill="#4a5462">stakes one</text>
+<text x="976" y="560" font-size="14" fill="#4a5462">yes/no question</text>
+<text x="976" y="586" font-size="14" fill="#4a5462">may escalate to Senior</text>
+<rect x="976" y="596" width="129" height="22" rx="11" fill="#ffffff" stroke="#a35200" stroke-width="1.2"/>
+<text x="986" y="611.5" font-size="13" fill="#a35200">Muse Wonder max</text>
+</g>
+<g>
+<rect x="730" y="450" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="746" y="480" font-size="16" font-weight="bold" fill="#10151b">Forecast</text>
+<rect x="746" y="492" width="90" height="22" rx="11" fill="#ffffff" stroke="#0a7559" stroke-width="1.2"/>
+<text x="756" y="507.5" font-size="13" fill="#0a7559">Muse Spark</text>
+<text x="746" y="538" font-size="14" fill="#4a5462">50% physics</text>
+<text x="746" y="560" font-size="14" fill="#4a5462">50% Muse’s own forecast</text>
+<text x="746" y="582" font-size="14" fill="#4a5462">worded by the</text>
+<text x="746" y="604" font-size="14" fill="#4a5462">Forecaster</text>
+</g>
+<g>
+<rect x="500" y="450" width="200" height="180" rx="8" fill="#10151b" stroke="#10151b" stroke-width="1.5"/>
+<text x="516" y="480" font-size="16" font-weight="bold" fill="#ffffff">Ledger</text>
+<rect x="516" y="492" width="58" height="22" rx="11" fill="#10151b" stroke="#ffffff" stroke-width="1.2"/>
+<text x="526" y="507.5" font-size="13" fill="#ffffff">sealed</text>
+<text x="516" y="538" font-size="14" fill="#ffffff">SHA-256 hash chain</text>
+<text x="516" y="560" font-size="14" fill="#ffffff">FreeTSA (RFC 3161)</text>
+<text x="516" y="582" font-size="14" fill="#ffffff">OpenTimestamps (Bitcoin)</text>
+<text x="516" y="604" font-size="14" fill="#ffffff">public ledger branch</text>
+</g>
+<g>
+<rect x="270" y="450" width="200" height="180" rx="8" fill="#f6f7f9" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="286" y="480" font-size="16" font-weight="bold" fill="#10151b">Scores</text>
+<rect x="286" y="492" width="48" height="22" rx="11" fill="#ffffff" stroke="#4a5462" stroke-width="1.2"/>
+<text x="296" y="507.5" font-size="13" fill="#4a5462">code</text>
+<text x="286" y="538" font-size="14" fill="#4a5462">log score, PIT, CRPS</text>
+<text x="286" y="560" font-size="14" fill="#4a5462">vs B0 climatology</text>
+<text x="286" y="582" font-size="14" fill="#4a5462">B1 physics alone</text>
+<text x="286" y="604" font-size="14" fill="#4a5462">B2 Muse alone</text>
+</g>
+<g>
+<rect x="270" y="300" width="440" height="114" rx="8" fill="#f6f7f9" stroke="#a35200" stroke-width="1.5"/>
+<text x="286" y="330" font-size="16" font-weight="bold" fill="#10151b">Le Verrier</text>
+<rect x="373.04" y="314" width="101" height="22" rx="11" fill="#ffffff" stroke="#a35200" stroke-width="1.2"/>
+<text x="383.04" y="329.5" font-size="13" fill="#a35200">Muse Wonder</text>
+<text x="286" y="358" font-size="14" fill="#4a5462">on a surprise, proposes a new model from 7 physics primitives</text>
+<text x="286" y="380" font-size="14" fill="#4a5462">fitted by code; never runs model code</text>
+<text x="286" y="402" font-size="14" fill="#4a5462">judged later: Neptune (adopted), Vulcan or abstain</text>
+</g>
+<path d="M240 180.0 L268 180.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M470 180.0 L498 180.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M700 180.0 L728 180.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M930 180.0 L958 180.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M1060.0 270 L1060.0 448" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M960 540.0 L932 540.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M730 540.0 L702 540.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M500 540.0 L472 540.0" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<path d="M140.0 270 L140.0 540 L268 540" fill="none" stroke="#10151b" stroke-width="1.5" marker-end="url(#ink)"/>
+<text x="152.0" y="532" font-size="14" fill="#4a5462">later nights</text>
+<path d="M370.0 450 L370.0 416" fill="none" stroke="#a35200" stroke-width="1.5" marker-end="url(#orange)"/>
+<text x="380.0" y="438" font-size="14" fill="#a35200">surprise</text>
+<path d="M710 357.0 L830.0 357.0 L830.0 272" fill="none" stroke="#a35200" stroke-width="1.5" marker-end="url(#orange)"/>
+<text x="840.0" y="304" font-size="14" fill="#a35200">new model</text>
+<path d="M600 630 L600 655" fill="none" stroke="#4a5462" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M330.0 655 L870.0 655" fill="none" stroke="#4a5462" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M330.0 655 L330.0 680" fill="none" stroke="#4a5462" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#muted)"/>
+<path d="M600.0 655 L600.0 680" fill="none" stroke="#4a5462" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#muted)"/>
+<path d="M870.0 655 L870.0 680" fill="none" stroke="#4a5462" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#muted)"/>
+<rect x="205" y="682" width="250" height="100" rx="8" fill="#ffffff" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="221" y="712" font-size="15" font-weight="bold" fill="#10151b">Public site</text>
+<text x="221" y="738" font-size="14" fill="#4a5462">GitHub Pages</text>
+<rect x="475" y="682" width="250" height="100" rx="8" fill="#ffffff" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="491" y="712" font-size="15" font-weight="bold" fill="#10151b">Beat SIRA</text>
+<text x="491" y="738" font-size="14" fill="#4a5462">players bet against SIRA’s</text>
+<text x="491" y="760" font-size="14" fill="#4a5462">sealed answers (Supabase)</text>
+<rect x="745" y="682" width="250" height="100" rx="8" fill="#ffffff" stroke="#c9d0d8" stroke-width="1.5"/>
+<text x="761" y="712" font-size="15" font-weight="bold" fill="#10151b">sira verify</text>
+<text x="761" y="738" font-size="14" fill="#4a5462">anyone rechecks the chain,</text>
+<text x="761" y="760" font-size="14" fill="#4a5462">receipts and every score</text>
+</svg>

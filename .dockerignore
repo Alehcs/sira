@@ -1,0 +1,9 @@
+.git
+.venv
+.claude
+var
+data/cache
+data/snapshot
+ledger
+site
+**/__pycache__

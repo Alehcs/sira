@@ -27,6 +27,9 @@ dev = [
     "hypothesis>=6.170.12",
     "pytest>=8.0",
 ]
+evidence = [
+    "matplotlib>=3.11.2",
+]
 
 [build-system]
 requires = ["hatchling"]

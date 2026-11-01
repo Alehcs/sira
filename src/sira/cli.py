@@ -159,9 +159,9 @@ def leverrier(args) -> None:
     from .llm import LLM
 
     with ThreadPoolExecutor(3) as pool:
-        report = case(Path(args.root), args.oid, LLM(), args.gap, args.window, pool)
-    out = Path("var") / f"leverrier-{args.oid}.json"
-    out.parent.mkdir(exist_ok=True)
+        report = case(Path(args.root), args.oid, LLM(), args.gap, args.window, pool, args.leaps)
+    out = Path(args.out) / f"leverrier-{args.oid}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=1, default=str))
     print(json.dumps({k: v for k, v in report.items() if k != "events"}, indent=2, default=str))
 
@@ -170,6 +170,34 @@ def stamp(args) -> None:
     from .evidence import stamp as seal
 
     print(json.dumps(seal(Path(args.path)), indent=2))
+
+
+def evidence(args) -> None:
+    from . import evidence as ev
+
+    root = Path(args.root)
+    if args.physics:
+        ev.physics(Path(args.snapshot), root)
+    results = ev.collect(root, Path(args.ledger) if Path(args.ledger).exists() else None, args.until)
+    if args.check:
+        # the Bitcoin proof matures after the fact, so only it may differ from the committed numbers
+        saved = json.loads((root / "results.json").read_text())
+        same = lambda r: json.loads(json.dumps(r | {"plan": r["plan"] | {"ots": None}}))
+        if same(saved) != same(results):
+            raise SystemExit("evidence/results.json does not match what the files give")
+        print(f"every number in {root / 'results.json'} was recomputed and matches")
+        return
+    (root / "results.json").write_text(json.dumps(results, indent=1) + "\n")
+    try:
+        made = ev.figures(results, root / "figures")
+    except ImportError:
+        made = []
+    brief = {k: v for k, v in results.items() if k not in ("test", "leverrier", "physics")}
+    if "test" in results:
+        brief["test"] = {k: results["test"][k] for k in ("cases", "failed", "outcomes", "cost_usd", "primary", "forecasters")}
+    if "live" in results:
+        brief["live"]["record"] = {k: v for k, v in results["live"]["record"].items() if k != "rows"}
+    print(json.dumps(brief | {"figures": made}, indent=2))
 
 
 def moments(args) -> None:
@@ -244,11 +272,21 @@ def main() -> None:
     leap.add_argument("--root", default="data/snapshot")
     leap.add_argument("--gap", type=int, default=10)
     leap.add_argument("--window", type=int, default=40)
+    leap.add_argument("--leaps", nargs="+", choices=["hidden", "new", "instrument"], help="the proposals to ask for, in order")
+    leap.add_argument("--out", default="var")
     leap.set_defaults(run=leverrier)
     best = sub.add_parser("highlights", help="list the ledger's best moments, for the video and posts")
     best.add_argument("--ledger", default="ledger")
     best.add_argument("--top", type=int, default=20)
     best.set_defaults(run=moments)
+    proof_ = sub.add_parser("evidence", help="recompute every pre-registered number and figure from the files in evidence/")
+    proof_.add_argument("--root", default="evidence")
+    proof_.add_argument("--ledger", default="ledger")
+    proof_.add_argument("--until", type=int, help="stop at this ledger sequence number, the freeze head")
+    proof_.add_argument("--physics", action="store_true", help="first rerun the two physics headlines from the snapshot")
+    proof_.add_argument("--snapshot", default="data/snapshot")
+    proof_.add_argument("--check", action="store_true", help="recompute and compare with the committed results instead of writing")
+    proof_.set_defaults(run=evidence)
     seal = sub.add_parser("stamp", help="timestamp a file, such as the evaluation plan, with FreeTSA and OpenTimestamps")
     seal.add_argument("path")
     seal.set_defaults(run=stamp)
