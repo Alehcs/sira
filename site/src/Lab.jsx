@@ -459,12 +459,13 @@ export default function Lab({ lang, data }) {
   const w = WORDS[lang].lab;
   if (latest === undefined) return <p className="muted">{WORDS[lang].loading}</p>;
   const has = !!(latest && latest.events && latest.events.length);
-  const shown = has ? view || 'latest' : 'featured';
+  // the featured case opens the page as the worked example; the latest investigation is one click away
+  const shown = has && view ? view : 'featured';
   return (
     <>
       {has && (
         <div className="seg labviews" role="group" aria-label={w.views.label}>
-          {['latest', 'featured'].map((v) => <button key={v} type="button" aria-pressed={shown === v} onClick={() => setView(v)}>{w.views[v]}</button>)}
+          {['featured', 'latest'].map((v) => <button key={v} type="button" aria-pressed={shown === v} onClick={() => setView(v)}>{w.views[v]}</button>)}
         </div>
       )}
       {shown === 'latest' ? <Latest key="latest" lang={lang} d={latest} /> : <Featured key="featured" lang={lang} data={data} />}
