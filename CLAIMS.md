@@ -21,6 +21,8 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | One Le Verrier did as well as five, at a fifth of the cost. | 4 Neptune verdicts with 1, 3 or 5 proposals per surprise; US$0.43 against US$2.11 | `leverrier.sizes` |
 | Muse Spark Open, the open-weights model, tells a real new source from a bad subtraction on about 91% of ZTF candidates it was never tuned on. | Balanced accuracy 0.913 (95% interval 0.869 to 0.956) and AUC 0.97 on 160 held-out candidates: 80 real (2024 supernovae of the Bright Transient Survey) and 80 bogus as labelled by ALeRCE's stamp classifier. Measured on Oct 27 against a 0.85 gate set before the run, not part of the timestamped plan. US$0.0097 a read | `reader.v2`, `evidence/reader/holdout-v2.json` |
 | An investigation costs about 16 US cents in Muse calls. | US$0.159 per investigated transient, 42 live investigations over 4 nights | `live.cost`, figure `live` |
+| SIRA runs every night, on its own. | A scheduled GitHub Actions nightly since Oct 27, every run green. It bets only when ZTF has new candidates: 29, 15, 14, 12 and 1 bets on its first five nights, as ZTF went quiet | `.github/workflows/nightly.yml`, the repository's Actions history |
+| Every line of SIRA's code was written during this hackathon. | First commit Oct 26 at 23:33 UTC, after the 16:00 UTC kickoff. Not ours: the open-source libraries, the public data and images, and the FreeTSA root certificate | `git log --reverse`, README "Built during the hackathon" |
 | Every bet is sealed before the sky answers, and anyone can check it. | Hash chain, FreeTSA RFC 3161 receipts and OpenTimestamps proofs on the `ledger` branch | `uv run sira verify --ledger ledger` |
 
 ## Measured, not a selling point
