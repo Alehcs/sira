@@ -1,0 +1,265 @@
+{
+ "oid": "ZTF21aadrxrx",
+ "checks": [
+  {
+   "t": 59236.56,
+   "weights": {
+    "ia": 0.002752889294426028,
+    "tde": 0.8972471048423111,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59246.56,
+   "weights": {
+    "ia": 0.002752889294426028,
+    "tde": 0.8972471048423111,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 5,
+    "p_value": 3.2000000000000005e-09,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.04287,
+   "seconds": 14.1,
+   "leap": "hidden",
+   "decision": "proposes Unseen microlens magnification",
+   "why": "An unseen point lens passed in front of a red background source, producing the accelerating r-band rise before the observational gap and a sharp peak hidden within it. The TDE fit extrapolated that ri"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.22081,
+   "seconds": 93.1,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing event",
+   "why": "An unseen compact foreground lens crossed the line of sight to a background star, so the early brightening was increasing magnification rather than an explosion or accretion flare. The event peaked be"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06037,
+   "seconds": 20.9,
+   "leap": "instrument",
+   "decision": "proposes Stray-light template residual flare",
+   "why": "A bright off-axis star leaked stray light into the r-band template subtraction, producing a smooth spurious rise in the first epoch that peaked during the observing gap and vanished after the template"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07149,
+   "seconds": 28.0,
+   "leap": "hidden",
+   "decision": "proposes Passed microlensing peak",
+   "why": "An unseen point lens crossed a steady background source, and the early brightening was rising magnification rather than an explosion or accretion flare. The alignment peaked unobserved between days -2"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-a62a122ee9",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.04467,
+   "seconds": 22.0,
+   "leap": "new",
+   "decision": "proposes Microlensed red background star",
+   "why": "The early r-band brightening was the approach to peak magnification, not an explosion or accretion rise, and the transient peaked in the unobserved gap before fading by day -8. A point lens magnifying"
+  }
+ ],
+ "now": 59256.56,
+ "future_points": 24,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Unseen microlens magnification",
+   "idea": "An unseen point lens passed in front of a red background source, producing the accelerating r-band rise before the observational gap and a sharp peak hidden within it. The TDE fit extrapolated that rise into a luminous plateau, but the source is now demagnifying symmetrically back toward its steady baseline.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "Future g and r fluxes will follow the same achromatic lens profile, mirroring the rise, and asymptote to a constant red baseline with g-r about 1.1 rather than remaining bright and blue.",
+   "cost_usd": 0.04287,
+   "bic": 32.53,
+   "fit": {
+    "chi2_per_point": 0.26,
+    "params": {
+     "lens0.t0": 59233.576,
+     "lens0.u0": 0.049,
+     "lens0.tE": 44.518,
+     "lens0.ztfg": 900.052,
+     "lens0.ztfr": 632.348,
+     "constant1.ztfg": -245.281,
+     "constant1.ztfr": 1964.299
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.85,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing event",
+   "idea": "An unseen compact foreground lens crossed the line of sight to a background star, so the early brightening was increasing magnification rather than an explosion or accretion flare. The event peaked between the early r-band rise and the later faint points and is now demagnifying.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts one achromatic, approximately time-symmetric peak at the same time in g and r, followed by a return to the constant pre-event source-plus-blend baseline, rather than continued TDE brightening or colour-evolving supernova decay.",
+   "cost_usd": 0.22081,
+   "bic": 32.53,
+   "fit": {
+    "chi2_per_point": 0.26,
+    "params": {
+     "lens0.t0": 59233.576,
+     "lens0.u0": 0.049,
+     "lens0.tE": 44.518,
+     "lens0.ztfg": 900.052,
+     "lens0.ztfr": 632.348,
+     "constant1.ztfg": -245.281,
+     "constant1.ztfr": 1964.299
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.85,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Stray-light template residual flare",
+   "idea": "A bright off-axis star leaked stray light into the r-band template subtraction, producing a smooth spurious rise in the first epoch that peaked during the observing gap and vanished after the template or pointing changed. The later g and r detections are only the steady underlying source, misread by the SN and TDE fits as the tail of a huge explosion.",
+   "components": [
+    {
+     "type": "flare"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "Future flux remains at the steady per-band baseline, with any residuals repeating with pointing, seeing, or template epoch rather than fading smoothly to zero.",
+   "cost_usd": 0.06037,
+   "bic": 50.61,
+   "fit": {
+    "chi2_per_point": 0.97,
+    "params": {
+     "flare0.t0": 59237.421,
+     "flare0.width": 5.53,
+     "flare0.ztfg": 5211.458,
+     "flare0.ztfr": 13863.732,
+     "constant1.ztfg": 924.333,
+     "constant1.ztfr": 2841.442
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.39,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "Passed microlensing peak",
+   "idea": "An unseen point lens crossed a steady background source, and the early brightening was rising magnification rather than an explosion or accretion flare. The alignment peaked unobserved between days -24 and -8, so the source is now demagnifying toward its unlensed level.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts an achromatic, time-symmetric decline with a fixed g/r flux ratio toward a constant baseline, not the much brighter continued peak forecast by the TDE and SN Ia hypotheses.",
+   "cost_usd": 0.07149,
+   "bic": 32.53,
+   "fit": {
+    "chi2_per_point": 0.26,
+    "params": {
+     "lens0.t0": 59233.576,
+     "lens0.u0": 0.049,
+     "lens0.tE": 44.518,
+     "lens0.ztfg": 900.052,
+     "lens0.ztfr": 632.348,
+     "constant1.ztfg": -245.281,
+     "constant1.ztfr": 1964.299
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.85,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Microlensed red background star",
+   "idea": "The early r-band brightening was the approach to peak magnification, not an explosion or accretion rise, and the transient peaked in the unobserved gap before fading by day -8. A point lens magnifying a steady red background star produces the same magnification in g and r, so both bands rise and fall together while preserving the source colour.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts a symmetric achromatic decline mirroring the earlier rise and a return to the same constant red baseline, rather than a blue slowly declining TDE plateau or colour-evolving supernova.",
+   "cost_usd": 0.04467,
+   "bic": 32.53,
+   "fit": {
+    "chi2_per_point": 0.26,
+    "params": {
+     "lens0.t0": 59233.576,
+     "lens0.u0": 0.049,
+     "lens0.tE": 44.518,
+     "lens0.ztfg": 900.052,
+     "lens0.ztfr": 632.348,
+     "constant1.ztfg": -245.281,
+     "constant1.ztfr": 1964.299
+    }
+   },
+   "against_old": {
+    "n": 24,
+    "log10_e": -8.85,
+    "verdict": "vulcan"
+   }
+  }
+ ],
+ "best": {
+  "leap": "instrument",
+  "name": "Stray-light template residual flare",
+  "verdict": "vulcan",
+  "log10_e": -8.39,
+  "margin_log10_e": 0.46
+ }
+}

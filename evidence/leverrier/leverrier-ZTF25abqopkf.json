@@ -1,0 +1,34 @@
+{
+ "oid": "ZTF25abqopkf",
+ "checks": [
+  {
+   "t": 60953.3,
+   "weights": {
+    "ia": 0.8849418182346361,
+    "tde": 0.015055738858705823,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60963.3,
+   "weights": {
+    "ia": 0.8849418182346361,
+    "tde": 0.015055738858705823,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

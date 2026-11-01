@@ -1,0 +1,120 @@
+{
+ "oid": "ZTF25aaizyki",
+ "checks": [
+  {
+   "t": 60760.54,
+   "weights": {
+    "ia": 0.236345513369009,
+    "ii": 0.39320535943843243,
+    "ibc": 0.26361144369883704,
+    "tde": 0.006837683493721585,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60770.54,
+   "weights": {
+    "ia": 0.20380385609016197,
+    "ii": 0.38629576691904816,
+    "ibc": 0.30400177133459166,
+    "tde": 0.005898605656198234,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60780.54,
+   "weights": {
+    "ia": 0.5999556768248054,
+    "ii": 0.00152159196935066,
+    "ibc": 0.28119813970295954,
+    "tde": 0.017324591502884245,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60790.54,
+   "weights": {
+    "ia": 0.8945464823308301,
+    "tde": 0.005392497514365282,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60800.54,
+   "weights": {
+    "ia": 0.8999999999999992,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60810.54,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60820.54,
+   "weights": {
+    "ibc": 0.8999999961942963,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60830.54,
+   "weights": {
+    "ibc": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

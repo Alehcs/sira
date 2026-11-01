@@ -1,0 +1,790 @@
+{
+ "distance": {
+  "all": {
+   "ia": {
+    "n": 29,
+    "median_abs_err": 0.123,
+    "within_10": 0.417,
+    "within_20": 0.754,
+    "over_30": 0.009
+   },
+   "control": {
+    "n": 14,
+    "median_bias": 0.651,
+    "over_30": 0.786
+   }
+  },
+  "good_fits": {
+   "ia": {
+    "n": 18,
+    "median_abs_err": 0.056,
+    "within_10": 0.587,
+    "within_20": 0.944,
+    "over_30": 0.0
+   },
+   "control": {
+    "n": 1,
+    "median_bias": 0.668,
+    "over_30": 1.0
+   }
+  },
+  "passes": false,
+  "code": "91ddc3654ab059675147a5b916efeb1977388475-dirty",
+  "rows": [
+   {
+    "oid": "ZTF25aajektz",
+    "ia": true,
+    "good": false,
+    "z": 0.04,
+    "z_pred": 0.0346
+   },
+   {
+    "oid": "ZTF25abowvko",
+    "ia": true,
+    "good": false,
+    "z": 0.042,
+    "z_pred": 0.0327
+   },
+   {
+    "oid": "ZTF25abqkiqr",
+    "ia": true,
+    "good": true,
+    "z": 0.054,
+    "z_pred": 0.0607
+   },
+   {
+    "oid": "ZTF25aanbdft",
+    "ia": true,
+    "good": true,
+    "z": 0.07409,
+    "z_pred": 0.0812
+   },
+   {
+    "oid": "ZTF25abmsodq",
+    "ia": true,
+    "good": true,
+    "z": 0.063,
+    "z_pred": 0.0629
+   },
+   {
+    "oid": "ZTF25aafydrq",
+    "ia": true,
+    "good": false,
+    "z": 0.07339,
+    "z_pred": 0.0595
+   },
+   {
+    "oid": "ZTF25aaizyki",
+    "ia": true,
+    "good": false,
+    "z": 0.0373,
+    "z_pred": 0.0463
+   },
+   {
+    "oid": "ZTF25aafhecq",
+    "ia": true,
+    "good": true,
+    "z": 0.032,
+    "z_pred": 0.0321
+   },
+   {
+    "oid": "ZTF25aalpjxp",
+    "ia": true,
+    "good": true,
+    "z": 0.08,
+    "z_pred": 0.075
+   },
+   {
+    "oid": "ZTF25aajmrso",
+    "ia": true,
+    "good": false,
+    "z": 0.066,
+    "z_pred": 0.0682
+   },
+   {
+    "oid": "ZTF25aalpmfp",
+    "ia": true,
+    "good": true,
+    "z": 0.054,
+    "z_pred": 0.0639
+   },
+   {
+    "oid": "ZTF25acgfdia",
+    "ia": true,
+    "good": true,
+    "z": 0.05219,
+    "z_pred": 0.0532
+   },
+   {
+    "oid": "ZTF24abuqgob",
+    "ia": true,
+    "good": false,
+    "z": 0.035,
+    "z_pred": 0.0252
+   },
+   {
+    "oid": "ZTF25acamzgr",
+    "ia": true,
+    "good": true,
+    "z": 0.061,
+    "z_pred": 0.0605
+   },
+   {
+    "oid": "ZTF25aakgfpu",
+    "ia": true,
+    "good": true,
+    "z": 0.058,
+    "z_pred": 0.049
+   },
+   {
+    "oid": "ZTF25acktnvu",
+    "ia": true,
+    "good": true,
+    "z": 0.04125,
+    "z_pred": 0.0347
+   },
+   {
+    "oid": "ZTF25abqopkf",
+    "ia": true,
+    "good": true,
+    "z": 0.06,
+    "z_pred": 0.0675
+   },
+   {
+    "oid": "ZTF25aavcbih",
+    "ia": true,
+    "good": false,
+    "z": 0.045,
+    "z_pred": 0.0546
+   },
+   {
+    "oid": "ZTF25abxrfik",
+    "ia": true,
+    "good": false,
+    "z": 0.04,
+    "z_pred": 0.0491
+   },
+   {
+    "oid": "ZTF25aasrzlo",
+    "ia": true,
+    "good": true,
+    "z": 0.074,
+    "z_pred": 0.074
+   },
+   {
+    "oid": "ZTF25abuzfte",
+    "ia": true,
+    "good": true,
+    "z": 0.0495,
+    "z_pred": 0.0506
+   },
+   {
+    "oid": "ZTF25aaylqqq",
+    "ia": true,
+    "good": false,
+    "z": 0.036,
+    "z_pred": 0.0401
+   },
+   {
+    "oid": "ZTF25aaazugo",
+    "ia": true,
+    "good": true,
+    "z": 0.04503,
+    "z_pred": 0.0445
+   },
+   {
+    "oid": "ZTF25aabsnyf",
+    "ia": true,
+    "good": false,
+    "z": 0.03,
+    "z_pred": 0.0265
+   },
+   {
+    "oid": "ZTF25abscivt",
+    "ia": true,
+    "good": true,
+    "z": 0.07748,
+    "z_pred": 0.0754
+   },
+   {
+    "oid": "ZTF25acgqgrv",
+    "ia": true,
+    "good": true,
+    "z": 0.07967,
+    "z_pred": 0.099
+   },
+   {
+    "oid": "ZTF18abffdjl",
+    "ia": true,
+    "good": true,
+    "z": 0.0666,
+    "z_pred": 0.0661
+   },
+   {
+    "oid": "ZTF25abovgwv",
+    "ia": true,
+    "good": true,
+    "z": 0.083,
+    "z_pred": 0.0717
+   },
+   {
+    "oid": "ZTF25acivwpw",
+    "ia": true,
+    "good": false,
+    "z": 0.079,
+    "z_pred": 0.1012
+   },
+   {
+    "oid": "ZTF25aadhuhm",
+    "ia": false,
+    "good": false,
+    "z": 0.022,
+    "z_pred": 0.0475
+   },
+   {
+    "oid": "ZTF25acblpes",
+    "ia": false,
+    "good": false,
+    "z": 0.1062,
+    "z_pred": 0.1058
+   },
+   {
+    "oid": "ZTF25abbslda",
+    "ia": false,
+    "good": false,
+    "z": 0.025,
+    "z_pred": 0.0694
+   },
+   {
+    "oid": "ZTF25accmunu",
+    "ia": false,
+    "good": false,
+    "z": 0.0328,
+    "z_pred": 0.0503
+   },
+   {
+    "oid": "ZTF25aacmgnn",
+    "ia": false,
+    "good": false,
+    "z": 0.0243,
+    "z_pred": 0.0446
+   },
+   {
+    "oid": "ZTF25abedagz",
+    "ia": false,
+    "good": false,
+    "z": 0.04,
+    "z_pred": 0.0384
+   },
+   {
+    "oid": "ZTF25aaglicm",
+    "ia": false,
+    "good": false,
+    "z": 0.016,
+    "z_pred": 0.0423
+   },
+   {
+    "oid": "ZTF25acgcuie",
+    "ia": false,
+    "good": false,
+    "z": 0.02428,
+    "z_pred": 0.0467
+   },
+   {
+    "oid": "ZTF25aafszll",
+    "ia": false,
+    "good": false,
+    "z": 0.02641,
+    "z_pred": 0.0371
+   },
+   {
+    "oid": "ZTF25aavddzo",
+    "ia": false,
+    "good": true,
+    "z": 0.0336,
+    "z_pred": 0.056
+   },
+   {
+    "oid": "ZTF25abyevmr",
+    "ia": false,
+    "good": false,
+    "z": 0.01298,
+    "z_pred": 0.0212
+   },
+   {
+    "oid": "ZTF25abxxkod",
+    "ia": false,
+    "good": false,
+    "z": 0.025,
+    "z_pred": 0.0539
+   },
+   {
+    "oid": "ZTF25abdkrgt",
+    "ia": false,
+    "good": false,
+    "z": 0.0242,
+    "z_pred": 0.0331
+   },
+   {
+    "oid": "ZTF25aacdjzo",
+    "ia": false,
+    "good": false,
+    "z": 0.05,
+    "z_pred": 0.0363
+   }
+  ]
+ },
+ "verdicts": {
+  "sets": {
+   "lens": {
+    "n": 20,
+    "correct": 17,
+    "decisive_right": 14,
+    "decisive_wrong": 0,
+    "abstain": 6
+   },
+   "ia": {
+    "n": 13,
+    "correct": 12,
+    "decisive_right": 12,
+    "decisive_wrong": 0,
+    "abstain": 1
+   }
+  },
+  "decisive_accuracy": 1.0,
+  "abstain_rate": 0.212,
+  "passes": true,
+  "code": "91ddc3654ab059675147a5b916efeb1977388475-dirty",
+  "rows": [
+   {
+    "oid": "ZTF20abztmco",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 16.91,
+    "chi2": {
+     "lens": 2.5816189628046136,
+     "ia": 43.65451838543695
+    },
+    "n_past": 132,
+    "n_future": 78,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21aadrxrx",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": NaN,
+    "chi2": {
+     "lens": NaN,
+     "ia": 3428.5277157822347
+    },
+    "n_past": 33,
+    "n_future": 30,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF21abdihbw",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 7.32,
+    "chi2": {
+     "lens": 24.19241037989395,
+     "ia": 177.0591979951393
+    },
+    "n_past": 8,
+    "n_future": 5,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21aavhwyj",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": NaN,
+    "chi2": {
+     "lens": NaN,
+     "ia": 93.14351684590787
+    },
+    "n_past": 11,
+    "n_future": 9,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF21abehnjv",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 32.27,
+    "chi2": {
+     "lens": 0.5376240429815002,
+     "ia": 17.35090181482445
+    },
+    "n_past": 9,
+    "n_future": 14,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF22aalftxa",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 4.88,
+    "chi2": {
+     "lens": 9.813528794339971,
+     "ia": 47.91436182880784
+    },
+    "n_past": 10,
+    "n_future": 7,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21abmnkml",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 38.4,
+    "chi2": {
+     "lens": 0.3125416695305621,
+     "ia": 12.001424873323332
+    },
+    "n_past": 6,
+    "n_future": 5,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF22aawaiui",
+    "truth": "lens",
+    "winner": "ia",
+    "ratio": 1.04,
+    "chi2": {
+     "lens": 18.34057519652265,
+     "ia": 17.696877167646768
+    },
+    "n_past": 6,
+    "n_future": 14,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF22aauvkpi",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": NaN,
+    "chi2": {
+     "lens": NaN,
+     "ia": 11.364800212770183
+    },
+    "n_past": 5,
+    "n_future": 7,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF21aawgkvn",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 7.91,
+    "chi2": {
+     "lens": 58.98023908840423,
+     "ia": 466.4931134914177
+    },
+    "n_past": 5,
+    "n_future": 5,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21acqomnw",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 23.54,
+    "chi2": {
+     "lens": 2.994407844710623,
+     "ia": 70.49602110091386
+    },
+    "n_past": 12,
+    "n_future": 40,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF20acpjazv",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 7.06,
+    "chi2": {
+     "lens": 2.3259496042424557,
+     "ia": 16.430720296291547
+    },
+    "n_past": 18,
+    "n_future": 5,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21abhqzzh",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 170.37,
+    "chi2": {
+     "lens": 0.23808972698246408,
+     "ia": 40.56239638560793
+    },
+    "n_past": 21,
+    "n_future": 7,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF20aavmhsg",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 4.04,
+    "chi2": {
+     "lens": 5.03059800999534,
+     "ia": 20.313899771345486
+    },
+    "n_past": 14,
+    "n_future": 17,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF18abaqxrt",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 7.22,
+    "chi2": {
+     "lens": 4.202339725323824,
+     "ia": 30.32892402177954
+    },
+    "n_past": 10,
+    "n_future": 16,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF20achpgdp",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 13.41,
+    "chi2": {
+     "lens": 0.21973030292150827,
+     "ia": 2.946527217308462
+    },
+    "n_past": 19,
+    "n_future": 15,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21abqhbuh",
+    "truth": "lens",
+    "winner": "ia",
+    "ratio": 1.43,
+    "chi2": {
+     "lens": 182.21755663420603,
+     "ia": 127.04043726602279
+    },
+    "n_past": 42,
+    "n_future": 34,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF19abftuld",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 5.5,
+    "chi2": {
+     "lens": 2.5934616107203143,
+     "ia": 14.263737804427535
+    },
+    "n_past": 43,
+    "n_future": 197,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF21abtulxp",
+    "truth": "lens",
+    "winner": "lens",
+    "ratio": 127.81,
+    "chi2": {
+     "lens": 0.7195337375651861,
+     "ia": 91.96470910330832
+    },
+    "n_past": 15,
+    "n_future": 20,
+    "verdict": "lens"
+   },
+   {
+    "oid": "ZTF18aaztjyd",
+    "truth": "lens",
+    "winner": "ia",
+    "ratio": 1.75,
+    "chi2": {
+     "lens": 1.6382589763766595,
+     "ia": 0.9384479980519042
+    },
+    "n_past": 10,
+    "n_future": 13,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF25abowvko",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 5.1,
+    "chi2": {
+     "lens": 18.59128453078545,
+     "ia": 3.642763015104559
+    },
+    "n_past": 5,
+    "n_future": 13,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abqkiqr",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 4.9,
+    "chi2": {
+     "lens": 49.002979445664614,
+     "ia": 10.003910189544007
+    },
+    "n_past": 7,
+    "n_future": 19,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abmsodq",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 39.07,
+    "chi2": {
+     "lens": 55.386957199974546,
+     "ia": 1.4176865225723472
+    },
+    "n_past": 9,
+    "n_future": 17,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25aaizyki",
+    "truth": "ia",
+    "winner": "lens",
+    "ratio": NaN,
+    "chi2": {
+     "lens": NaN,
+     "ia": 0.7766529228347551
+    },
+    "n_past": 7,
+    "n_future": 41,
+    "verdict": "abstain"
+   },
+   {
+    "oid": "ZTF25acgfdia",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 14.3,
+    "chi2": {
+     "lens": 32.1349070360423,
+     "ia": 2.2472544391752822
+    },
+    "n_past": 5,
+    "n_future": 12,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25acamzgr",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 16.26,
+    "chi2": {
+     "lens": 48.59333953781654,
+     "ia": 2.9880628104829476
+    },
+    "n_past": 17,
+    "n_future": 29,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abxrfik",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 5.0,
+    "chi2": {
+     "lens": 40.72495773841997,
+     "ia": 8.14201200619003
+    },
+    "n_past": 5,
+    "n_future": 30,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25aasrzlo",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 3.58,
+    "chi2": {
+     "lens": 10.443722436166757,
+     "ia": 2.9171802261911326
+    },
+    "n_past": 9,
+    "n_future": 22,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abuzfte",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 5.64,
+    "chi2": {
+     "lens": 72.17324109032185,
+     "ia": 12.800902548458717
+    },
+    "n_past": 8,
+    "n_future": 21,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25aaylqqq",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 58.38,
+    "chi2": {
+     "lens": 50.93328753972287,
+     "ia": 0.8724214069881392
+    },
+    "n_past": 21,
+    "n_future": 54,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25aaazugo",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 10.19,
+    "chi2": {
+     "lens": 23.52531865343654,
+     "ia": 2.308194232138439
+    },
+    "n_past": 5,
+    "n_future": 15,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abscivt",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 5.04,
+    "chi2": {
+     "lens": 39.69255290045032,
+     "ia": 7.872130576900526
+    },
+    "n_past": 10,
+    "n_future": 16,
+    "verdict": "ia"
+   },
+   {
+    "oid": "ZTF25abovgwv",
+    "truth": "ia",
+    "winner": "ia",
+    "ratio": 4.51,
+    "chi2": {
+     "lens": 50.79073985366656,
+     "ia": 11.259479910490795
+    },
+    "n_past": 8,
+    "n_future": 6,
+    "verdict": "ia"
+   }
+  ]
+ }
+}

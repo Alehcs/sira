@@ -282,7 +282,7 @@ def figures(results: dict, out: Path) -> list[str]:
         fig, ax = plt.subplots(figsize=(7.5, 3.6))
         for i, (k, label) in enumerate((("b2", "Muse alone (B2)"), ("b1", "physics alone (B1)"))):
             xs = np.array([r["sira_minus"][k] for r in test["rows"]])
-            y = i + np.linspace(-0.25, 0.25, len(xs))[np.argsort(np.argsort(xs))]
+            y = i + (np.argsort(np.argsort(xs)) % 5 - 2) * 0.09
             ax.scatter(np.clip(xs, -6, 12), y, s=16, color=[G if x > 0 else WARN for x in xs], zorder=3)
             lo, hi = test["primary"][k]["ci95"]
             ax.plot([lo, hi], [i - 0.38] * 2, color=INK, lw=2.5)
@@ -291,7 +291,7 @@ def figures(results: dict, out: Path) -> list[str]:
         ax.invert_yaxis()
         ax.set_yticks([0, 1], ["SIRA − Muse alone", "SIRA − physics alone"])
         ax.set_xlabel("log score per measurement, SIRA minus rival (nats; right is SIRA better)")
-        ax.set_title(f"{test['cases']} unseen test objects: each dot is one object, bar is the mean and 95% interval",
+        ax.set_title(f"{test['cases']} test objects SIRA never saw, one dot each\nbar: mean and 95% interval over objects",
                      fontsize=10, color=INK, loc="left")
         save(fig, "forecasts")
 

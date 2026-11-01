@@ -1,0 +1,116 @@
+{
+ "code": "36980e0cda335a7723f529e96916a89d95245178",
+ "cases": 40,
+ "outcomes": 532,
+ "bets": 175,
+ "dropped": 0,
+ "surprises": 3,
+ "leap_bets": 3,
+ "cost_usd": 22.6,
+ "verdicts": [
+  {
+   "object": "ZTF21abdihbw",
+   "verdict": "neptune",
+   "log10_e": 3.609
+  },
+  {
+   "object": "ZTF21abtulxp",
+   "verdict": "neptune",
+   "log10_e": 3.845
+  },
+  {
+   "object": "ZTF25abiwxmw",
+   "verdict": "neptune",
+   "log10_e": 2.625
+  }
+ ],
+ "sira": {
+  "log_score": -4.091,
+  "crps": 20.64,
+  "coverage_90": 0.949,
+  "class_log_loss": 1.292
+ },
+ "b0": {
+  "log_score": -5.121,
+  "crps": 25.05,
+  "coverage_90": 0.87,
+  "class_log_loss": null
+ },
+ "b1": {
+  "log_score": -4.418,
+  "crps": 22.4,
+  "coverage_90": 0.902,
+  "class_log_loss": 1.952
+ },
+ "b2": {
+  "log_score": -4.878,
+  "crps": 25.18,
+  "coverage_90": 0.874,
+  "class_log_loss": 1.409
+ },
+ "sira_minus": {
+  "b0": {
+   "log_score": 1.03,
+   "ci95": [
+    0.624,
+    1.469
+   ]
+  },
+  "b1": {
+   "log_score": 0.327,
+   "ci95": [
+    0.166,
+    0.506
+   ]
+  },
+  "b2": {
+   "log_score": 0.787,
+   "ci95": [
+    0.372,
+    1.31
+   ]
+  }
+ },
+ "ablations": {
+  "no_llm": {
+   "log_score": -4.38,
+   "sira_minus": 0.289,
+   "ci95": [
+    0.149,
+    0.454
+   ]
+  },
+  "no_team": {
+   "log_score": -4.1,
+   "sira_minus": 0.009,
+   "ci95": [
+    -0.004,
+    0.023
+   ]
+  },
+  "no_leverrier": {
+   "log_score": -4.118,
+   "sira_minus": 0.027,
+   "ci95": [
+    -0.0,
+    0.08
+   ]
+  },
+  "llm_25": {
+   "log_score": -4.137,
+   "sira_minus": 0.046,
+   "ci95": [
+    0.009,
+    0.084
+   ]
+  },
+  "llm_75": {
+   "log_score": -4.106,
+   "sira_minus": 0.015,
+   "ci95": [
+    -0.02,
+    0.048
+   ]
+  }
+ }
+}

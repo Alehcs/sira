@@ -1,0 +1,632 @@
+{
+ "ZTF18aaztjyd": {
+  "type": "microlensing",
+  "t0_mjd": 58289.59,
+  "tE": 71.7,
+  "u0": 0.13
+ },
+ "ZTF18abaqxrt": {
+  "type": "microlensing",
+  "t0_mjd": 58301.55,
+  "tE": 33.2,
+  "u0": 0.61
+ },
+ "ZTF18abffdjl": {
+  "type": "SN Ia",
+  "redshift": 0.0666,
+  "peak_mjd": 61003.19,
+  "name": "SN2025aedq"
+ },
+ "ZTF18abhxjmj": {
+  "type": "microlensing",
+  "t0_mjd": 58248.729999999996,
+  "tE": 46.6,
+  "u0": 0.17
+ },
+ "ZTF19aaekacq": {
+  "type": "microlensing",
+  "t0_mjd": 58544.28,
+  "tE": 47.2,
+  "u0": 0.57
+ },
+ "ZTF19aaoocwc": {
+  "type": "microlensing",
+  "t0_mjd": 58580.46,
+  "tE": 81.1,
+  "u0": 0.12
+ },
+ "ZTF19aaopcxy": {
+  "type": "microlensing",
+  "t0_mjd": 58550.84,
+  "tE": 108.8,
+  "u0": 0.21
+ },
+ "ZTF19aatwaux": {
+  "type": "microlensing",
+  "t0_mjd": 58636.520000000004,
+  "tE": 51.6,
+  "u0": 0.15
+ },
+ "ZTF19aavndrc": {
+  "type": "microlensing",
+  "t0_mjd": 58636.87,
+  "tE": 69.7,
+  "u0": 0.1
+ },
+ "ZTF19aayqnmp": {
+  "type": "microlensing",
+  "t0_mjd": 58651.55,
+  "tE": 169.6,
+  "u0": 0.26
+ },
+ "ZTF19aazhmab": {
+  "type": "microlensing",
+  "t0_mjd": 58641.79,
+  "tE": 82.7,
+  "u0": 0.03
+ },
+ "ZTF19abftuld": {
+  "type": "microlensing",
+  "t0_mjd": 58728.25,
+  "tE": 104.5,
+  "u0": 0.19
+ },
+ "ZTF19abhznaj": {
+  "type": "microlensing",
+  "t0_mjd": 58691.2,
+  "tE": 4.0,
+  "u0": 0.14
+ },
+ "ZTF19abibzvr": {
+  "type": "microlensing",
+  "t0_mjd": 58300.46,
+  "tE": 36.2,
+  "u0": 0.24
+ },
+ "ZTF19abjehsm": {
+  "type": "microlensing",
+  "t0_mjd": 58700.18,
+  "tE": 20.6,
+  "u0": 0.53
+ },
+ "ZTF19abjsvbc": {
+  "type": "microlensing",
+  "t0_mjd": 58713.21,
+  "tE": 20.4,
+  "u0": 0.23
+ },
+ "ZTF19abjtzvc": {
+  "type": "microlensing",
+  "t0_mjd": 58709.28,
+  "tE": 170.1,
+  "u0": 0.12
+ },
+ "ZTF19abqueuo": {
+  "type": "microlensing",
+  "t0_mjd": 58730.520000000004,
+  "tE": 91.1,
+  "u0": 0.37
+ },
+ "ZTF20aaukggm": {
+  "type": "microlensing",
+  "t0_mjd": 58961.5,
+  "tE": 53.5,
+  "u0": 0.11
+ },
+ "ZTF20aauodap": {
+  "type": "microlensing",
+  "t0_mjd": 58976.479999999996,
+  "tE": 76.6,
+  "u0": 0.14
+ },
+ "ZTF20aavmhsg": {
+  "type": "microlensing",
+  "t0_mjd": 58982.44,
+  "tE": 46.0,
+  "u0": 0.12
+ },
+ "ZTF20abhmltf": {
+  "type": "microlensing",
+  "t0_mjd": 59042.84,
+  "tE": 55.3,
+  "u0": 0.24
+ },
+ "ZTF20abiogoc": {
+  "type": "microlensing",
+  "t0_mjd": 59031.520000000004,
+  "tE": 28.6,
+  "u0": 0.03
+ },
+ "ZTF20abohkdo": {
+  "type": "microlensing",
+  "t0_mjd": 59061.11,
+  "tE": 44.5,
+  "u0": 0.1
+ },
+ "ZTF20abqkcsf": {
+  "type": "microlensing",
+  "t0_mjd": 59078.15,
+  "tE": 55.5,
+  "u0": 0.14
+ },
+ "ZTF20abrtvbz": {
+  "type": "microlensing",
+  "t0_mjd": 59088.71,
+  "tE": 64.6,
+  "u0": 0.11
+ },
+ "ZTF20abxwenr": {
+  "type": "microlensing",
+  "t0_mjd": 59116.78,
+  "tE": 158.3,
+  "u0": 0.01
+ },
+ "ZTF20abztmco": {
+  "type": "microlensing",
+  "t0_mjd": 59237.85,
+  "tE": 172.8,
+  "u0": 0.23
+ },
+ "ZTF20acbmtwd": {
+  "type": "microlensing",
+  "t0_mjd": 59150.04,
+  "tE": 85.5,
+  "u0": 0.26
+ },
+ "ZTF20achpgdp": {
+  "type": "microlensing",
+  "t0_mjd": 59150.0,
+  "tE": 70.6,
+  "u0": 0.28
+ },
+ "ZTF20acpjazv": {
+  "type": "microlensing",
+  "t0_mjd": 59206.94,
+  "tE": 74.0,
+  "u0": 0.43
+ },
+ "ZTF21aadrxrx": {
+  "type": "microlensing",
+  "t0_mjd": 59237.0,
+  "tE": 39.2,
+  "u0": 0.06
+ },
+ "ZTF21aaqsyeh": {
+  "type": "microlensing",
+  "t0_mjd": 59310.44,
+  "tE": 27.6,
+  "u0": 0.4
+ },
+ "ZTF21aavhwyj": {
+  "type": "microlensing",
+  "t0_mjd": 59352.37,
+  "tE": 47.4,
+  "u0": 0.14
+ },
+ "ZTF21aawgkvn": {
+  "type": "microlensing",
+  "t0_mjd": 59331.59,
+  "tE": 13.4,
+  "u0": 0.24
+ },
+ "ZTF21aaymbrh": {
+  "type": "microlensing",
+  "t0_mjd": 59346.13,
+  "tE": 76.0,
+  "u0": 0.13
+ },
+ "ZTF21abdihbw": {
+  "type": "microlensing",
+  "t0_mjd": 59381.83,
+  "tE": 45.9,
+  "u0": 0.04
+ },
+ "ZTF21abdikzn": {
+  "type": "microlensing",
+  "t0_mjd": 59406.61,
+  "tE": 83.6,
+  "u0": 0.31
+ },
+ "ZTF21abehdtd": {
+  "type": "microlensing",
+  "t0_mjd": 59375.3,
+  "tE": 79.4,
+  "u0": 0.24
+ },
+ "ZTF21abehnjv": {
+  "type": "microlensing",
+  "t0_mjd": 59398.79,
+  "tE": 48.8,
+  "u0": 0.22
+ },
+ "ZTF21abhqzzh": {
+  "type": "microlensing",
+  "t0_mjd": 59460.44,
+  "tE": 203.1,
+  "u0": 0.21
+ },
+ "ZTF21abihdde": {
+  "type": "microlensing",
+  "t0_mjd": 59421.62,
+  "tE": 132.7,
+  "u0": 0.1
+ },
+ "ZTF21abmnkml": {
+  "type": "microlensing",
+  "t0_mjd": 59458.229999999996,
+  "tE": 110.8,
+  "u0": 0.29
+ },
+ "ZTF21abqhbuh": {
+  "type": "microlensing",
+  "t0_mjd": 59519.95,
+  "tE": 60.9,
+  "u0": 0.04
+ },
+ "ZTF21abtulxp": {
+  "type": "microlensing",
+  "t0_mjd": 59468.72,
+  "tE": 128.5,
+  "u0": 0.02
+ },
+ "ZTF21acqomnw": {
+  "type": "microlensing",
+  "t0_mjd": 59690.14,
+  "tE": 105.6,
+  "u0": 0.29
+ },
+ "ZTF22aabpdbm": {
+  "type": "microlensing",
+  "t0_mjd": 59619.24,
+  "tE": 162.7,
+  "u0": 0.09
+ },
+ "ZTF22aafvwxf": {
+  "type": "microlensing",
+  "t0_mjd": 59678.71,
+  "tE": 86.6,
+  "u0": 0.06
+ },
+ "ZTF22aalftxa": {
+  "type": "microlensing",
+  "t0_mjd": 59768.63,
+  "tE": 80.0,
+  "u0": 0.31
+ },
+ "ZTF22aarwizr": {
+  "type": "microlensing",
+  "t0_mjd": 59787.06,
+  "tE": 36.5,
+  "u0": 0.62
+ },
+ "ZTF22aauvkpi": {
+  "type": "microlensing",
+  "t0_mjd": 59797.68,
+  "tE": 41.8,
+  "u0": 0.44
+ },
+ "ZTF22aavemfz": {
+  "type": "microlensing",
+  "t0_mjd": 59794.68,
+  "tE": 77.0,
+  "u0": 0.12
+ },
+ "ZTF22aawaiui": {
+  "type": "microlensing",
+  "t0_mjd": 59804.08,
+  "tE": 54.9,
+  "u0": 0.51
+ },
+ "ZTF22abazvnk": {
+  "type": "microlensing",
+  "t0_mjd": 59817.64,
+  "tE": 62.9,
+  "u0": 0.08
+ },
+ "ZTF22abcflpn": {
+  "type": "microlensing",
+  "t0_mjd": 59821.26,
+  "tE": 28.8,
+  "u0": 0.08
+ },
+ "ZTF22abejuat": {
+  "type": "microlensing",
+  "t0_mjd": 59843.94,
+  "tE": 23146.4,
+  "u0": 0.0
+ },
+ "ZTF22abfvhzh": {
+  "type": "microlensing",
+  "t0_mjd": 59834.47,
+  "tE": 13.5,
+  "u0": 0.15
+ },
+ "ZTF24aakaiha": {
+  "type": "TDE-He",
+  "redshift": 0.051,
+  "peak_mjd": 60448.36,
+  "name": "AT2024gxr"
+ },
+ "ZTF24aatxshz": {
+  "type": "TDE",
+  "redshift": 0.1398,
+  "peak_mjd": 60519.26,
+  "name": "AT2024qab"
+ },
+ "ZTF24aavdccv": {
+  "type": "SN Ia-91bg",
+  "redshift": 0.01832,
+  "peak_mjd": 60509.29,
+  "name": "SN2024pbd"
+ },
+ "ZTF24ablzmbm": {
+  "type": "SN Iax",
+  "redshift": 0.01804,
+  "peak_mjd": 60609.48,
+  "name": "SN2024xqr"
+ },
+ "ZTF24abmaujk": {
+  "type": "TDE",
+  "redshift": 0.12,
+  "peak_mjd": 60622.19,
+  "name": "AT2024ymu"
+ },
+ "ZTF24abuqgob": {
+  "type": "SN Ia",
+  "redshift": 0.035,
+  "peak_mjd": 60687.32,
+  "name": "SN2024acnp"
+ },
+ "ZTF25aaazugo": {
+  "type": "SN Ia",
+  "redshift": 0.04503,
+  "peak_mjd": 60691.47,
+  "name": "SN2025dw"
+ },
+ "ZTF25aabsnyf": {
+  "type": "SN Ia",
+  "redshift": 0.03,
+  "peak_mjd": 60695.49,
+  "name": "SN2025gp"
+ },
+ "ZTF25aacmgnn": {
+  "type": "SN II",
+  "redshift": 0.0243,
+  "peak_mjd": 60714.52,
+  "name": "SN2025iw"
+ },
+ "ZTF25aadhuhm": {
+  "type": "SN II",
+  "redshift": 0.022,
+  "peak_mjd": 60728.18,
+  "name": "SN2025aph"
+ },
+ "ZTF25aafhecq": {
+  "type": "SN Ia",
+  "redshift": 0.032,
+  "peak_mjd": 60724.4,
+  "name": "SN2025bag"
+ },
+ "ZTF25aafszll": {
+  "type": "SN II",
+  "redshift": 0.02641,
+  "peak_mjd": 60728.46,
+  "name": "SN2025byp"
+ },
+ "ZTF25aafydrq": {
+  "type": "SN Ia",
+  "redshift": 0.07339,
+  "peak_mjd": 60731.21,
+  "name": "SN2025bzj"
+ },
+ "ZTF25aaglicm": {
+  "type": "SN II",
+  "redshift": 0.016,
+  "peak_mjd": 60727.48,
+  "name": "SN2025ayy"
+ },
+ "ZTF25aaizyki": {
+  "type": "SN Ia",
+  "redshift": 0.0373,
+  "peak_mjd": 60754.53,
+  "name": "SN2025eqq"
+ },
+ "ZTF25aajektz": {
+  "type": "SN Ia",
+  "redshift": 0.04,
+  "peak_mjd": 60757.14,
+  "name": "SN2025ezk"
+ },
+ "ZTF25aajmrso": {
+  "type": "SN Ia",
+  "redshift": 0.066,
+  "peak_mjd": 60760.42,
+  "name": "SN2025fed"
+ },
+ "ZTF25aakgfpu": {
+  "type": "SN Ia",
+  "redshift": 0.058,
+  "peak_mjd": 60775.39,
+  "name": "SN2025frd"
+ },
+ "ZTF25aalpjxp": {
+  "type": "SN Ia",
+  "redshift": 0.08,
+  "peak_mjd": 60772.27,
+  "name": "SN2025gnn"
+ },
+ "ZTF25aalpmfp": {
+  "type": "SN Ia",
+  "redshift": 0.054,
+  "peak_mjd": 60775.24,
+  "name": "SN2025glz"
+ },
+ "ZTF25aanbdft": {
+  "type": "SN Ia",
+  "redshift": 0.07409,
+  "peak_mjd": 60787.21,
+  "name": "SN2025hjv"
+ },
+ "ZTF25aasrzlo": {
+  "type": "SN Ia",
+  "redshift": 0.074,
+  "peak_mjd": 60840.33,
+  "name": "SN2025mpb"
+ },
+ "ZTF25aatmfzy": {
+  "type": "SLSN-II",
+  "redshift": 0.097,
+  "peak_mjd": 60934.52,
+  "name": "SN2025nnd"
+ },
+ "ZTF25aavcbih": {
+  "type": "SN Ia",
+  "redshift": 0.045,
+  "peak_mjd": 60847.34,
+  "name": "SN2025nmw"
+ },
+ "ZTF25aavddzo": {
+  "type": "SN II",
+  "redshift": 0.0336,
+  "peak_mjd": 60843.22,
+  "name": "SN2025nle"
+ },
+ "ZTF25aaylqqq": {
+  "type": "SN Ia",
+  "redshift": 0.036,
+  "peak_mjd": 60870.44,
+  "name": "SN2025pks"
+ },
+ "ZTF25abbslda": {
+  "type": "SN IIP",
+  "redshift": 0.025,
+  "peak_mjd": 60897.25,
+  "name": "SN2025rje"
+ },
+ "ZTF25abedagz": {
+  "type": "SN IIb",
+  "redshift": 0.04,
+  "peak_mjd": 60894.37,
+  "name": "SN2025sny"
+ },
+ "ZTF25abiwxmw": {
+  "type": "SLSN-I",
+  "redshift": 0.161,
+  "peak_mjd": 60928.2,
+  "name": "SN2025upm"
+ },
+ "ZTF25abmsodq": {
+  "type": "SN Ia",
+  "redshift": 0.063,
+  "peak_mjd": 60928.31,
+  "name": "SN2025wib"
+ },
+ "ZTF25abovgwv": {
+  "type": "SN Ia",
+  "redshift": 0.083,
+  "peak_mjd": 60932.19,
+  "name": "SN2025wxm"
+ },
+ "ZTF25abowvko": {
+  "type": "SN Ia",
+  "redshift": 0.042,
+  "peak_mjd": 60934.5,
+  "name": "SN2025wxy"
+ },
+ "ZTF25abqkiqr": {
+  "type": "SN Ia",
+  "redshift": 0.054,
+  "peak_mjd": 60943.3,
+  "name": "SN2025xjv"
+ },
+ "ZTF25abqopkf": {
+  "type": "SN Ia",
+  "redshift": 0.06,
+  "peak_mjd": 60949.3,
+  "name": "SN2025xpx"
+ },
+ "ZTF25abscivt": {
+  "type": "SN Ia",
+  "redshift": 0.07748,
+  "peak_mjd": 60954.13,
+  "name": "SN2025yew"
+ },
+ "ZTF25abuovxv": {
+  "type": "TDE-featureless",
+  "redshift": 0.345,
+  "peak_mjd": 61038.26,
+  "name": "TDE2025zmb"
+ },
+ "ZTF25abuzfte": {
+  "type": "SN Ia",
+  "redshift": 0.0495,
+  "peak_mjd": 60960.14,
+  "name": "SN2025zoy"
+ },
+ "ZTF25abxrfik": {
+  "type": "SN Ia",
+  "redshift": 0.04,
+  "peak_mjd": 60982.52,
+  "name": "SN2025aazr"
+ },
+ "ZTF25abzyzac": {
+  "type": "SLSN-I",
+  "redshift": 0.19,
+  "peak_mjd": 61005.21,
+  "name": "SN2025abvv"
+ },
+ "ZTF25acamzgr": {
+  "type": "SN Ia",
+  "redshift": 0.061,
+  "peak_mjd": 60990.44,
+  "name": "SN2025abtw"
+ },
+ "ZTF25acblpes": {
+  "type": "SN II",
+  "redshift": 0.1062,
+  "peak_mjd": 60989.36,
+  "name": "SN2025accl"
+ },
+ "ZTF25accmopr": {
+  "type": "SLSN-I",
+  "redshift": 0.307,
+  "peak_mjd": 61031.44,
+  "name": "SN2025afad"
+ },
+ "ZTF25accmunu": {
+  "type": "SN Ic",
+  "redshift": 0.0328,
+  "peak_mjd": 60988.55,
+  "name": "SN2025abrr"
+ },
+ "ZTF25acgcuie": {
+  "type": "SN II",
+  "redshift": 0.02428,
+  "peak_mjd": 61015.56,
+  "name": "SN2025afyb"
+ },
+ "ZTF25acgfdia": {
+  "type": "SN Ia",
+  "redshift": 0.05219,
+  "peak_mjd": 61026.46,
+  "name": "SN2025afxm"
+ },
+ "ZTF25acgqgrv": {
+  "type": "SN Ia",
+  "redshift": 0.07967,
+  "peak_mjd": 61031.35,
+  "name": "SN2025agqn"
+ },
+ "ZTF25acivwpw": {
+  "type": "SN Ia",
+  "redshift": 0.079,
+  "peak_mjd": 61030.48,
+  "name": "SN2025ahlf"
+ },
+ "ZTF25acktnvu": {
+  "type": "SN Ia",
+  "redshift": 0.04125,
+  "peak_mjd": 61038.55,
+  "name": "SN2025ahyp"
+ }
+}

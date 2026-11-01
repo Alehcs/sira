@@ -1,0 +1,316 @@
+{
+ "oid": "ZTF21aavhwyj",
+ "checks": [
+  {
+   "t": 59337.46,
+   "weights": {
+    "tde": 0.8999791187201731,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59347.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59357.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59367.46,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 4,
+    "p_value": 7.872000000000002e-07,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.14273,
+   "seconds": 63.5,
+   "leap": "hidden",
+   "decision": "proposes Binary-source microlens event",
+   "why": "An unseen foreground point lens first magnified a hot, blue background star, producing the smooth roughly 35-day g-band rise and much faster symmetric fall that the slow TDE decline overpredicted. A s"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.20538,
+   "seconds": 102.3,
+   "leap": "new",
+   "decision": "proposes Microlensing with lens-star flare",
+   "why": "An unseen low-mass object in the Galactic plane point-lenses a hot background source, producing the symmetric, very blue g-band rise and fall that a TDE power law cannot match. The lens is a red dwarf"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.14629,
+   "seconds": 69.7,
+   "leap": "instrument",
+   "decision": "proposes Crowded-field template PSF ghost",
+   "why": "At low Galactic latitude a bright neighbour in the g reference template is imperfectly PSF-matched, so seeing and pointing drift create a g-only subtraction residual that waxes smoothly and then wanes"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.14239,
+   "seconds": 64.3,
+   "leap": "hidden",
+   "decision": "proposes Blue explosion with red flare",
+   "why": "A blue explosion peaked near day -24 and is now declining symmetrically, rather than maintaining a TDE-like power-law tail. A separate short-lived, very red hidden source switched on near day -1, prod"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-9ae6b3a3fb",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.1883,
+   "seconds": 95.3,
+   "leap": "new",
+   "decision": "proposes Cooling double-peaked explosion",
+   "why": "The g-band event is hot ejecta that peaked near day -24 and is now cooling and fading, not a still-rising accretion flow. Slower, cooler, more opaque ejecta are producing a delayed red peak, on top of"
+  }
+ ],
+ "now": 59377.46,
+ "future_points": 9,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Binary-source microlens event",
+   "idea": "An unseen foreground point lens first magnified a hot, blue background star, producing the smooth roughly 35-day g-band rise and much faster symmetric fall that the slow TDE decline overpredicted. A short second magnification of a red companion is now adding the abrupt r-band light, represented by the flare on a steady baseline, while the blue magnification continues to fade.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "flare"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts g returns symmetrically toward its pre-event baseline rather than staying bright and blue, while r peaks within a few days and then fades rapidly as the brief red flare ends.",
+   "cost_usd": 0.14273,
+   "bic": 32.36,
+   "fit": {
+    "chi2_per_point": 0.08,
+    "params": {
+     "lens0.t0": 59352.541,
+     "lens0.u0": 0.737,
+     "lens0.tE": 8.591,
+     "lens0.ztfg": 830.399,
+     "lens0.ztfr": 733.056,
+     "flare1.t0": 59351.778,
+     "flare1.width": 16.702,
+     "flare1.ztfg": 232.808,
+     "flare1.ztfr": 754.221,
+     "constant2.ztfg": 43.734,
+     "constant2.ztfr": 68.384
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": 0.99,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Microlensing with lens-star flare",
+   "idea": "An unseen low-mass object in the Galactic plane point-lenses a hot background source, producing the symmetric, very blue g-band rise and fall that a TDE power law cannot match. The lens is a red dwarf whose brief flare supplies the sudden r-band brightening near day -1 while g keeps fading.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "flare"
+    }
+   ],
+   "predicts": "It predicts a symmetric return of g to its faint pre-event baseline within weeks and a days-long decay of the r-only spike, instead of the TDE's lingering bright blue power-law tail.",
+   "cost_usd": 0.20538,
+   "bic": 26.62,
+   "fit": {
+    "chi2_per_point": 0.07,
+    "params": {
+     "lens0.t0": 59352.507,
+     "lens0.u0": 0.086,
+     "lens0.tE": 63.206,
+     "lens0.ztfg": 66.285,
+     "lens0.ztfr": 154.313,
+     "flare1.t0": 59350.706,
+     "flare1.width": 16.357,
+     "flare1.ztfg": 84.665,
+     "flare1.ztfr": 245.549
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": 0.86,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Crowded-field template PSF ghost",
+   "idea": "At low Galactic latitude a bright neighbour in the g reference template is imperfectly PSF-matched, so seeing and pointing drift create a g-only subtraction residual that waxes smoothly and then wanes while the cleaner r reference remains blank. The isolated late r detection is a brief residual from the same mismatched neighbour, not a real reddening source.",
+   "components": [
+    {
+     "type": "rise_fall"
+    },
+    {
+     "type": "constant"
+    },
+    {
+     "type": "flare"
+    }
+   ],
+   "predicts": "It predicts both bands settle within days to the flat pre-event baseline, with the r point disappearing as quickly as it appeared and no sustained achromatic TDE-like brightening.",
+   "cost_usd": 0.14629,
+   "bic": 32.36,
+   "fit": {
+    "chi2_per_point": 0.08,
+    "params": {
+     "rise_fall0.t0": 59352.673,
+     "rise_fall0.rise": 2.319,
+     "rise_fall0.fall": 4.552,
+     "rise_fall0.ztfg": 959.855,
+     "rise_fall0.ztfr": 672.2,
+     "constant1.ztfg": 46.738,
+     "constant1.ztfr": 60.088,
+     "flare2.t0": 59351.944,
+     "flare2.width": 16.462,
+     "flare2.ztfg": 262.281,
+     "flare2.ztfr": 823.896
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": 1.02,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "Blue explosion with red flare",
+   "idea": "A blue explosion peaked near day -24 and is now declining symmetrically, rather than maintaining a TDE-like power-law tail. A separate short-lived, very red hidden source switched on near day -1, producing the isolated bright r point with little extra g light.",
+   "components": [
+    {
+     "type": "rise_fall"
+    },
+    {
+     "type": "flare"
+    }
+   ],
+   "predicts": "g will continue its rapid exponential fade toward baseline while the r excess peaks around now and disappears within a few days, leaving no bright blue plateau.",
+   "cost_usd": 0.14239,
+   "bic": 26.86,
+   "fit": {
+    "chi2_per_point": 0.09,
+    "params": {
+     "rise_fall0.t0": 59352.896,
+     "rise_fall0.rise": 7.054,
+     "rise_fall0.fall": 13.493,
+     "rise_fall0.ztfg": 815.527,
+     "rise_fall0.ztfr": 1993.675,
+     "flare1.t0": 59352.961,
+     "flare1.width": 5.143,
+     "flare1.ztfg": 369.733,
+     "flare1.ztfr": 1029.582
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": -2.98,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Cooling double-peaked explosion",
+   "idea": "The g-band event is hot ejecta that peaked near day -24 and is now cooling and fading, not a still-rising accretion flow. Slower, cooler, more opaque ejecta are producing a delayed red peak, on top of faint steady host light.",
+   "components": [
+    {
+     "type": "rise_fall"
+    },
+    {
+     "type": "rise_fall"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts g keeps fading while r peaks later and declines more slowly, so the source stays red and returns to baseline rather than resuming a blue TDE rise.",
+   "cost_usd": 0.1883,
+   "bic": 35.25,
+   "fit": {
+    "chi2_per_point": 0.09,
+    "params": {
+     "rise_fall0.t0": 59353.816,
+     "rise_fall0.rise": 1.947,
+     "rise_fall0.fall": 2.939,
+     "rise_fall0.ztfg": 874.019,
+     "rise_fall0.ztfr": 1279.65,
+     "rise_fall1.t0": 59358.122,
+     "rise_fall1.rise": 7.748,
+     "rise_fall1.fall": 12.78,
+     "rise_fall1.ztfg": 681.019,
+     "rise_fall1.ztfr": 685.49,
+     "constant2.ztfg": -11.612,
+     "constant2.ztfr": 187.991
+    }
+   },
+   "against_old": {
+    "n": 9,
+    "log10_e": -0.21,
+    "verdict": "abstain"
+   }
+  }
+ ],
+ "best": {
+  "leap": "instrument",
+  "name": "Crowded-field template PSF ghost",
+  "verdict": "abstain",
+  "log10_e": 1.02,
+  "margin_log10_e": 0.03
+ }
+}

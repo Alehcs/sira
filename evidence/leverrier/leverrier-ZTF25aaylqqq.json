@@ -1,0 +1,73 @@
+{
+ "oid": "ZTF25aaylqqq",
+ "checks": [
+  {
+   "t": 60865.36,
+   "weights": {
+    "ia": 0.4453570502049699,
+    "ibc": 0.454505155569829,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 18,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60875.36,
+   "weights": {
+    "ia": 0.7018508109970122,
+    "ibc": 0.19814918898859243,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 18,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60885.36,
+   "weights": {
+    "ia": 0.8999999951592006,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 12,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60895.36,
+   "weights": {
+    "ia": 0.8999999999999999,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 11,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60905.36,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

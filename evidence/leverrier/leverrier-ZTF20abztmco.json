@@ -1,0 +1,273 @@
+{
+ "oid": "ZTF20abztmco",
+ "checks": [
+  {
+   "t": 59114.45,
+   "weights": {
+    "ia": 0.6646076713780322,
+    "ibc": 0.2097489302756615,
+    "tde": 0.025544532535590803,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 12,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59124.45,
+   "weights": {
+    "ia": 0.14303476524393924,
+    "ibc": 0.010974405904283563,
+    "tde": 0.7451920152496984,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59134.45,
+   "weights": {
+    "ia": 0.015205632815865427,
+    "ii": 0.6208124951873477,
+    "ibc": 0.0009301601791875805,
+    "tde": 0.26305171181759945,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 10,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59144.45,
+   "weights": {
+    "ia": 0.8999430440709781,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 11,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59154.45,
+   "weights": {
+    "ia": 0.8999999995972036,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59164.45,
+   "weights": {
+    "ia": 0.8999999999309166,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 13,
+    "misses": 2,
+    "p_value": 0.02695126256884796,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59174.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 10,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59184.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 10,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59194.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 17,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59204.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 4,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59214.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 13,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59224.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 20,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59234.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59244.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 10,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59254.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 16,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59264.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 15,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59274.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 12,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59284.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 4,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59294.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59304.45,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 11,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

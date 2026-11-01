@@ -1,0 +1,48 @@
+{
+ "oid": "ZTF20achpgdp",
+ "checks": [
+  {
+   "t": 59138.17,
+   "weights": {
+    "ia": 0.7772436698550977,
+    "ii": 0.010110020404922709,
+    "ibc": 0.11264630973997895,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 9,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59148.17,
+   "weights": {
+    "ia": 0.8950734439657966,
+    "ibc": 0.00492655603420328,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 12,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59158.17,
+   "weights": {
+    "ia": 0.8999999632875311,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

@@ -1,0 +1,288 @@
+{
+ "oid": "ZTF21abqhbuh",
+ "checks": [
+  {
+   "t": 59442.39,
+   "weights": {
+    "ia": 0.8982016386445739,
+    "ibc": 0.0017983613554094777,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59452.39,
+   "weights": {
+    "ia": 0.8999999946682876,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59462.39,
+   "weights": {
+    "ia": 0.8999999999779175,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59472.39,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 3,
+    "p_value": 0.0004154574330623999,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06679,
+   "seconds": 24.7,
+   "leap": "hidden",
+   "decision": "proposes Foreground microlens on red source",
+   "why": "An unseen foreground point mass is slowly transiting a red background source, so its achromatic magnification keeps both bands rising together at nearly constant g-r colour for over 60 days. This long"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03524,
+   "seconds": 12.3,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing of red star",
+   "why": "At this low Galactic latitude a foreground point lens is slowly magnifying a background red giant, producing a months-long rise far slower than a supernova. A constant component accounts for blended, "
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.04403,
+   "seconds": 15.6,
+   "leap": "instrument",
+   "decision": "proposes Drifting subtraction residual leak",
+   "why": "In this crowded low Galactic latitude field, a mis-registered or seeing-mismatched template leaves a residual from a nearby bright red star at the transient position. A slow seasonal drift in alignmen"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03606,
+   "seconds": 13.6,
+   "leap": "hidden",
+   "decision": "proposes Galactic microlensing alignment",
+   "why": "An unseen foreground point lens in the Galactic plane is gradually aligning with a red background source, achromatically magnifying it on top of its steady baseline light. This replaces the Ia explosi"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-8c3884ef34",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.04943,
+   "seconds": 17.1,
+   "leap": "new",
+   "decision": "proposes Galactic point microlensing",
+   "why": "An unseen foreground point mass in the Galactic plane is magnifying a distant, intrinsically red background star, producing the slow brightening seen for over 60 days. Both bands rise together by abou"
+  }
+ ],
+ "now": 59482.39,
+ "future_points": 19,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Foreground microlens on red source",
+   "idea": "An unseen foreground point mass is slowly transiting a red background source, so its achromatic magnification keeps both bands rising together at nearly constant g-r colour for over 60 days. This long, accelerating, colour-stable rise is not a Type Ia approaching a normal peak and decline, but a lensing approach toward maximum magnification.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts both bands peak together after now and then fall symmetrically at essentially constant g-r colour, returning to the faint baseline, unlike a Type Ia that should already be fading and reddening.",
+   "cost_usd": 0.06679,
+   "bic": 35.29,
+   "fit": {
+    "chi2_per_point": 0.61,
+    "params": {
+     "lens0.t0": 59507.713,
+     "lens0.u0": 0.001,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 18.334,
+     "lens0.ztfr": 74.491,
+     "constant1.ztfg": -86.244,
+     "constant1.ztfr": -319.675
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 1043.37,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing of red star",
+   "idea": "At this low Galactic latitude a foreground point lens is slowly magnifying a background red giant, producing a months-long rise far slower than a supernova. A constant component accounts for blended, unlensed light in each band.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "Both bands will keep rising together with nearly unchanged g-r colour to one peak, then decline symmetrically to the pre-event baseline, unlike a Type Ia whose colour evolves and which fades irreversibly after maximum.",
+   "cost_usd": 0.03524,
+   "bic": 35.29,
+   "fit": {
+    "chi2_per_point": 0.61,
+    "params": {
+     "lens0.t0": 59507.713,
+     "lens0.u0": 0.001,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 18.334,
+     "lens0.ztfr": 74.491,
+     "constant1.ztfg": -86.244,
+     "constant1.ztfr": -319.675
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 1043.37,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Drifting subtraction residual leak",
+   "idea": "In this crowded low Galactic latitude field, a mis-registered or seeing-mismatched template leaves a residual from a nearby bright red star at the transient position. A slow seasonal drift in alignment or calibration makes that residual grow steadily and redly, mimicking a still-rising supernova while intermittent well-matched epochs subtract cleanly to about 20.8 mag limits.",
+   "components": [
+    {
+     "type": "constant"
+    },
+    {
+     "type": "trend"
+    }
+   ],
+   "predicts": "It predicts future flux rises linearly at the same per-band rate with unchanged roughly 1.5 mag g-r offset, centroid and stamp residuals tied to the neighbour, and occasional deep non-detections on well-matched epochs, rather than peaking and fading as the Ia model requires.",
+   "cost_usd": 0.04403,
+   "bic": 138.53,
+   "fit": {
+    "chi2_per_point": 5.45,
+    "params": {
+     "constant0.ztfg": 141.364,
+     "constant0.ztfr": 536.759,
+     "trend1.ztfg": 447.681,
+     "trend1.ztfr": 1220.748
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 0.23,
+    "verdict": "abstain"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "Galactic microlensing alignment",
+   "idea": "An unseen foreground point lens in the Galactic plane is gradually aligning with a red background source, achromatically magnifying it on top of its steady baseline light. This replaces the Ia explosion, explaining the >60-day monotonic rise at nearly constant r-g colour that the Ia fit mistook for a post-peak decline.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts an achromatic symmetric turnover and fall back to the pre-rise constant baseline at unchanged r-g colour, rather than an Ia-like reddening radioactive decline.",
+   "cost_usd": 0.03606,
+   "bic": 35.29,
+   "fit": {
+    "chi2_per_point": 0.61,
+    "params": {
+     "lens0.t0": 59507.713,
+     "lens0.u0": 0.001,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 18.334,
+     "lens0.ztfr": 74.491,
+     "constant1.ztfg": -86.244,
+     "constant1.ztfr": -319.675
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 1043.37,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic point microlensing",
+   "idea": "An unseen foreground point mass in the Galactic plane is magnifying a distant, intrinsically red background star, producing the slow brightening seen for over 60 days. Both bands rise together by about 1.7 mag at an almost constant g-r colour of roughly 1.5 mag, as expected for achromatic lensing rather than an expanding, cooling supernova.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts an achromatic turnover followed by a symmetric decline on the same timescale back to the constant pre-event baseline at unchanged colour, unlike a Type Ia supernova which should redden, develop evolving spectral features, and fade irreversibly after peak.",
+   "cost_usd": 0.04943,
+   "bic": 35.29,
+   "fit": {
+    "chi2_per_point": 0.61,
+    "params": {
+     "lens0.t0": 59507.713,
+     "lens0.u0": 0.001,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 18.334,
+     "lens0.ztfr": 74.491,
+     "constant1.ztfg": -86.244,
+     "constant1.ztfr": -319.675
+    }
+   },
+   "against_old": {
+    "n": 19,
+    "log10_e": 1043.37,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "hidden",
+  "name": "Foreground microlens on red source",
+  "verdict": "neptune",
+  "log10_e": 1043.37,
+  "margin_log10_e": 0.0
+ }
+}

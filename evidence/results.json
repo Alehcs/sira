@@ -1,0 +1,3994 @@
+{
+ "plan": {
+  "sha256": "d701a5dcf9383408340c77fc2dc331b9ed4b95c150141f47bbcdb3ed75ed15f8",
+  "valid": true,
+  "tsa_time": "2026-11-01T11:58:17+00:00",
+  "ots": "pending"
+ },
+ "test": {
+  "cases": 37,
+  "failed": [
+   "ZTF22abejuat",
+   "ZTF25aafydrq",
+   "ZTF25acgcuie"
+  ],
+  "runs": {
+   "a": 37,
+   "b": 37
+  },
+  "outcomes": 1064,
+  "bets": 350,
+  "cost_usd": 45.06,
+  "rows": [
+   {
+    "object": "ZTF18aaztjyd",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 36,
+    "sira_minus": {
+     "b0": 0.058,
+     "b1": -0.062,
+     "b2": 0.151
+    },
+    "run_a": {
+     "b0": 0.044,
+     "b1": -0.077,
+     "b2": 0.145
+    },
+    "run_b": {
+     "b0": 0.073,
+     "b1": -0.048,
+     "b2": 0.156
+    }
+   },
+   {
+    "object": "ZTF20abhmltf",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 2,
+    "sira_minus": {
+     "b0": -0.342,
+     "b1": 0.273,
+     "b2": -0.079
+    },
+    "run_a": {
+     "b0": -0.43,
+     "b1": 0.185,
+     "b2": -0.003
+    },
+    "run_b": {
+     "b0": -0.253,
+     "b1": 0.361,
+     "b2": -0.156
+    }
+   },
+   {
+    "object": "ZTF20achpgdp",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 54,
+    "sira_minus": {
+     "b0": -0.088,
+     "b1": 0.207,
+     "b2": -0.106
+    },
+    "run_a": {
+     "b0": -0.073,
+     "b1": 0.221,
+     "b2": -0.118
+    },
+    "run_b": {
+     "b0": -0.102,
+     "b1": 0.192,
+     "b2": -0.094
+    }
+   },
+   {
+    "object": "ZTF21aaqsyeh",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 10,
+    "sira_minus": {
+     "b0": 0.393,
+     "b1": -0.306,
+     "b2": 0.382
+    },
+    "run_a": {
+     "b0": 0.333,
+     "b1": -0.366,
+     "b2": 0.602
+    },
+    "run_b": {
+     "b0": 0.453,
+     "b1": -0.246,
+     "b2": 0.161
+    }
+   },
+   {
+    "object": "ZTF21abdihbw",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 14,
+    "sira_minus": {
+     "b0": 9.407,
+     "b1": 2.48,
+     "b2": 3.725
+    },
+    "run_a": {
+     "b0": 9.588,
+     "b1": 2.662,
+     "b2": 3.306
+    },
+    "run_b": {
+     "b0": 9.225,
+     "b1": 2.299,
+     "b2": 4.143
+    }
+   },
+   {
+    "object": "ZTF21abdikzn",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 30,
+    "sira_minus": {
+     "b0": -0.286,
+     "b1": 0.227,
+     "b2": -0.079
+    },
+    "run_a": {
+     "b0": -0.3,
+     "b1": 0.213,
+     "b2": -0.066
+    },
+    "run_b": {
+     "b0": -0.272,
+     "b1": 0.24,
+     "b2": -0.092
+    }
+   },
+   {
+    "object": "ZTF21abehnjv",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 32,
+    "sira_minus": {
+     "b0": 3.313,
+     "b1": 0.256,
+     "b2": 4.817
+    },
+    "run_a": {
+     "b0": 3.239,
+     "b1": 0.182,
+     "b2": 6.041
+    },
+    "run_b": {
+     "b0": 3.387,
+     "b1": 0.329,
+     "b2": 3.593
+    }
+   },
+   {
+    "object": "ZTF21abtulxp",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 32,
+    "sira_minus": {
+     "b0": 6.074,
+     "b1": 0.355,
+     "b2": 2.216
+    },
+    "run_a": {
+     "b0": 5.741,
+     "b1": 0.022,
+     "b2": 3.19
+    },
+    "run_b": {
+     "b0": 6.407,
+     "b1": 0.687,
+     "b2": 1.242
+    }
+   },
+   {
+    "object": "ZTF22aavemfz",
+    "type": "microlensing",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 8,
+    "sira_minus": {
+     "b0": 0.372,
+     "b1": -0.137,
+     "b2": 0.09
+    },
+    "run_a": {
+     "b0": 0.316,
+     "b1": -0.194,
+     "b2": 0.08
+    },
+    "run_b": {
+     "b0": 0.429,
+     "b1": -0.081,
+     "b2": 0.099
+    }
+   },
+   {
+    "object": "ZTF24aakaiha",
+    "type": "TDE-He",
+    "class": "tde",
+    "runs": 2,
+    "outcomes": 36,
+    "sira_minus": {
+     "b0": 1.46,
+     "b1": 1.364,
+     "b2": 4.342
+    },
+    "run_a": {
+     "b0": 1.379,
+     "b1": 1.283,
+     "b2": 5.973
+    },
+    "run_b": {
+     "b0": 1.541,
+     "b1": 1.445,
+     "b2": 2.711
+    }
+   },
+   {
+    "object": "ZTF24aatxshz",
+    "type": "TDE",
+    "class": "tde",
+    "runs": 2,
+    "outcomes": 32,
+    "sira_minus": {
+     "b0": 0.569,
+     "b1": 0.25,
+     "b2": -0.058
+    },
+    "run_a": {
+     "b0": 0.546,
+     "b1": 0.227,
+     "b2": -0.042
+    },
+    "run_b": {
+     "b0": 0.592,
+     "b1": 0.273,
+     "b2": -0.075
+    }
+   },
+   {
+    "object": "ZTF24aavdccv",
+    "type": "SN Ia-91bg",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 32,
+    "sira_minus": {
+     "b0": 3.215,
+     "b1": 0.45,
+     "b2": 7.203
+    },
+    "run_a": {
+     "b0": 3.329,
+     "b1": 0.565,
+     "b2": 7.71
+    },
+    "run_b": {
+     "b0": 3.1,
+     "b1": 0.335,
+     "b2": 6.696
+    }
+   },
+   {
+    "object": "ZTF24ablzmbm",
+    "type": "SN Iax",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 36,
+    "sira_minus": {
+     "b0": 0.618,
+     "b1": -0.044,
+     "b2": 0.276
+    },
+    "run_a": {
+     "b0": 0.681,
+     "b1": 0.019,
+     "b2": 0.135
+    },
+    "run_b": {
+     "b0": 0.554,
+     "b1": -0.107,
+     "b2": 0.418
+    }
+   },
+   {
+    "object": "ZTF24abmaujk",
+    "type": "TDE",
+    "class": "tde",
+    "runs": 2,
+    "outcomes": 6,
+    "sira_minus": {
+     "b0": 4.908,
+     "b1": 1.268,
+     "b2": -0.553
+    },
+    "run_a": {
+     "b0": 4.912,
+     "b1": 1.271,
+     "b2": -0.551
+    },
+    "run_b": {
+     "b0": 4.905,
+     "b1": 1.264,
+     "b2": -0.554
+    }
+   },
+   {
+    "object": "ZTF25aacmgnn",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 22,
+    "sira_minus": {
+     "b0": -0.042,
+     "b1": -0.112,
+     "b2": 0.201
+    },
+    "run_a": {
+     "b0": -0.045,
+     "b1": -0.115,
+     "b2": 0.22
+    },
+    "run_b": {
+     "b0": -0.039,
+     "b1": -0.109,
+     "b2": 0.181
+    }
+   },
+   {
+    "object": "ZTF25aadhuhm",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 10,
+    "sira_minus": {
+     "b0": -0.005,
+     "b1": 0.688,
+     "b2": -0.331
+    },
+    "run_a": {
+     "b0": -0.054,
+     "b1": 0.64,
+     "b2": -0.314
+    },
+    "run_b": {
+     "b0": 0.044,
+     "b1": 0.737,
+     "b2": -0.347
+    }
+   },
+   {
+    "object": "ZTF25aafhecq",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 30,
+    "sira_minus": {
+     "b0": 6.252,
+     "b1": -0.307,
+     "b2": 6.709
+    },
+    "run_a": {
+     "b0": 6.242,
+     "b1": -0.316,
+     "b2": 6.281
+    },
+    "run_b": {
+     "b0": 6.262,
+     "b1": -0.297,
+     "b2": 7.137
+    }
+   },
+   {
+    "object": "ZTF25aafszll",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 12,
+    "sira_minus": {
+     "b0": 6.189,
+     "b1": 1.742,
+     "b2": 1.519
+    },
+    "run_a": {
+     "b0": 6.209,
+     "b1": 1.762,
+     "b2": 2.309
+    },
+    "run_b": {
+     "b0": 6.169,
+     "b1": 1.722,
+     "b2": 0.728
+    }
+   },
+   {
+    "object": "ZTF25aaglicm",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 24,
+    "sira_minus": {
+     "b0": -0.251,
+     "b1": 1.161,
+     "b2": -0.377
+    },
+    "run_a": {
+     "b0": -0.326,
+     "b1": 1.086,
+     "b2": -0.369
+    },
+    "run_b": {
+     "b0": -0.176,
+     "b1": 1.236,
+     "b2": -0.384
+    }
+   },
+   {
+    "object": "ZTF25aaizyki",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 22,
+    "sira_minus": {
+     "b0": 0.338,
+     "b1": -0.195,
+     "b2": 0.351
+    },
+    "run_a": {
+     "b0": 0.278,
+     "b1": -0.256,
+     "b2": 0.68
+    },
+    "run_b": {
+     "b0": 0.399,
+     "b1": -0.135,
+     "b2": 0.022
+    }
+   },
+   {
+    "object": "ZTF25aalpjxp",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 20,
+    "sira_minus": {
+     "b0": 0.074,
+     "b1": 0.181,
+     "b2": 0.193
+    },
+    "run_a": {
+     "b0": 0.087,
+     "b1": 0.193,
+     "b2": 0.091
+    },
+    "run_b": {
+     "b0": 0.062,
+     "b1": 0.168,
+     "b2": 0.295
+    }
+   },
+   {
+    "object": "ZTF25aalpmfp",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 8,
+    "sira_minus": {
+     "b0": 0.784,
+     "b1": -0.178,
+     "b2": 0.436
+    },
+    "run_a": {
+     "b0": 0.803,
+     "b1": -0.159,
+     "b2": 0.39
+    },
+    "run_b": {
+     "b0": 0.764,
+     "b1": -0.198,
+     "b2": 0.482
+    }
+   },
+   {
+    "object": "ZTF25aanbdft",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 16,
+    "sira_minus": {
+     "b0": 0.071,
+     "b1": -0.231,
+     "b2": 0.283
+    },
+    "run_a": {
+     "b0": 0.11,
+     "b1": -0.192,
+     "b2": 0.213
+    },
+    "run_b": {
+     "b0": 0.031,
+     "b1": -0.271,
+     "b2": 0.353
+    }
+   },
+   {
+    "object": "ZTF25aatmfzy",
+    "type": "SLSN-II",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 20,
+    "sira_minus": {
+     "b0": -0.078,
+     "b1": 0.108,
+     "b2": 0.006
+    },
+    "run_a": {
+     "b0": -0.048,
+     "b1": 0.137,
+     "b2": -0.008
+    },
+    "run_b": {
+     "b0": -0.107,
+     "b1": 0.078,
+     "b2": 0.02
+    }
+   },
+   {
+    "object": "ZTF25aavddzo",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 22,
+    "sira_minus": {
+     "b0": 1.053,
+     "b1": 0.102,
+     "b2": 3.23
+    },
+    "run_a": {
+     "b0": 1.089,
+     "b1": 0.138,
+     "b2": 4.764
+    },
+    "run_b": {
+     "b0": 1.017,
+     "b1": 0.066,
+     "b2": 1.697
+    }
+   },
+   {
+    "object": "ZTF25abbslda",
+    "type": "SN IIP",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 142,
+    "sira_minus": {
+     "b0": -0.401,
+     "b1": 0.716,
+     "b2": -0.12
+    },
+    "run_a": {
+     "b0": -0.438,
+     "b1": 0.679,
+     "b2": -0.095
+    },
+    "run_b": {
+     "b0": -0.364,
+     "b1": 0.753,
+     "b2": -0.146
+    }
+   },
+   {
+    "object": "ZTF25abedagz",
+    "type": "SN IIb",
+    "class": "ibc",
+    "runs": 2,
+    "outcomes": 38,
+    "sira_minus": {
+     "b0": 0.023,
+     "b1": -0.043,
+     "b2": 0.248
+    },
+    "run_a": {
+     "b0": 0.038,
+     "b1": -0.028,
+     "b2": 0.305
+    },
+    "run_b": {
+     "b0": 0.009,
+     "b1": -0.057,
+     "b2": 0.191
+    }
+   },
+   {
+    "object": "ZTF25abiwxmw",
+    "type": "SLSN-I",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 38,
+    "sira_minus": {
+     "b0": 0.983,
+     "b1": 1.151,
+     "b2": -0.422
+    },
+    "run_a": {
+     "b0": 0.966,
+     "b1": 1.18,
+     "b2": -0.45
+    },
+    "run_b": {
+     "b0": 1.0,
+     "b1": 1.121,
+     "b2": -0.394
+    }
+   },
+   {
+    "object": "ZTF25abmsodq",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 28,
+    "sira_minus": {
+     "b0": 0.516,
+     "b1": -0.119,
+     "b2": 0.242
+    },
+    "run_a": {
+     "b0": 0.521,
+     "b1": -0.114,
+     "b2": 0.247
+    },
+    "run_b": {
+     "b0": 0.512,
+     "b1": -0.124,
+     "b2": 0.237
+    }
+   },
+   {
+    "object": "ZTF25abowvko",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 42,
+    "sira_minus": {
+     "b0": 0.751,
+     "b1": -0.16,
+     "b2": 0.949
+    },
+    "run_a": {
+     "b0": 0.729,
+     "b1": -0.182,
+     "b2": 1.071
+    },
+    "run_b": {
+     "b0": 0.773,
+     "b1": -0.138,
+     "b2": 0.827
+    }
+   },
+   {
+    "object": "ZTF25abqkiqr",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 28,
+    "sira_minus": {
+     "b0": 0.376,
+     "b1": -0.056,
+     "b2": 0.218
+    },
+    "run_a": {
+     "b0": 0.386,
+     "b1": -0.046,
+     "b2": 0.157
+    },
+    "run_b": {
+     "b0": 0.365,
+     "b1": -0.066,
+     "b2": 0.279
+    }
+   },
+   {
+    "object": "ZTF25abuovxv",
+    "type": "TDE-featureless",
+    "class": "tde",
+    "runs": 2,
+    "outcomes": 48,
+    "sira_minus": {
+     "b0": 0.329,
+     "b1": 0.206,
+     "b2": 0.104
+    },
+    "run_a": {
+     "b0": 0.323,
+     "b1": 0.2,
+     "b2": 0.067
+    },
+    "run_b": {
+     "b0": 0.335,
+     "b1": 0.212,
+     "b2": 0.14
+    }
+   },
+   {
+    "object": "ZTF25abzyzac",
+    "type": "SLSN-I",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 34,
+    "sira_minus": {
+     "b0": 0.423,
+     "b1": -0.12,
+     "b2": 0.385
+    },
+    "run_a": {
+     "b0": 0.368,
+     "b1": -0.175,
+     "b2": 0.565
+    },
+    "run_b": {
+     "b0": 0.479,
+     "b1": -0.065,
+     "b2": 0.204
+    }
+   },
+   {
+    "object": "ZTF25acblpes",
+    "type": "SN II",
+    "class": "ii",
+    "runs": 2,
+    "outcomes": 28,
+    "sira_minus": {
+     "b0": 1.628,
+     "b1": -0.092,
+     "b2": 0.225
+    },
+    "run_a": {
+     "b0": 1.6,
+     "b1": -0.119,
+     "b2": 0.293
+    },
+    "run_b": {
+     "b0": 1.656,
+     "b1": -0.064,
+     "b2": 0.157
+    }
+   },
+   {
+    "object": "ZTF25accmopr",
+    "type": "SLSN-I",
+    "class": "other",
+    "runs": 2,
+    "outcomes": 44,
+    "sira_minus": {
+     "b0": 0.08,
+     "b1": 0.225,
+     "b2": -0.127
+    },
+    "run_a": {
+     "b0": 0.117,
+     "b1": 0.262,
+     "b2": -0.147
+    },
+    "run_b": {
+     "b0": 0.042,
+     "b1": 0.187,
+     "b2": -0.107
+    }
+   },
+   {
+    "object": "ZTF25accmunu",
+    "type": "SN Ic",
+    "class": "ibc",
+    "runs": 2,
+    "outcomes": 8,
+    "sira_minus": {
+     "b0": 0.253,
+     "b1": 0.023,
+     "b2": -0.021
+    },
+    "run_a": {
+     "b0": 0.257,
+     "b1": 0.028,
+     "b2": -0.025
+    },
+    "run_b": {
+     "b0": 0.248,
+     "b1": 0.019,
+     "b2": -0.018
+    }
+   },
+   {
+    "object": "ZTF25acgfdia",
+    "type": "SN Ia",
+    "class": "ia",
+    "runs": 2,
+    "outcomes": 20,
+    "sira_minus": {
+     "b0": 0.67,
+     "b1": -0.021,
+     "b2": 0.078
+    },
+    "run_a": {
+     "b0": 0.679,
+     "b1": -0.013,
+     "b2": 0.08
+    },
+    "run_b": {
+     "b0": 0.661,
+     "b1": -0.03,
+     "b2": 0.075
+    }
+   }
+  ],
+  "primary": {
+   "b0": {
+    "mean": 1.343,
+    "ci95": [
+     0.672,
+     2.133
+    ],
+    "cases_ahead": 29
+   },
+   "b1": {
+    "mean": 0.304,
+    "ci95": [
+     0.122,
+     0.517
+    ],
+    "cases_ahead": 21
+   },
+   "b2": {
+    "mean": 0.981,
+    "ci95": [
+     0.414,
+     1.639
+    ],
+    "cases_ahead": 26
+   }
+  },
+  "by_run": {
+   "a": {
+    "b0": {
+     "mean": 1.33,
+     "ci95": [
+      0.658,
+      2.121
+     ]
+    },
+    "b1": {
+     "mean": 0.292,
+     "ci95": [
+      0.107,
+      0.51
+     ]
+    },
+    "b2": {
+     "mean": 1.155,
+     "ci95": [
+      0.501,
+      1.888
+     ]
+    }
+   },
+   "b": {
+    "b0": {
+     "mean": 1.356,
+     "ci95": [
+      0.686,
+      2.149
+     ]
+    },
+    "b1": {
+     "mean": 0.316,
+     "ci95": [
+      0.135,
+      0.521
+     ]
+    },
+    "b2": {
+     "mean": 0.807,
+     "ci95": [
+      0.297,
+      1.423
+     ]
+    }
+   }
+  },
+  "by_class": {
+   "ia": {
+    "b0": {
+     "cases": 11,
+     "mean": 1.242,
+     "cases_ahead": 11
+    },
+    "b1": {
+     "cases": 11,
+     "mean": -0.062,
+     "cases_ahead": 2
+    },
+    "b2": {
+     "cases": 11,
+     "mean": 1.54,
+     "cases_ahead": 11
+    }
+   },
+   "ibc": {
+    "b0": {
+     "cases": 2,
+     "mean": 0.138,
+     "cases_ahead": 2
+    },
+    "b1": {
+     "cases": 2,
+     "mean": -0.01,
+     "cases_ahead": 1
+    },
+    "b2": {
+     "cases": 2,
+     "mean": 0.114,
+     "cases_ahead": 1
+    }
+   },
+   "ii": {
+    "b0": {
+     "cases": 7,
+     "mean": 1.167,
+     "cases_ahead": 3
+    },
+    "b1": {
+     "cases": 7,
+     "mean": 0.601,
+     "cases_ahead": 5
+    },
+    "b2": {
+     "cases": 7,
+     "mean": 0.621,
+     "cases_ahead": 4
+    }
+   },
+   "other": {
+    "b0": {
+     "cases": 13,
+     "mean": 1.562,
+     "cases_ahead": 9
+    },
+    "b1": {
+     "cases": 13,
+     "mean": 0.358,
+     "cases_ahead": 9
+    },
+    "b2": {
+     "cases": 13,
+     "mean": 0.843,
+     "cases_ahead": 8
+    }
+   },
+   "tde": {
+    "b0": {
+     "cases": 4,
+     "mean": 1.817,
+     "cases_ahead": 4
+    },
+    "b1": {
+     "cases": 4,
+     "mean": 0.772,
+     "cases_ahead": 4
+    },
+    "b2": {
+     "cases": 4,
+     "mean": 0.959,
+     "cases_ahead": 2
+    }
+   }
+  },
+  "forecasters": {
+   "sira": {
+    "log_score": -4.108,
+    "crps": 21.017,
+    "coverage_90": 0.948,
+    "class_log_loss": 1.288
+   },
+   "b0": {
+    "log_score": -5.121,
+    "crps": 25.047,
+    "coverage_90": 0.87,
+    "class_log_loss": null
+   },
+   "b1": {
+    "log_score": -4.419,
+    "crps": 22.411,
+    "coverage_90": 0.902,
+    "class_log_loss": 1.952
+   },
+   "b2": {
+    "log_score": -5.068,
+    "crps": 26.628,
+    "coverage_90": 0.865,
+    "class_log_loss": 1.409
+   }
+  },
+  "ablations": {
+   "llm_25": {
+    "sira_minus": 0.043,
+    "ci95": [
+     0.004,
+     0.071
+    ]
+   },
+   "llm_75": {
+    "sira_minus": 0.02,
+    "ci95": [
+     -0.005,
+     0.058
+    ]
+   },
+   "no_leverrier": {
+    "sira_minus": 0.028,
+    "ci95": [
+     0.0,
+     0.063
+    ]
+   },
+   "no_llm": {
+    "sira_minus": 0.282,
+    "ci95": [
+     0.163,
+     0.448
+    ]
+   },
+   "no_team": {
+    "sira_minus": 0.005,
+    "ci95": [
+     -0.015,
+     0.006
+    ]
+   }
+  },
+  "team": {
+   "dropped": 0,
+   "remembered": 0,
+   "surprises": 6,
+   "verdicts": {
+    "neptune": 6,
+    "vulcan": 0,
+    "abstain": 0
+   },
+   "skeptics": {
+    "extra_usd_per_bet": 0.0132,
+    "bets_dropped": 0,
+    "objects_flagged_remembered": 0
+   },
+   "director": {
+    "reviewed_cases": 27,
+    "reviewed_outcomes": 106,
+    "sira_minus_unreviewed": -0.005,
+    "ci95": [
+     -0.035,
+     0.153
+    ],
+    "senior_usd": 3.45
+   }
+  }
+ },
+ "leverrier": {
+  "objects": {
+   "microlensing": {
+    "n": 56,
+    "replayed": 54,
+    "surprised": 6
+   },
+   "ia": {
+    "n": 29,
+    "replayed": 29,
+    "surprised": 0
+   }
+  },
+  "sizes": {
+   "1": {
+    "usd": 0.43,
+    "neptune_on_lenses": 4,
+    "neptune_on_ia": 0,
+    "vulcan_on_lenses": 1,
+    "discoveries_per_usd": 9.41
+   },
+   "3": {
+    "usd": 1.35,
+    "neptune_on_lenses": 4,
+    "neptune_on_ia": 0,
+    "vulcan_on_lenses": 1,
+    "discoveries_per_usd": 2.96
+   },
+   "5": {
+    "usd": 2.11,
+    "neptune_on_lenses": 4,
+    "neptune_on_ia": 0,
+    "vulcan_on_lenses": 1,
+    "discoveries_per_usd": 1.89
+   }
+  },
+  "rows": [
+   {
+    "object": "ZTF18aaztjyd",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF18abaqxrt",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF18abhxjmj",
+    "kind": "microlensing",
+    "replayed": false,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aaekacq",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aaoocwc",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aaopcxy",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aatwaux",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aavndrc",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aayqnmp",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19aazhmab",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abftuld",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.0432,
+     "verdict": "neptune",
+     "log10_e": 118.0,
+     "name": "Microlensed red background star"
+    },
+    "3": {
+     "usd": 0.1108,
+     "verdict": "neptune",
+     "log10_e": 118.0,
+     "name": "Microlensed red background star"
+    },
+    "5": {
+     "usd": 0.1699,
+     "verdict": "neptune",
+     "log10_e": 118.0,
+     "name": "Microlensed red background star"
+    }
+   },
+   {
+    "object": "ZTF19abhznaj",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abibzvr",
+    "kind": "microlensing",
+    "replayed": false,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abjehsm",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abjsvbc",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abjtzvc",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF19abqueuo",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20aaukggm",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20aauodap",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20aavmhsg",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.0545,
+     "verdict": "neptune",
+     "log10_e": 14.88,
+     "name": "Lens magnifying red background source"
+    },
+    "3": {
+     "usd": 0.1154,
+     "verdict": "neptune",
+     "log10_e": 14.88,
+     "name": "Lens magnifying red background source"
+    },
+    "5": {
+     "usd": 0.1918,
+     "verdict": "neptune",
+     "log10_e": 14.88,
+     "name": "Lens magnifying red background source"
+    }
+   },
+   {
+    "object": "ZTF20abhmltf",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abiogoc",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abohkdo",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abqkcsf",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abrtvbz",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abxwenr",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20abztmco",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20acbmtwd",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20achpgdp",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF20acpjazv",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21aadrxrx",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.0429,
+     "verdict": "vulcan",
+     "log10_e": -8.85,
+     "name": "Unseen microlens magnification"
+    },
+    "3": {
+     "usd": 0.3241,
+     "verdict": "vulcan",
+     "log10_e": -8.85,
+     "name": "Unseen microlens magnification"
+    },
+    "5": {
+     "usd": 0.4402,
+     "verdict": "vulcan",
+     "log10_e": -8.85,
+     "name": "Unseen microlens magnification"
+    }
+   },
+   {
+    "object": "ZTF21aaqsyeh",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21aavhwyj",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.1427,
+     "verdict": "abstain",
+     "log10_e": 0.99,
+     "name": "Binary-source microlens event"
+    },
+    "3": {
+     "usd": 0.4944,
+     "verdict": "abstain",
+     "log10_e": 0.86,
+     "name": "Microlensing with lens-star flare"
+    },
+    "5": {
+     "usd": 0.8251,
+     "verdict": "abstain",
+     "log10_e": 0.86,
+     "name": "Microlensing with lens-star flare"
+    }
+   },
+   {
+    "object": "ZTF21aawgkvn",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21aaymbrh",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abdihbw",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abdikzn",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abehdtd",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abehnjv",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abhqzzh",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abihdde",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abmnkml",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF21abqhbuh",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.0668,
+     "verdict": "neptune",
+     "log10_e": 1043.37,
+     "name": "Foreground microlens on red source"
+    },
+    "3": {
+     "usd": 0.1461,
+     "verdict": "neptune",
+     "log10_e": 1043.37,
+     "name": "Foreground microlens on red source"
+    },
+    "5": {
+     "usd": 0.2316,
+     "verdict": "neptune",
+     "log10_e": 1043.37,
+     "name": "Foreground microlens on red source"
+    }
+   },
+   {
+    "object": "ZTF21abtulxp",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": true,
+    "1": {
+     "usd": 0.0751,
+     "verdict": "neptune",
+     "log10_e": 9.34,
+     "name": "Microlensed red source"
+    },
+    "3": {
+     "usd": 0.1623,
+     "verdict": "neptune",
+     "log10_e": 9.34,
+     "name": "Microlensed red source"
+    },
+    "5": {
+     "usd": 0.2532,
+     "verdict": "neptune",
+     "log10_e": 9.34,
+     "name": "Microlensed red source"
+    }
+   },
+   {
+    "object": "ZTF21acqomnw",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aabpdbm",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aafvwxf",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aalftxa",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aarwizr",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aauvkpi",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aavemfz",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22aawaiui",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22abazvnk",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22abcflpn",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22abejuat",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF22abfvhzh",
+    "kind": "microlensing",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF18abffdjl",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF24abuqgob",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aaazugo",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aabsnyf",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aafhecq",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aafydrq",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aaizyki",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aajektz",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aajmrso",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aakgfpu",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aalpjxp",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aalpmfp",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aanbdft",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aasrzlo",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aavcbih",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25aaylqqq",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abmsodq",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abovgwv",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abowvko",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abqkiqr",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abqopkf",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abscivt",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abuzfte",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25abxrfik",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25acamzgr",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25acgfdia",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25acgqgrv",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25acivwpw",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   },
+   {
+    "object": "ZTF25acktnvu",
+    "kind": "ia",
+    "replayed": true,
+    "surprised": false,
+    "1": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "3": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    },
+    "5": {
+     "usd": 0,
+     "verdict": null,
+     "log10_e": null,
+     "name": null
+    }
+   }
+  ]
+ },
+ "physics": {
+  "distance": {
+   "all": {
+    "ia": {
+     "n": 29,
+     "median_abs_err": 0.123,
+     "within_10": 0.417,
+     "within_20": 0.754,
+     "over_30": 0.009
+    },
+    "control": {
+     "n": 14,
+     "median_bias": 0.651,
+     "over_30": 0.786
+    }
+   },
+   "good_fits": {
+    "ia": {
+     "n": 18,
+     "median_abs_err": 0.056,
+     "within_10": 0.587,
+     "within_20": 0.944,
+     "over_30": 0.0
+    },
+    "control": {
+     "n": 1,
+     "median_bias": 0.668,
+     "over_30": 1.0
+    }
+   },
+   "passes": false,
+   "code": "91ddc3654ab059675147a5b916efeb1977388475-dirty",
+   "rows": [
+    {
+     "oid": "ZTF25aajektz",
+     "ia": true,
+     "good": false,
+     "z": 0.04,
+     "z_pred": 0.0346
+    },
+    {
+     "oid": "ZTF25abowvko",
+     "ia": true,
+     "good": false,
+     "z": 0.042,
+     "z_pred": 0.0327
+    },
+    {
+     "oid": "ZTF25abqkiqr",
+     "ia": true,
+     "good": true,
+     "z": 0.054,
+     "z_pred": 0.0607
+    },
+    {
+     "oid": "ZTF25aanbdft",
+     "ia": true,
+     "good": true,
+     "z": 0.07409,
+     "z_pred": 0.0812
+    },
+    {
+     "oid": "ZTF25abmsodq",
+     "ia": true,
+     "good": true,
+     "z": 0.063,
+     "z_pred": 0.0629
+    },
+    {
+     "oid": "ZTF25aafydrq",
+     "ia": true,
+     "good": false,
+     "z": 0.07339,
+     "z_pred": 0.0595
+    },
+    {
+     "oid": "ZTF25aaizyki",
+     "ia": true,
+     "good": false,
+     "z": 0.0373,
+     "z_pred": 0.0463
+    },
+    {
+     "oid": "ZTF25aafhecq",
+     "ia": true,
+     "good": true,
+     "z": 0.032,
+     "z_pred": 0.0321
+    },
+    {
+     "oid": "ZTF25aalpjxp",
+     "ia": true,
+     "good": true,
+     "z": 0.08,
+     "z_pred": 0.075
+    },
+    {
+     "oid": "ZTF25aajmrso",
+     "ia": true,
+     "good": false,
+     "z": 0.066,
+     "z_pred": 0.0682
+    },
+    {
+     "oid": "ZTF25aalpmfp",
+     "ia": true,
+     "good": true,
+     "z": 0.054,
+     "z_pred": 0.0639
+    },
+    {
+     "oid": "ZTF25acgfdia",
+     "ia": true,
+     "good": true,
+     "z": 0.05219,
+     "z_pred": 0.0532
+    },
+    {
+     "oid": "ZTF24abuqgob",
+     "ia": true,
+     "good": false,
+     "z": 0.035,
+     "z_pred": 0.0252
+    },
+    {
+     "oid": "ZTF25acamzgr",
+     "ia": true,
+     "good": true,
+     "z": 0.061,
+     "z_pred": 0.0605
+    },
+    {
+     "oid": "ZTF25aakgfpu",
+     "ia": true,
+     "good": true,
+     "z": 0.058,
+     "z_pred": 0.049
+    },
+    {
+     "oid": "ZTF25acktnvu",
+     "ia": true,
+     "good": true,
+     "z": 0.04125,
+     "z_pred": 0.0347
+    },
+    {
+     "oid": "ZTF25abqopkf",
+     "ia": true,
+     "good": true,
+     "z": 0.06,
+     "z_pred": 0.0675
+    },
+    {
+     "oid": "ZTF25aavcbih",
+     "ia": true,
+     "good": false,
+     "z": 0.045,
+     "z_pred": 0.0546
+    },
+    {
+     "oid": "ZTF25abxrfik",
+     "ia": true,
+     "good": false,
+     "z": 0.04,
+     "z_pred": 0.0491
+    },
+    {
+     "oid": "ZTF25aasrzlo",
+     "ia": true,
+     "good": true,
+     "z": 0.074,
+     "z_pred": 0.074
+    },
+    {
+     "oid": "ZTF25abuzfte",
+     "ia": true,
+     "good": true,
+     "z": 0.0495,
+     "z_pred": 0.0506
+    },
+    {
+     "oid": "ZTF25aaylqqq",
+     "ia": true,
+     "good": false,
+     "z": 0.036,
+     "z_pred": 0.0401
+    },
+    {
+     "oid": "ZTF25aaazugo",
+     "ia": true,
+     "good": true,
+     "z": 0.04503,
+     "z_pred": 0.0445
+    },
+    {
+     "oid": "ZTF25aabsnyf",
+     "ia": true,
+     "good": false,
+     "z": 0.03,
+     "z_pred": 0.0265
+    },
+    {
+     "oid": "ZTF25abscivt",
+     "ia": true,
+     "good": true,
+     "z": 0.07748,
+     "z_pred": 0.0754
+    },
+    {
+     "oid": "ZTF25acgqgrv",
+     "ia": true,
+     "good": true,
+     "z": 0.07967,
+     "z_pred": 0.099
+    },
+    {
+     "oid": "ZTF18abffdjl",
+     "ia": true,
+     "good": true,
+     "z": 0.0666,
+     "z_pred": 0.0661
+    },
+    {
+     "oid": "ZTF25abovgwv",
+     "ia": true,
+     "good": true,
+     "z": 0.083,
+     "z_pred": 0.0717
+    },
+    {
+     "oid": "ZTF25acivwpw",
+     "ia": true,
+     "good": false,
+     "z": 0.079,
+     "z_pred": 0.1012
+    },
+    {
+     "oid": "ZTF25aadhuhm",
+     "ia": false,
+     "good": false,
+     "z": 0.022,
+     "z_pred": 0.0475
+    },
+    {
+     "oid": "ZTF25acblpes",
+     "ia": false,
+     "good": false,
+     "z": 0.1062,
+     "z_pred": 0.1058
+    },
+    {
+     "oid": "ZTF25abbslda",
+     "ia": false,
+     "good": false,
+     "z": 0.025,
+     "z_pred": 0.0694
+    },
+    {
+     "oid": "ZTF25accmunu",
+     "ia": false,
+     "good": false,
+     "z": 0.0328,
+     "z_pred": 0.0503
+    },
+    {
+     "oid": "ZTF25aacmgnn",
+     "ia": false,
+     "good": false,
+     "z": 0.0243,
+     "z_pred": 0.0446
+    },
+    {
+     "oid": "ZTF25abedagz",
+     "ia": false,
+     "good": false,
+     "z": 0.04,
+     "z_pred": 0.0384
+    },
+    {
+     "oid": "ZTF25aaglicm",
+     "ia": false,
+     "good": false,
+     "z": 0.016,
+     "z_pred": 0.0423
+    },
+    {
+     "oid": "ZTF25acgcuie",
+     "ia": false,
+     "good": false,
+     "z": 0.02428,
+     "z_pred": 0.0467
+    },
+    {
+     "oid": "ZTF25aafszll",
+     "ia": false,
+     "good": false,
+     "z": 0.02641,
+     "z_pred": 0.0371
+    },
+    {
+     "oid": "ZTF25aavddzo",
+     "ia": false,
+     "good": true,
+     "z": 0.0336,
+     "z_pred": 0.056
+    },
+    {
+     "oid": "ZTF25abyevmr",
+     "ia": false,
+     "good": false,
+     "z": 0.01298,
+     "z_pred": 0.0212
+    },
+    {
+     "oid": "ZTF25abxxkod",
+     "ia": false,
+     "good": false,
+     "z": 0.025,
+     "z_pred": 0.0539
+    },
+    {
+     "oid": "ZTF25abdkrgt",
+     "ia": false,
+     "good": false,
+     "z": 0.0242,
+     "z_pred": 0.0331
+    },
+    {
+     "oid": "ZTF25aacdjzo",
+     "ia": false,
+     "good": false,
+     "z": 0.05,
+     "z_pred": 0.0363
+    }
+   ]
+  },
+  "verdicts": {
+   "sets": {
+    "lens": {
+     "n": 20,
+     "correct": 17,
+     "decisive_right": 14,
+     "decisive_wrong": 0,
+     "abstain": 6
+    },
+    "ia": {
+     "n": 13,
+     "correct": 12,
+     "decisive_right": 12,
+     "decisive_wrong": 0,
+     "abstain": 1
+    }
+   },
+   "decisive_accuracy": 1.0,
+   "abstain_rate": 0.212,
+   "passes": true,
+   "code": "91ddc3654ab059675147a5b916efeb1977388475-dirty",
+   "rows": [
+    {
+     "oid": "ZTF20abztmco",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 16.91,
+     "chi2": {
+      "lens": 2.5816189628046136,
+      "ia": 43.65451838543695
+     },
+     "n_past": 132,
+     "n_future": 78,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21aadrxrx",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": NaN,
+     "chi2": {
+      "lens": NaN,
+      "ia": 3428.5277157822347
+     },
+     "n_past": 33,
+     "n_future": 30,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF21abdihbw",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 7.32,
+     "chi2": {
+      "lens": 24.19241037989395,
+      "ia": 177.0591979951393
+     },
+     "n_past": 8,
+     "n_future": 5,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21aavhwyj",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": NaN,
+     "chi2": {
+      "lens": NaN,
+      "ia": 93.14351684590787
+     },
+     "n_past": 11,
+     "n_future": 9,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF21abehnjv",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 32.27,
+     "chi2": {
+      "lens": 0.5376240429815002,
+      "ia": 17.35090181482445
+     },
+     "n_past": 9,
+     "n_future": 14,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF22aalftxa",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 4.88,
+     "chi2": {
+      "lens": 9.813528794339971,
+      "ia": 47.91436182880784
+     },
+     "n_past": 10,
+     "n_future": 7,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21abmnkml",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 38.4,
+     "chi2": {
+      "lens": 0.3125416695305621,
+      "ia": 12.001424873323332
+     },
+     "n_past": 6,
+     "n_future": 5,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF22aawaiui",
+     "truth": "lens",
+     "winner": "ia",
+     "ratio": 1.04,
+     "chi2": {
+      "lens": 18.34057519652265,
+      "ia": 17.696877167646768
+     },
+     "n_past": 6,
+     "n_future": 14,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF22aauvkpi",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": NaN,
+     "chi2": {
+      "lens": NaN,
+      "ia": 11.364800212770183
+     },
+     "n_past": 5,
+     "n_future": 7,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF21aawgkvn",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 7.91,
+     "chi2": {
+      "lens": 58.98023908840423,
+      "ia": 466.4931134914177
+     },
+     "n_past": 5,
+     "n_future": 5,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21acqomnw",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 23.54,
+     "chi2": {
+      "lens": 2.994407844710623,
+      "ia": 70.49602110091386
+     },
+     "n_past": 12,
+     "n_future": 40,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF20acpjazv",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 7.06,
+     "chi2": {
+      "lens": 2.3259496042424557,
+      "ia": 16.430720296291547
+     },
+     "n_past": 18,
+     "n_future": 5,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21abhqzzh",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 170.37,
+     "chi2": {
+      "lens": 0.23808972698246408,
+      "ia": 40.56239638560793
+     },
+     "n_past": 21,
+     "n_future": 7,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF20aavmhsg",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 4.04,
+     "chi2": {
+      "lens": 5.03059800999534,
+      "ia": 20.313899771345486
+     },
+     "n_past": 14,
+     "n_future": 17,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF18abaqxrt",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 7.22,
+     "chi2": {
+      "lens": 4.202339725323824,
+      "ia": 30.32892402177954
+     },
+     "n_past": 10,
+     "n_future": 16,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF20achpgdp",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 13.41,
+     "chi2": {
+      "lens": 0.21973030292150827,
+      "ia": 2.946527217308462
+     },
+     "n_past": 19,
+     "n_future": 15,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21abqhbuh",
+     "truth": "lens",
+     "winner": "ia",
+     "ratio": 1.43,
+     "chi2": {
+      "lens": 182.21755663420603,
+      "ia": 127.04043726602279
+     },
+     "n_past": 42,
+     "n_future": 34,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF19abftuld",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 5.5,
+     "chi2": {
+      "lens": 2.5934616107203143,
+      "ia": 14.263737804427535
+     },
+     "n_past": 43,
+     "n_future": 197,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF21abtulxp",
+     "truth": "lens",
+     "winner": "lens",
+     "ratio": 127.81,
+     "chi2": {
+      "lens": 0.7195337375651861,
+      "ia": 91.96470910330832
+     },
+     "n_past": 15,
+     "n_future": 20,
+     "verdict": "lens"
+    },
+    {
+     "oid": "ZTF18aaztjyd",
+     "truth": "lens",
+     "winner": "ia",
+     "ratio": 1.75,
+     "chi2": {
+      "lens": 1.6382589763766595,
+      "ia": 0.9384479980519042
+     },
+     "n_past": 10,
+     "n_future": 13,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF25abowvko",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 5.1,
+     "chi2": {
+      "lens": 18.59128453078545,
+      "ia": 3.642763015104559
+     },
+     "n_past": 5,
+     "n_future": 13,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abqkiqr",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 4.9,
+     "chi2": {
+      "lens": 49.002979445664614,
+      "ia": 10.003910189544007
+     },
+     "n_past": 7,
+     "n_future": 19,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abmsodq",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 39.07,
+     "chi2": {
+      "lens": 55.386957199974546,
+      "ia": 1.4176865225723472
+     },
+     "n_past": 9,
+     "n_future": 17,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25aaizyki",
+     "truth": "ia",
+     "winner": "lens",
+     "ratio": NaN,
+     "chi2": {
+      "lens": NaN,
+      "ia": 0.7766529228347551
+     },
+     "n_past": 7,
+     "n_future": 41,
+     "verdict": "abstain"
+    },
+    {
+     "oid": "ZTF25acgfdia",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 14.3,
+     "chi2": {
+      "lens": 32.1349070360423,
+      "ia": 2.2472544391752822
+     },
+     "n_past": 5,
+     "n_future": 12,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25acamzgr",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 16.26,
+     "chi2": {
+      "lens": 48.59333953781654,
+      "ia": 2.9880628104829476
+     },
+     "n_past": 17,
+     "n_future": 29,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abxrfik",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 5.0,
+     "chi2": {
+      "lens": 40.72495773841997,
+      "ia": 8.14201200619003
+     },
+     "n_past": 5,
+     "n_future": 30,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25aasrzlo",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 3.58,
+     "chi2": {
+      "lens": 10.443722436166757,
+      "ia": 2.9171802261911326
+     },
+     "n_past": 9,
+     "n_future": 22,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abuzfte",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 5.64,
+     "chi2": {
+      "lens": 72.17324109032185,
+      "ia": 12.800902548458717
+     },
+     "n_past": 8,
+     "n_future": 21,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25aaylqqq",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 58.38,
+     "chi2": {
+      "lens": 50.93328753972287,
+      "ia": 0.8724214069881392
+     },
+     "n_past": 21,
+     "n_future": 54,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25aaazugo",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 10.19,
+     "chi2": {
+      "lens": 23.52531865343654,
+      "ia": 2.308194232138439
+     },
+     "n_past": 5,
+     "n_future": 15,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abscivt",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 5.04,
+     "chi2": {
+      "lens": 39.69255290045032,
+      "ia": 7.872130576900526
+     },
+     "n_past": 10,
+     "n_future": 16,
+     "verdict": "ia"
+    },
+    {
+     "oid": "ZTF25abovgwv",
+     "truth": "ia",
+     "winner": "ia",
+     "ratio": 4.51,
+     "chi2": {
+      "lens": 50.79073985366656,
+      "ia": 11.259479910490795
+     },
+     "n_past": 8,
+     "n_future": 6,
+     "verdict": "ia"
+    }
+   ]
+  }
+ },
+ "live": {
+  "head": {
+   "seq": 666,
+   "hash": "d8c0c0c1de09a0911d85a2766ee01be9f1caf2db2c4d949a37c31a0941863798",
+   "tsa_time": "2026-11-01T00:08:28+00:00"
+  },
+  "record": {
+   "answered": 0,
+   "void": 0,
+   "right": 0,
+   "brier": null,
+   "log_score": null,
+   "rows": []
+  },
+  "cost": {
+   "nights": 4,
+   "investigated": 42,
+   "usd": 6.7,
+   "usd_per_investigation": 0.159,
+   "by_role_per_investigation": {
+    "director": 0.0107,
+    "forecaster": 0.0013,
+    "llm_only": 0.0178,
+    "lookout": 0.0225,
+    "reader": 0.0254,
+    "senior": 0.0081,
+    "skeptic": 0.0313,
+    "theorist": 0.0423
+   }
+  },
+  "lookouts": {
+   "looks": 72,
+   "voted": 17,
+   "vote_changed_decision": 1,
+   "extra_usd": 0.337
+  }
+ }
+}

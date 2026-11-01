@@ -1,0 +1,21 @@
+{
+ "oid": "ZTF21aaymbrh",
+ "checks": [
+  {
+   "t": 59347.46,
+   "weights": {
+    "ia": 0.49871188075680495,
+    "ii": 0.07540797094704547,
+    "ibc": 0.32588014829614964,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

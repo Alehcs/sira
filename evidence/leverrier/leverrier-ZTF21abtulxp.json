@@ -1,0 +1,263 @@
+{
+ "oid": "ZTF21abtulxp",
+ "checks": [
+  {
+   "t": 59448.39,
+   "weights": {
+    "ia": 0.3610915778763288,
+    "ii": 0.34018581108514107,
+    "ibc": 0.19872261103853017,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59458.39,
+   "weights": {
+    "ia": 0.8999535477254095,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 6,
+    "p_value": 4.4032000000000004e-10,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.07509,
+   "seconds": 28.5,
+   "leap": "hidden",
+   "decision": "proposes Microlensed red source",
+   "why": "An unseen foreground point lens is increasingly magnifying a steady, very red background source close to the Galactic plane, superposed on its constant baseline light. The resulting achromatic amplifi"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03068,
+   "seconds": 8.3,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing event",
+   "why": "At b=-5 degrees a foreground point lens is increasingly magnifying a reddened background star, giving the steady then accelerating achromatic rise from day -30 with constant g-r about 1.2. The Type Ia"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.05653,
+   "seconds": 22.9,
+   "leap": "instrument",
+   "decision": "proposes Crowded-field subtraction drift",
+   "why": "A bright red neighbour in this low-latitude crowded field is imperfectly subtracted, and seeing or zero-point drift lets increasing PSF-wing light leak into the aperture. This creates a spurious, very"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.06049,
+   "seconds": 22.1,
+   "leap": "hidden",
+   "decision": "proposes Foreground point microlens",
+   "why": "An unseen foreground point lens at low Galactic latitude is magnifying a steady, red background source, producing the slow-then-rapid brightening misread as a Type Ia supernova. The nearly constant g-"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fa21bf75de",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03037,
+   "seconds": 11.9,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing event",
+   "why": "An unseen foreground lens in the crowded Galactic plane (b=-5 deg) is aligning with a distant red background star, magnifying it rather than any explosion occurring. The months-long slow rise that acc"
+  }
+ ],
+ "now": 59468.39,
+ "future_points": 23,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Microlensed red source",
+   "idea": "An unseen foreground point lens is increasingly magnifying a steady, very red background source close to the Galactic plane, superposed on its constant baseline light. The resulting achromatic amplification grows in both bands while preserving the observed g-r colour of about 1.2 mag, overwhelming the failed supernova and null forecasts.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The transient should brighten achromatically to one symmetric peak and then decline symmetrically back to its original constant baseline and colour, without supernova-like colour evolution.",
+   "cost_usd": 0.07509,
+   "bic": 19.73,
+   "fit": {
+    "chi2_per_point": 0.1,
+    "params": {
+     "lens0.t0": 59468.901,
+     "lens0.u0": 0.005,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 2.144,
+     "lens0.ztfr": 6.827,
+     "constant1.ztfg": -12.485,
+     "constant1.ztfr": -48.387
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": 9.34,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing event",
+   "idea": "At b=-5 degrees a foreground point lens is increasingly magnifying a reddened background star, giving the steady then accelerating achromatic rise from day -30 with constant g-r about 1.2. The Type Ia fit mistook the long approach for a supernova rise and predicted a peak and fade, while the magnification is still growing toward closest approach.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "Flux will keep rising achromatically with unchanged g-r to a symmetric peak at t0 and then decline as the time-reverse of the rise, rather than decaying and reddening like a supernova.",
+   "cost_usd": 0.03068,
+   "bic": 19.73,
+   "fit": {
+    "chi2_per_point": 0.1,
+    "params": {
+     "lens0.t0": 59468.901,
+     "lens0.u0": 0.005,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 2.144,
+     "lens0.ztfr": 6.827,
+     "constant1.ztfg": -12.485,
+     "constant1.ztfr": -48.387
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": 9.34,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Crowded-field subtraction drift",
+   "idea": "A bright red neighbour in this low-latitude crowded field is imperfectly subtracted, and seeing or zero-point drift lets increasing PSF-wing light leak into the aperture. This creates a spurious, very red, steadily brightening residual with no true transient at the nominal position.",
+   "components": [
+    {
+     "type": "constant"
+    },
+    {
+     "type": "trend"
+    }
+   ],
+   "predicts": "Flux will keep growing approximately linearly, faster in r than g, with an offset non-PSF dipole in the stamps, rather than peaking and fading as a centred point source like the Ia model.",
+   "cost_usd": 0.05653,
+   "bic": 265.99,
+   "fit": {
+    "chi2_per_point": 23.2,
+    "params": {
+     "constant0.ztfg": 101.919,
+     "constant0.ztfr": 239.54,
+     "trend1.ztfg": 455.55,
+     "trend1.ztfr": 455.55
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": -17.24,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "Foreground point microlens",
+   "idea": "An unseen foreground point lens at low Galactic latitude is magnifying a steady, red background source, producing the slow-then-rapid brightening misread as a Type Ia supernova. The nearly constant g-r colour as both bands rise by the same factor is the lens signature, with the constant component accounting for the unlensed baseline flux.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts a further achromatic rise to a single symmetric peak followed by a mirror-image decline to the pre-event baseline at unchanged colour, not the colour-evolving asymmetric fade of a supernova.",
+   "cost_usd": 0.06049,
+   "bic": 19.73,
+   "fit": {
+    "chi2_per_point": 0.1,
+    "params": {
+     "lens0.t0": 59468.901,
+     "lens0.u0": 0.005,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 2.144,
+     "lens0.ztfr": 6.827,
+     "constant1.ztfg": -12.485,
+     "constant1.ztfr": -48.387
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": 9.34,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing event",
+   "idea": "An unseen foreground lens in the crowded Galactic plane (b=-5 deg) is aligning with a distant red background star, magnifying it rather than any explosion occurring. The months-long slow rise that accelerates sharply after day -13 with persistently red g-r about 1.2 is the achromatic approach to maximum magnification on top of the steady baseline source.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The light curve will keep rising achromatically at constant colour to a symmetric peak and then fall as the mirror image of its rise, unlike a Type Ia supernova which would turn over asymmetrically and evolve in colour.",
+   "cost_usd": 0.03037,
+   "bic": 19.73,
+   "fit": {
+    "chi2_per_point": 0.1,
+    "params": {
+     "lens0.t0": 59468.901,
+     "lens0.u0": 0.005,
+     "lens0.tE": 600.0,
+     "lens0.ztfg": 2.144,
+     "lens0.ztfr": 6.827,
+     "constant1.ztfg": -12.485,
+     "constant1.ztfr": -48.387
+    }
+   },
+   "against_old": {
+    "n": 23,
+    "log10_e": 9.34,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "hidden",
+  "name": "Microlensed red source",
+  "verdict": "neptune",
+  "log10_e": 9.34,
+  "margin_log10_e": 0.0
+ }
+}

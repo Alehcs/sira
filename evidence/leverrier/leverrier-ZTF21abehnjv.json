@@ -1,0 +1,60 @@
+{
+ "oid": "ZTF21abehnjv",
+ "checks": [
+  {
+   "t": 59388.36,
+   "weights": {
+    "ia": 0.6120864554970685,
+    "ii": 0.0033679783692789167,
+    "ibc": 0.28454556613365267,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 4,
+    "misses": 1,
+    "p_value": 0.07763184,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59398.36,
+   "weights": {
+    "ia": 0.8999821077030625,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59408.36,
+   "weights": {
+    "ia": 0.8999999999996462,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59418.36,
+   "weights": {
+    "ia": 0.9,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

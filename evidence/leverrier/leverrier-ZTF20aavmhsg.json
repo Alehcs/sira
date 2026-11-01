@@ -1,0 +1,248 @@
+{
+ "oid": "ZTF20aavmhsg",
+ "checks": [
+  {
+   "t": 58976.49,
+   "weights": {
+    "ia": 0.899997216306436,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 8,
+    "misses": 5,
+    "p_value": 1.70392704e-07,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-bf2a84c60b",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.05447,
+   "seconds": 18.2,
+   "leap": "hidden",
+   "decision": "proposes Lens magnifying red background source",
+   "why": "An unseen foreground point lens is slowly aligning with a red background source, achromatically magnifying it above a steady blended baseline. The g-r colour has stayed near 1.1 mag while the flux ros"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-bf2a84c60b",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0264,
+   "seconds": 9.5,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing event",
+   "why": "An unseen point-mass lens in the low-latitude Galactic plane is magnifying a red background star, producing the slow, months-long rise seen since day -30. This is gravitational magnification rather th"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-bf2a84c60b",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03452,
+   "seconds": 13.4,
+   "leap": "instrument",
+   "decision": "proposes Drifting calibration subtraction residual",
+   "why": "A slowly drifting zero-point and template-subtraction residual in this crowded low-latitude field adds spurious flux at a fixed position. Its steady growth mimics a smooth, nearly colour-stable bright"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-bf2a84c60b",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03366,
+   "seconds": 13.7,
+   "leap": "hidden",
+   "decision": "proposes Microlensed red source",
+   "why": "An unseen foreground point lens is magnifying a steady red background source, rather than a Type Ia explosion fading after peak. The achromatic lensing magnification explains the month-long rise in bo"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-bf2a84c60b",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.0427,
+   "seconds": 14.9,
+   "leap": "new",
+   "decision": "proposes Microlensed red background star",
+   "why": "The >30-day, nearly colour-constant (g-r~1.1) brightening at low Galactic latitude is the achromatic magnification of a red background star by an unseen foreground lens, not an explosion. The fitted I"
+  }
+ ],
+ "now": 58986.49,
+ "future_points": 27,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Lens magnifying red background source",
+   "idea": "An unseen foreground point lens is slowly aligning with a red background source, achromatically magnifying it above a steady blended baseline. The g-r colour has stayed near 1.1 mag while the flux rose roughly sevenfold over 30 days and flattened near peak, unlike a Type Ia explosion template.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The flux will now decline in g and r together, mirroring the rise with essentially unchanged g-r colour and returning to the constant baseline, rather than cooling, reddening and decaying as a Type Ia would.",
+   "cost_usd": 0.05447,
+   "bic": 21.58,
+   "fit": {
+    "chi2_per_point": 0.24,
+    "params": {
+     "lens0.t0": 58982.525,
+     "lens0.u0": 0.243,
+     "lens0.tE": 23.111,
+     "lens0.ztfg": 31.874,
+     "lens0.ztfr": 95.333,
+     "constant1.ztfg": 9.674,
+     "constant1.ztfr": 24.829
+    }
+   },
+   "against_old": {
+    "n": 27,
+    "log10_e": 14.88,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing event",
+   "idea": "An unseen point-mass lens in the low-latitude Galactic plane is magnifying a red background star, producing the slow, months-long rise seen since day -30. This is gravitational magnification rather than an explosion, so there is no ejecta cooling or radioactive evolution.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The light curve will peak and then decline symmetrically with the same timescale in g and r at constant g-r color, returning to the constant baseline, unlike a SN Ia which predicts an asymmetric, color-evolving decline.",
+   "cost_usd": 0.0264,
+   "bic": 21.58,
+   "fit": {
+    "chi2_per_point": 0.24,
+    "params": {
+     "lens0.t0": 58982.525,
+     "lens0.u0": 0.243,
+     "lens0.tE": 23.111,
+     "lens0.ztfg": 31.874,
+     "lens0.ztfr": 95.333,
+     "constant1.ztfg": 9.674,
+     "constant1.ztfr": 24.829
+    }
+   },
+   "against_old": {
+    "n": 27,
+    "log10_e": 14.88,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Drifting calibration subtraction residual",
+   "idea": "A slowly drifting zero-point and template-subtraction residual in this crowded low-latitude field adds spurious flux at a fixed position. Its steady growth mimics a smooth, nearly colour-stable brightening in both g and r with no real transient onset.",
+   "components": [
+    {
+     "type": "constant"
+    },
+    {
+     "type": "trend"
+    }
+   ],
+   "predicts": "It predicts the flux keeps rising linearly in microjansky per day in both bands with constant colour, showing no supernova peak, turnover, or cooling.",
+   "cost_usd": 0.03452,
+   "bic": 251.93,
+   "fit": {
+    "chi2_per_point": 20.07,
+    "params": {
+     "constant0.ztfg": 53.919,
+     "constant0.ztfr": 127.71,
+     "trend1.ztfg": 324.1,
+     "trend1.ztfr": 324.1
+    }
+   },
+   "against_old": {
+    "n": 27,
+    "log10_e": -18.12,
+    "verdict": "vulcan"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "Microlensed red source",
+   "idea": "An unseen foreground point lens is magnifying a steady red background source, rather than a Type Ia explosion fading after peak. The achromatic lensing magnification explains the month-long rise in both bands at nearly constant g-r colour that the Ia forecast increasingly underpredicted.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The g and r fluxes will peak together and then decline symmetrically with the same tE and unchanged g-r colour, instead of the asymmetric, colour-evolving decline of a supernova.",
+   "cost_usd": 0.03366,
+   "bic": 21.58,
+   "fit": {
+    "chi2_per_point": 0.24,
+    "params": {
+     "lens0.t0": 58982.525,
+     "lens0.u0": 0.243,
+     "lens0.tE": 23.111,
+     "lens0.ztfg": 31.874,
+     "lens0.ztfr": 95.333,
+     "constant1.ztfg": 9.674,
+     "constant1.ztfr": 24.829
+    }
+   },
+   "against_old": {
+    "n": 27,
+    "log10_e": 14.88,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Microlensed red background star",
+   "idea": "The >30-day, nearly colour-constant (g-r~1.1) brightening at low Galactic latitude is the achromatic magnification of a red background star by an unseen foreground lens, not an explosion. The fitted Ia peaked and faded too early because magnification keeps rising toward closest approach long after a supernova would turn over.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts a symmetric, achromatic turnover followed by a decline mirroring the rise back to the constant baseline, with g-r unchanged through peak and no supernova-like cooling or rapid post-peak fade.",
+   "cost_usd": 0.0427,
+   "bic": 21.58,
+   "fit": {
+    "chi2_per_point": 0.24,
+    "params": {
+     "lens0.t0": 58982.525,
+     "lens0.u0": 0.243,
+     "lens0.tE": 23.111,
+     "lens0.ztfg": 31.874,
+     "lens0.ztfr": 95.333,
+     "constant1.ztfg": 9.674,
+     "constant1.ztfr": 24.829
+    }
+   },
+   "against_old": {
+    "n": 27,
+    "log10_e": 14.88,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "hidden",
+  "name": "Lens magnifying red background source",
+  "verdict": "neptune",
+  "log10_e": 14.88,
+  "margin_log10_e": 0.0
+ }
+}

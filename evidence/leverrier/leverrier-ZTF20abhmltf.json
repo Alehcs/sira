@@ -1,0 +1,33 @@
+{
+ "oid": "ZTF20abhmltf",
+ "checks": [
+  {
+   "t": 59044.25,
+   "weights": {
+    "ia": 0.6720873863533352,
+    "ibc": 0.22784784864328203,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59054.25,
+   "weights": {
+    "ia": 0.8999987964665064,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

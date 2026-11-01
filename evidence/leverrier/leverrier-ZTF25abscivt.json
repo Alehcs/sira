@@ -1,0 +1,50 @@
+{
+ "oid": "ZTF25abscivt",
+ "checks": [
+  {
+   "t": 60948.21,
+   "weights": {
+    "ia": 0.45326524974057336,
+    "ii": 0.3591186024860458,
+    "ibc": 0.07843853631975775,
+    "tde": 0.00917761145362313,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 7,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60958.21,
+   "weights": {
+    "ia": 0.8858097466952235,
+    "ibc": 0.010929227462976403,
+    "tde": 0.002897054386570493,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 60968.21,
+   "weights": {
+    "ia": 0.8998312403134446,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 6,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

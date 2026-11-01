@@ -1,0 +1,145 @@
+{
+ "oid": "ZTF21abhqzzh",
+ "checks": [
+  {
+   "t": 59401.39,
+   "weights": {
+    "ia": 0.5066327002444038,
+    "ii": 0.003730720790833756,
+    "ibc": 0.350883603929918,
+    "tde": 0.03875297503484449,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59411.39,
+   "weights": {
+    "ia": 0.18140322940093864,
+    "ii": 0.6649406866452519,
+    "ibc": 0.010935771057275835,
+    "tde": 0.04272031289653384,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59421.39,
+   "weights": {
+    "ia": 0.18140322940093864,
+    "ii": 0.6649406866452519,
+    "ibc": 0.010935771057275835,
+    "tde": 0.04272031289653384,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 2,
+    "p_value": 0.0004,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59431.39,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59441.39,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 1,
+    "p_value": 0.09607920319999999,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59451.39,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59461.39,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 1,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59471.39,
+   "weights": {
+    "tde": 0.9000000000000001,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59481.39,
+   "weights": {
+    "tde": 0.8998947985575719,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 2,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 59491.39,
+   "weights": {
+    "ia": 0.8999999999999757,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 0,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  }
+ ],
+ "events": []
+}

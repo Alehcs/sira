@@ -1,0 +1,280 @@
+{
+ "oid": "ZTF19abftuld",
+ "checks": [
+  {
+   "t": 58689.43,
+   "weights": {
+    "ia": 0.5491406881743429,
+    "ii": 0.008606883340785337,
+    "ibc": 0.34225242848487186,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 3,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 58699.43,
+   "weights": {
+    "ia": 0.23694640648856083,
+    "ii": 0.004242991305931406,
+    "ibc": 0.008711002476588467,
+    "tde": 0.6500995997289194,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 5,
+    "misses": 0,
+    "p_value": 1.0,
+    "surprised": false
+   }
+  },
+  {
+   "t": 58709.43,
+   "weights": {
+    "ia": 0.3426694947274801,
+    "tde": 0.5573305049908349,
+    "null": 0.1
+   },
+   "surprise": {
+    "n": 15,
+    "misses": 3,
+    "p_value": 0.0030393745632011308,
+    "surprised": true
+   }
+  }
+ ],
+ "events": [
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.04319,
+   "seconds": 13.8,
+   "leap": "hidden",
+   "decision": "proposes Microlensed red background star",
+   "why": "An unseen foreground point lens at low Galactic latitude is gradually magnifying a red background star, adding an achromatic, slowly accelerating rise on top of steady blended light. This explains the"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03044,
+   "seconds": 9.5,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing of red source",
+   "why": "At low Galactic latitude a faint, very red background star has brightened smoothly for over fifty days and accelerated upward where supernova and TDE models predicted a cooling decline. An unseen fore"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03716,
+   "seconds": 10.9,
+   "leap": "instrument",
+   "decision": "proposes Drifting red template residual",
+   "why": "At b=-5 a crowded, highly reddened template likely contains a variable red star whose light leaks into the difference images at this position. A slow seasonal seeing and zero-point drift then grows th"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.03499,
+   "seconds": 10.2,
+   "leap": "hidden",
+   "decision": "proposes hidden Galactic microlens",
+   "why": "An unseen foreground point mass in the low-latitude Galactic plane is slowly magnifying a red background star, producing the month-long achromatic brightening that supernova and TDE fits mistook for a"
+  },
+  {
+   "role": "leverrier",
+   "case": "case-fdb2462ade",
+   "model": "muse-wonder-1.0",
+   "effort": "high",
+   "cost_usd": 0.02411,
+   "seconds": 9.7,
+   "leap": "new",
+   "decision": "proposes Galactic microlensing peak",
+   "why": "An unseen point lens at low Galactic latitude is slowly magnifying an intrinsically red background source, producing the 50-day monotonic rise to a plateau near peak. Unlike a supernova or TDE, the ma"
+  }
+ ],
+ "now": 58719.43,
+ "future_points": 234,
+ "proposals": [
+  {
+   "leap": "hidden",
+   "name": "Microlensed red background star",
+   "idea": "An unseen foreground point lens at low Galactic latitude is gradually magnifying a red background star, adding an achromatic, slowly accelerating rise on top of steady blended light. This explains the smooth >50-day monotonic brightening in r with a persistently very red g-r colour and the recent failure of fading SN/TDE forecasts in both bands.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts an achromatic symmetric turnover and mirror-image decline to the pre-rise baseline, with g and r rising and falling by the same magnification factor and no colour evolution.",
+   "cost_usd": 0.04319,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "lens0.t0": 58727.917,
+     "lens0.u0": 0.021,
+     "lens0.tE": 599.999,
+     "lens0.ztfg": 0.84,
+     "lens0.ztfr": 2.893,
+     "constant1.ztfg": 3.461,
+     "constant1.ztfr": 3.898
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 118.0,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing of red source",
+   "idea": "At low Galactic latitude a faint, very red background star has brightened smoothly for over fifty days and accelerated upward where supernova and TDE models predicted a cooling decline. An unseen foreground point lens is achromatically magnifying that star, with the constant component accounting for its unmagnified and blended baseline flux in each band.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The light curve will reach a single peak after day 0 and then decline symmetrically as the mirror image of its rise at essentially constant g-r color, rather than cooling, reddening, and fading asymmetrically like an explosion or TDE.",
+   "cost_usd": 0.03044,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "lens0.t0": 58727.917,
+     "lens0.u0": 0.021,
+     "lens0.tE": 599.999,
+     "lens0.ztfg": 0.84,
+     "lens0.ztfr": 2.893,
+     "constant1.ztfg": 3.461,
+     "constant1.ztfr": 3.898
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 118.0,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "instrument",
+   "name": "Drifting red template residual",
+   "idea": "At b=-5 a crowded, highly reddened template likely contains a variable red star whose light leaks into the difference images at this position. A slow seasonal seeing and zero-point drift then grows that subtraction residual almost linearly in r with a much weaker, nearly constant g residual, mimicking a long, red, slow rise with no true onset.",
+   "components": [
+    {
+     "type": "constant"
+    },
+    {
+     "type": "trend"
+    }
+   ],
+   "predicts": "It predicts the r flux will continue its linear drift, stay very red, and correlate with seeing or template changes or vanish on reprocessing with a clean template, rather than peaking and fading to zero like a supernova or TDE.",
+   "cost_usd": 0.03716,
+   "bic": 39.62,
+   "fit": {
+    "chi2_per_point": 1.21,
+    "params": {
+     "constant0.ztfg": 24.589,
+     "constant0.ztfr": 71.473,
+     "trend1.ztfg": 88.908,
+     "trend1.ztfr": 107.583
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 174.74,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "hidden",
+   "name": "hidden Galactic microlens",
+   "idea": "An unseen foreground point mass in the low-latitude Galactic plane is slowly magnifying a red background star, producing the month-long achromatic brightening that supernova and TDE fits mistook for a fading peak. A constant per-band baseline accounts for the unmagnified source and blended field light on top of which the lens acts.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "The light curve will peak achromatically and then decline symmetrically to its pre-rise baseline with essentially constant g-r, rather than decaying like radioactive or fallback emission.",
+   "cost_usd": 0.03499,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "lens0.t0": 58727.917,
+     "lens0.u0": 0.021,
+     "lens0.tE": 599.999,
+     "lens0.ztfg": 0.84,
+     "lens0.ztfr": 2.893,
+     "constant1.ztfg": 3.461,
+     "constant1.ztfr": 3.898
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 118.0,
+    "verdict": "neptune"
+   }
+  },
+  {
+   "leap": "new",
+   "name": "Galactic microlensing peak",
+   "idea": "An unseen point lens at low Galactic latitude is slowly magnifying an intrinsically red background source, producing the 50-day monotonic rise to a plateau near peak. Unlike a supernova or TDE, the magnification is achromatic, so the red color is the source color and does not evolve from cooling ejecta.",
+   "components": [
+    {
+     "type": "lens"
+    },
+    {
+     "type": "constant"
+    }
+   ],
+   "predicts": "It predicts a symmetric, achromatic decline back to the pre-event baseline at the same rate as the rise, with constant g-r color throughout.",
+   "cost_usd": 0.02411,
+   "bic": 26.17,
+   "fit": {
+    "chi2_per_point": 0.18,
+    "params": {
+     "lens0.t0": 58727.917,
+     "lens0.u0": 0.021,
+     "lens0.tE": 599.999,
+     "lens0.ztfg": 0.84,
+     "lens0.ztfr": 2.893,
+     "constant1.ztfg": 3.461,
+     "constant1.ztfr": 3.898
+    }
+   },
+   "against_old": {
+    "n": 234,
+    "log10_e": 118.0,
+    "verdict": "neptune"
+   }
+  }
+ ],
+ "best": {
+  "leap": "instrument",
+  "name": "Drifting red template residual",
+  "verdict": "neptune",
+  "log10_e": 174.74,
+  "margin_log10_e": 56.74
+ }
+}
