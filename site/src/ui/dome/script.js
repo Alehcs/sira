@@ -3,7 +3,7 @@ const LEAD = 0.4;
 const THINK = 2.4; // the longest call of a beat takes this long on screen, its real seconds counted on its bubble
 const TALK = 2.2;
 const SEATS = ['tia', 'tibc', 'tii'];
-const WHO = { reader: 'lec', llm_only: 'muse', director: 'dir', senior: 'sen', forecaster: 'pro', leverrier: 'lv', sky: 'ztf', lookouts: 'vig' };
+const WHO = { reader: 'lec', llm_only: 'muse', director: 'dir', senior: 'sen', forecaster: 'pro', leverrier: 'lv', sky: 'ztf', lookout: 'vig' };
 const LENSES = { instrument: 'ein', physics: 'efi', memory: 'eme' };
 
 const hyp = (c) => (c.decision || '').replace('defends ', '');
@@ -19,9 +19,10 @@ function seat(calls, seats) {
 
 const agent = (c, seats) => (c.role === 'theorist' ? SEATS.find((s) => seats[s] === hyp(c)) : c.role === 'skeptic' ? LENSES[c.lens] : WHO[c.role]);
 
-// who a line is for: the reader tells the theorists, a skeptic answers whoever it doubts, the rest report to the director
+// who a line is for: the lookouts tell the reader, the reader the theorists, a skeptic whoever it doubts, the rest the director
 function audience(c, seats) {
   if (c.to) return c.to.flatMap((r) => (r === 'theorist' ? SEATS : [WHO[r]])).filter(Boolean);
+  if (c.role === 'lookout') return ['lec'];
   if (c.role === 'reader') return SEATS;
   if (c.role === 'skeptic' && c.lens === 'instrument') return ['lec'];
   if (c.role === 'skeptic' && c.lens === 'physics') {

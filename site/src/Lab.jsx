@@ -222,9 +222,9 @@ function attachment(i, d, step, w, f) {
   return null;
 }
 
-// a replay opens on its last step with the whole thread from the top; the thread follows once the visitor plays or picks a step
-function useSteps(last, pace) {
-  const [step, setStep] = useState(last);
+// a replay opens on the given step with its thread from the top; the thread follows once the visitor plays or picks a step
+function useSteps(last, pace, first = last) {
+  const [step, setStep] = useState(first);
   const [playing, setPlaying] = useState(false);
   const [follow, setFollow] = useState(false);
 
@@ -269,7 +269,7 @@ function Featured({ lang, data: d }) {
   const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
   const scenes = useMemo(() => beats(d, text.says), [d, lang]);
   const pace = useMemo(() => lengths(scenes), [scenes]);
-  const { step, playing, follow, go, play } = useSteps(last, pace);
+  const { step, playing, follow, go, play } = useSteps(last, pace, 0);
 
   // the figure at this step: what the sky had shown by then and the forecast sealed last
   const now = d.now[step];
@@ -364,9 +364,8 @@ function liveBeats(d, stages) {
     voices: Object.entries(weights).filter(([, v]) => v >= 0.005).sort((a, b) => (a[0] === 'null') - (b[0] === 'null') || b[1] - a[1]),
     range: { x0: Math.min(0, ...days) - 1, x1: Math.max(1, ...days) + 1, f0: Math.max(1, Math.min(...fluxes, 100) * 0.8), f1: Math.max(...fluxes, 10) * 1.25 },
   };
-  // the two lookouts on the catwalk share no single bubble in the observatory, so their stage plays without calls
   return stages.map(({ roles, events }) => ({
-    calls: roles[0] === 'lookout' ? [] : events.map(({ role, lens, decision, seconds }) => ({ role, lens, decision, seconds })),
+    calls: events.map(({ role, lens, decision, seconds, priority }) => ({ role, lens, decision, seconds, priority })),
     scene, seal: roles[0] === 'forecaster' ? d.question.p : null,
   }));
 }
@@ -425,7 +424,8 @@ function Latest({ lang, d }) {
 
   return (
     <>
-      <Dome lang={lang} beats={scenes} at={step} stamps={im.stamps ? { src: BASE + im.stamps, tile: im.panel[0], gap: 0, pixel: 1 } : null} />
+      <Dome lang={lang} beats={scenes} at={step} sky={im.host ? { src: BASE + im.host } : null}
+        stamps={im.stamps ? { src: BASE + im.stamps, tile: im.panel[0], gap: 0, pixel: 1 } : null} />
       <div className="objhead">
         <h1>{d.object}</h1>
         <div className="coords">

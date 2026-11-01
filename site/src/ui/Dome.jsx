@@ -35,10 +35,12 @@ function useImage(src, read) {
   return out;
 }
 
-// the sky through the slit: the field around the object in 4×4 blocks, averaged, colours untouched
+// the sky through the slit: the field around the object in the largest blocks that fit, averaged, colours untouched
 function slit(ctx, at) {
-  const [cx, cy] = at;
-  const cols = SLIT, rows = 52, k = 4;
+  const { width, height } = ctx.canvas;
+  const [cx, cy] = at || [width / 2, height / 2];
+  const cols = SLIT, rows = 52;
+  const k = [4, 3, 2, 1].find((n) => cx >= (cols / 2) * n && cx + (cols / 2) * n <= width && cy >= 20 * n && cy + (rows - 20) * n <= height) || 1;
   const x0 = Math.round(cx - (cols / 2) * k), y0 = Math.round(cy - 20 * k);
   const d = ctx.getImageData(x0, y0, cols * k, rows * k).data;
   return Array.from({ length: rows }, (_, j) => Array.from({ length: cols }, (__, i) => [0, 1, 2].map((c) => {
@@ -61,6 +63,7 @@ function plates(ctx, { tile, gap, pixel }) {
 function line(c, w, f) {
   const d = c.decision || '';
   const hyp = (h) => w.hyp[h] || h;
+  if (c.role === 'lookout') return w.looks(d === 'investigate', f.num(c.priority || 0, 2));
   if (c.role === 'reader') {
     const m = /^(real|bogus) \(([\d.]+)\)$/.exec(d);
     return m ? w.reads(m[1] === 'real', f.pct(Number(m[2]))) : '';
@@ -183,7 +186,7 @@ export default function Dome({ lang, beats, at, sky, stamps }) {
   // the names, the bubbles and the sealed slip, in logical pixels
   function overlay(st, heads, t, calm) {
     const tags = Object.entries(TAGS).map(([id, [dx, dy]]) => {
-      const h = id === 'vig' ? { x: (heads.vig[0].x + heads.vig[1].x) / 2, y: heads.vig[0].y } : heads[id];
+      const h = heads[id];
       const seat = st.seats[id];
       const name = seat ? w.theorist(seat === 'adopted' ? seat : w.hyp[seat] || seat) : w.names[id];
       const a = st.agents[id];
