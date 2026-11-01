@@ -407,3 +407,14 @@ def test_survey_reads_the_newest_detection_and_shrugs_off_a_failed_request(monke
 
     monkeypatch.setattr(alerce, "objects", down)
     assert site.survey() is None
+
+
+def test_the_lab_header_reads_its_numbers_from_the_committed_results(tmp_path):
+    from pathlib import Path
+
+    got = site.proof(Path("evidence/results.json"))
+    results = json.loads(Path("evidence/results.json").read_text())
+    assert got["vs_muse"] == results["test"]["primary"]["b2"]["mean"] and got["vs_physics"] == results["test"]["primary"]["b1"]["mean"]
+    assert got["objects"] == len(results["test"]["rows"]) and got["lens_wins"] <= got["surprises"]
+    assert got["usd"] == results["live"]["cost"]["usd_per_investigation"]
+    assert site.proof(tmp_path / "missing.json") is None

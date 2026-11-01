@@ -1,8 +1,18 @@
-/* the lab's two views and the photos under the latest investigation */
+/* the lab's opening numbers, its two views and the photos under the latest investigation */
+.lede { margin: 6px 0 26px; }
+.lede p { margin: 0 0 18px; max-width: 64ch; font-size: 19px; line-height: 1.45; }
+.lede .proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 28px; }
+.lede .proof b { display: block; font: 600 32px/1.1 'STIX Two Text', serif; color: var(--text); }
+.lede .proof span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--muted); }
+.lede > a { display: inline-block; margin-top: 16px; font-size: 14.5px; }
+.replaynote { margin: -6px 0 14px; max-width: 72ch; font-size: 14.5px; color: var(--muted); }
 .labviews { margin: 4px 0 18px; }
 .labviews button { min-height: 44px; font-size: 15px; }
 .labphotos { margin-top: 32px; }
 @media (max-width: 700px) {
+  .lede p { font-size: 17px; }
+  .lede .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+  .lede .proof b { font-size: 27px; }
   .labviews { display: flex; width: 100%; margin-bottom: 14px; }
   .labviews button { flex: 1 1 0; padding: 6px 10px; line-height: 1.3; }
 }

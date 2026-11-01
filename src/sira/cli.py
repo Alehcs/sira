@@ -13,7 +13,7 @@ def site(args) -> None:
         replays(Path("var"), Path(args.root), Path(args.out))
         print(f"replays written to {args.out}")
     else:
-        print(json.dumps(export(Path(args.ledger), Path(args.out), quiet=survey)["record"], indent=2))
+        print(json.dumps(export(Path(args.ledger), Path(args.out), quiet=survey, results=Path("evidence/results.json"))["record"], indent=2))
         img = Path(args.out) / "img"
         print(f"{len(list(img.glob('*.png')))} stamp strips and {len(list(img.glob('*.jpg')))} host images in {img}")
 

@@ -91,7 +91,7 @@ export default function App() {
         </div>
       </header>
       <main className="wrap">
-        {tab === 'lab' && (lab ? <Lab lang={lang} data={lab} /> : <p className="muted">{w.loading}</p>)}
+        {tab === 'lab' && (lab ? <Lab lang={lang} data={lab} live={live} /> : <p className="muted">{w.loading}</p>)}
         {tab === 'live' && <Investigate lang={lang} live={live} />}
         {tab === 'archive' && <Archive lang={lang} live={live} />}
         {tab === 'beat' && <Beat lang={lang} live={live} />}

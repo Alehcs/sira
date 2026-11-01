@@ -517,7 +517,18 @@ def survey() -> dict | None:
     return {"ztf_last": _date(items[0]["lastmjd"])} if items else None
 
 
-def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None) -> dict:
+def proof(results: Path) -> dict | None:
+    # the pre-registered headline numbers the Lab opens with, read from the committed results
+    if not results.exists():
+        return None
+    r = json.loads(results.read_text())
+    test, lv = r["test"], r["leverrier"]
+    return {"objects": len(test["rows"]), "vs_muse": test["primary"]["b2"]["mean"], "vs_physics": test["primary"]["b1"]["mean"],
+            "surprises": lv["objects"]["microlensing"]["surprised"], "lens_wins": lv["sizes"]["1"]["neptune_on_lenses"],
+            "usd": r["live"]["cost"]["usd_per_investigation"]}
+
+
+def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None, results: Path | None = None) -> dict:
     from datetime import timezone
 
     from . import archive, gallery
@@ -534,6 +545,8 @@ def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None)
     data = live(entries, pics)
     if quiet:
         data["survey"] = quiet()
+    if results and (found := proof(results)):
+        data["proof"] = found
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
     (out / "latest.json").write_text(json.dumps(latest(entries, pics, now), separators=(",", ":"), ensure_ascii=False))
     book = archive.build(entries, pics, now)
