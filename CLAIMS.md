@@ -15,6 +15,7 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | From a well-measured SN Ia light curve alone, SIRA's physics code puts its host galaxy at the right distance to within about 6%. | Median redshift error 5.6% on 18 well-measured test SN Ia; 12.3% on all 29, above the 10% its acceptance test asks of all fits. Other types treated as Ia come out 65% too far. Physics code, no Muse call | `physics.distance`, figure `distance` |
 | Asked "lens or supernova?", SIRA's physics code was right every time it decided, and said "I don't know" otherwise. | 26 of 26 decisive verdicts right, 7 of 33 abstained (21%), judged on the part of each light curve it never saw. Physics code, no Muse call | `physics.verdicts`, figure `verdicts` |
 | When the sky surprised SIRA, Muse Wonder proposed an invisible lens, and it forecast the data it had not seen far better than the old hypotheses. | The physics was surprised on 6 of 54 test lensing events; Le Verrier's proposal won its sealed test (Neptune, e ≥ 20) on 4, abstained on 1, lost on 1. The lens is one of the 7 pieces Wonder builds models from; the lab's own hypotheses (Ia, II, Ibc, TDE) never include it. No SN Ia (0 of 29) surprised the physics | `leverrier`, figure `team_size` |
+| With no lens among its pieces, Muse Wonder wrote the gravitational lens law on its own for 2 of the 6 lensing events it had never seen. | Pre-registered (FreeTSA, 2026-11-01 19:17 UTC): 3 of its 18 equations on the 6 lensing surprises are the point-lens law (u²+2)/(u·√(u²+4)). The lab kept it once, on ZTF19abftuld, where it beat the old hypotheses on the next 40 days by log10 E 143 | `equations.lenses`, `evidence/equations/leverrier-ZTF19abftuld.json` |
 | One Le Verrier did as well as five, at a fifth of the cost. | 4 Neptune verdicts with 1, 3 or 5 proposals per surprise; US$0.43 against US$2.11 | `leverrier.sizes` |
 | Muse Spark Open, the open-weights model, tells a real new source from a bad subtraction on about 91% of ZTF candidates it was never tuned on. | Balanced accuracy 0.913 (95% interval 0.869 to 0.956) and AUC 0.97 on 160 held-out candidates: 80 real (2024 supernovae of the Bright Transient Survey) and 80 bogus as labelled by ALeRCE's stamp classifier. Measured on Oct 27 against a 0.85 gate set before the run, not part of the timestamped plan. US$0.0097 a read | `reader.v2`, `evidence/reader/holdout-v2.json` |
 | An investigation costs about 16 US cents in Muse calls. | US$0.159 per investigated transient, 42 live investigations over 4 nights | `live.cost`, figure `live` |
@@ -33,6 +34,8 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | The lookouts' vote of three rarely changes the call. | Changed 1 of 17 voted decisions, US$0.34 extra | `live.lookouts` |
 | Three of the 40 pre-registered test objects got no bet. | Their only checkpoint had 4 detections and the physics needs 5 | `test.failed` |
 | The test evaluation cost US$45 in Muse calls. | Two runs of 40 objects, 350 bets | `test.cost_usd` |
+| Writing its own equations, Le Verrier did worse than building from pieces. | On the same 6 lensing surprises its chosen laws won 2, abstained on 1 and lost 3; built from pieces they won 4 | `equations.lenses.verdicts`, `equations.lenses.pieces_verdicts` |
+| Free equations also win on transients that are not lenses. | On the 4 other test surprises, all rare transients, 3 chosen laws won their test, none of them a lens; the plan counts each as a false discovery. A fourth wrote a lens law and abstained. The experiment cost US$3.11 | `equations.others`, `equations.usd` |
 | The reader's second protocol is not significantly better than its first. | 0.913 against 0.875 on the same 160 candidates; 13 reads gained, 7 lost, McNemar p 0.26 | `reader.v2_vs_v1` |
 
 ## Measured after the plan
@@ -58,4 +61,5 @@ Computed from the same sealed test ledgers once the results were in, so not pre-
 - That the agent team makes the forecasts better. The ablations say the pooled Muse forecast does; the team asks the questions, explains and proposes.
 - 5.6% without "12.3% on all 29".
 - That Wonder came up with the lens from nothing. A lens is one of the 7 pieces it builds from.
+- That Wonder rediscovers physics reliably. With no pieces it wrote the lens law on 2 of 6 lensing events it had never seen.
 - That Le Verrier never made a false discovery, or that a Neptune verdict confirms a model. It means the model forecast unseen data far better than the old hypotheses.
