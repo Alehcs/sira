@@ -18,6 +18,24 @@ function textWidth(text) {
   return c.measureText(text).width + 2;
 }
 
+// whether the segment from a to b passes through the box
+function crosses([ax, ay], [bx, by], { x0, x1, y0, y1 }) {
+  if (![ax, ay, bx, by].every(Number.isFinite)) return false;
+  const dx = bx - ax, dy = by - ay;
+  let t0 = 0, t1 = 1;
+  for (const [p, q] of [[-dx, ax - x0], [dx, x1 - ax], [-dy, ay - y0], [dy, y1 - ay]]) {
+    if (p === 0) {
+      if (q < 0) return false;
+    } else if (p < 0) {
+      t0 = Math.max(t0, q / p);
+    } else {
+      t1 = Math.min(t1, q / p);
+    }
+    if (t0 > t1) return false;
+  }
+  return true;
+}
+
 // a round flux at or beyond v, for the ends of the log axis
 function nice(v, up) {
   const e = 10 ** Math.floor(Math.log10(v));
@@ -222,11 +240,14 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
   // forecasts: mean ± z sigma, clipped to the frame, each named at its end with its seal
   const bands = [];
   const names = [];
+  const lines = [];
+  const wanted = [];
   fcs.forEach((fc, i) => {
     const z = fc.z ?? 1.645;
     const s = fc.band === 'g' ? 'sg' : 'sr';
     const up = fc.rows.map(([d, mu, sd]) => `${f1(X(d))},${f1(Y(mu + z * sd))}`);
     const dn = fc.rows.slice().reverse().map(([d, mu, sd]) => `${f1(X(d))},${f1(Y(mu - z * sd))}`);
+    lines.push(...[z, -z, 0].map((k) => fc.rows.map(([d, mu, sd]) => [X(d), Y(mu + k * sd)])));
     if (fc.style === 'sealed' || !fc.style) {
       bands.push(<polygon key={`a${i}`} className="fill" points={up.concat(dn).join(' ')} />);
       bands.push(<polyline key={`u${i}`} className={`edge ${s}`} points={up.join(' ')} />);
@@ -257,9 +278,35 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     ty = Math.min(Math.max(ty, T + 14), B - (hash ? 21 : 6));
     const g = goalBox;
     if (g && tx < g.x1 && tx + tw > g.x0 && ty - 12 < g.y1 && ty + (hash ? 15 : 0) > g.y0) ty = g.y1 + 14;
-    names.push(<text key={`n${i}`} className="hyp" x={f1(tx)} y={f1(ty)}>{fc.label}</text>);
-    if (hash) names.push(<text key={`h${i}`} x={f1(tx)} y={f1(ty + 15)}>{hash}</text>);
+    wanted.push({ i, label: fc.label, hash, tx, ty, tw });
   });
+  // a name crossed by any line takes the nearest spot in the frame that nothing crosses
+  for (const d of [goal && goal.day, nowAt]) if (!none(d)) lines.push([[X(d), T], [X(d), B]]);
+  if (reference) lines.push([[L, Y(reference.flux)], [R, Y(reference.flux)]]);
+  const named = [];
+  for (const nm of wanted) {
+    const h = nm.hash ? 15 : 0;
+    const boxAt = (x, y) => ({ x0: x - 2, x1: x + nm.tw + 2, y0: y - 15, y1: y + 5 + h });
+    const cost = (x, y) => {
+      const b = boxAt(x, y);
+      let n = lines.filter((pts) => pts.some((p, k) => k > 0 && crosses(pts[k - 1], p, b))).length * 100;
+      for (const p of shown) if (X(p.day) > b.x0 - 4 && X(p.day) < b.x1 + 4 && Y(p.flux) > b.y0 - 4 && Y(p.flux) < b.y1 + 4) n += 10;
+      for (const o of named.concat(goalBox || [])) if (b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0) n += 100;
+      return n + Math.hypot(x - nm.tx, y - nm.ty) / 40;
+    };
+    let best = { x: nm.tx, y: nm.ty, c: cost(nm.tx, nm.ty) };
+    if (best.c >= 1) {
+      for (let x = L + 6; x + nm.tw <= R - 6; x += 8) {
+        for (let y = T + 16; y + 6 + h <= B; y += 8) {
+          const c = cost(x, y);
+          if (c < best.c) best = { x, y, c };
+        }
+      }
+    }
+    named.push(boxAt(best.x, best.y));
+    names.push(<text key={`n${nm.i}`} className="hyp" x={f1(best.x)} y={f1(best.y)}>{nm.label}</text>);
+    if (nm.hash) names.push(<text key={`h${nm.i}`} x={f1(best.x)} y={f1(best.y + 15)}>{nm.hash}</text>);
+  }
   out.push(<g key="bands" clipPath={`url(#${clip})`}>{bands}</g>);
   out.push(...names);
 
@@ -304,12 +351,26 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     if (note.sub && !narrow) out.push(<text key="notes" x={f1(nx)} y={f1(ny + 16)} textAnchor="end">{note.sub}</text>);
   }
 
-  // each band named once, at its first detection whose left side is free of other marks
+  // each band named once, beside its earliest detection where the letter clears every mark, error bar and the other letter
+  const blocks = shown.flatMap((q) => {
+    const x = X(q.day), y = Y(q.flux);
+    const bar = q.err && !q.limit ? [Y(q.flux + q.err), Y(q.flux - q.err)].filter(Number.isFinite) : [];
+    return [{ x0: x - 5, x1: x + 5, y0: y - 5, y1: y + 5 }].concat(bar.length ? [{ x0: x - 1.5, x1: x + 1.5, y0: Math.min(...bar), y1: Math.max(...bar) }] : []);
+  });
   for (const b of bandNames ? [] : ['r', 'g']) {
-    const firsts = shown.filter((q) => q.band === b && !q.limit && (!zoomed || (X(q.day) - 20 > L && q.day <= x1)));
-    const clear = (p) => !shown.some((q) => q !== p && Math.abs(X(q.day) - (X(p.day) - 13)) < 9 && Math.abs(Y(q.flux) - Y(p.flux)) < 10);
-    const p = firsts.find(clear) || firsts[0];
-    if (p) out.push(<text key={`b${b}`} className={`band-${b}`} x={f1(X(p.day) - 9)} y={f1(Y(p.flux) + 5)} textAnchor="end">{b}</text>);
+    const firsts = shown.filter((q) => q.band === b && !q.limit && X(q.day) > L && X(q.day) < R);
+    const spots = (p) => [[-9, 'end', 5], [9, 'start', 5], [0, 'middle', -9], [0, 'middle', 19]].map(([dx, anchor, dy]) => {
+      const x = X(p.day) + dx, y = Y(p.flux) + dy;
+      const x0 = anchor === 'end' ? x - 9 : anchor === 'start' ? x : x - 4.5;
+      return { x, y, anchor, box: { x0, x1: x0 + 9, y0: y - 11, y1: y + 3 } };
+    });
+    const within = ({ box: o }) => o.x0 > L + 2 && o.x1 < R - 2 && o.y0 > T + 2 && o.y1 < B - 2;
+    const hits = (s) => blocks.filter((k) => s.box.x0 < k.x1 + 2 && k.x0 < s.box.x1 + 2 && s.box.y0 < k.y1 + 2 && k.y0 < s.box.y1 + 2).length;
+    // the earliest spot that touches no mark, else the one that touches the fewest
+    const at = firsts.flatMap(spots).filter(within).reduce((a, s) => (!a || hits(s) < hits(a) ? s : a), null);
+    if (!at) continue;
+    blocks.push(at.box);
+    out.push(<text key={`b${b}`} className={`band-${b}`} x={f1(at.x)} y={f1(at.y)} textAnchor={at.anchor}>{b}</text>);
   }
 
   // the line to beat, and in words the bands, go wherever they cover the fewest marks, over the points
@@ -317,7 +378,7 @@ export default function Figure({ lang, start, points = [], forecasts = [], rings
     const measure = axes ? textWidth : (text) => String(text).length * 7.4;
     const marks = shown.map((p) => [X(p.day), Y(p.flux)]);
     const walls = [nowAt, goal && goal.day].filter((d) => !none(d)).map(X);
-    const taken = goalBox ? [goalBox] : [];
+    const taken = goalBox ? [goalBox, ...named] : [...named];
     if (nowAt !== null) taken.push({ x0: X(nowAt) - nowWidth - 14, x1: X(nowAt) + nowWidth + 14, y0: B - (start ? 38 : 22), y1: B });
     const cost = (b) => {
       if (b.x0 < L + 2 || b.x1 > R - 2 || b.y0 < T + 2 || b.y1 > B - 2) return Infinity;

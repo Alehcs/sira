@@ -79,9 +79,9 @@ function line(c, w, f) {
   return '';
 }
 
-// each bubble opens to its own side; if it would cover another or leave the view it tries the other side, then rises
-function place(els, want, s, view) {
-  const boxes = [];
+// each bubble opens to its own side; if it would cover another, the slip or leave the view it tries the other side, then rises
+function place(els, want, s, view, taken) {
+  const boxes = taken.slice();
   const order = want.slice().sort((a, b) => (a.think ? 0 : 1) - (b.think ? 0 : 1));
   for (const b of order) {
     const el = els.get(b.id);
@@ -134,6 +134,7 @@ export default function Dome({ lang, beats, at, sky, stamps }) {
   const bubbles = useRef(new Map());
   const clock = useRef({ at: null, start: 0 });
   const aim = useRef(null);
+  const moving = useRef(false);
   const [view, setView] = useState(null);
   const field = useImage(sky && sky.src, (ctx) => slit(ctx, sky.at));
   const cuts = useImage(stamps && stamps.src, (ctx) => plates(ctx, stamps));
@@ -198,32 +199,44 @@ export default function Dome({ lang, beats, at, sky, stamps }) {
       return a.think ? { id, think: true, x, y, secs: Math.floor(a.real), on: calm ? 2 : Math.floor(t / 0.3) % 3 } : { id, x, y, text: a.text };
     }).filter((b) => b.think || b.text);
     const sp = slip();
-    const paper = st.sealed !== null && st.sealed !== undefined && st.slip >= 1 ? { x: sp[0] - 11, y: sp[1] - 10, text: f.pct(st.sealed) } : null;
+    const paper = st.sealed !== null && st.sealed !== undefined && st.slip >= 1 ? { x: sp[0], y: sp[1], text: f.pct(st.sealed) } : null;
     const talk = Object.entries(st.agents).filter(([, a]) => a.talk);
     const ids = talk.length ? talk.flatMap(([id, a]) => [id, ...a.to]) : Object.keys(st.agents);
     const xs = ids.map((id) => heads[id]).filter(Boolean).map((h) => h.x);
     return { tags, want, paper, focus: xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null };
   }
 
+  // a finger on the strip ends the pan, and the bubbles follow what it shows
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return undefined;
+    const stop = () => { moving.current = false; };
+    el.addEventListener('pointerdown', stop);
+    el.addEventListener('wheel', stop, { passive: true });
+    return () => { el.removeEventListener('pointerdown', stop); el.removeEventListener('wheel', stop); };
+  }, []);
+
   useLayoutEffect(() => {
     const el = root.current;
     if (!view || !el) return;
-    // bubbles may open over the night on either side of the scene
-    const left = narrow ? -el.scrollLeft : inset;
-    place(bubbles.current, view.want, s, [-left, el.clientWidth - left]);
+    // on a phone the strip pans to whoever is acting
+    if (narrow && view.focus !== null) {
+      const x = Math.round(Math.min(W - el.clientWidth, Math.max(0, view.focus - el.clientWidth / 2)));
+      if (aim.current === null || Math.abs(x - aim.current) > 40) {
+        const jump = aim.current === null || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        aim.current = x;
+        moving.current = !jump;
+        el.scrollTo({ left: x, behavior: jump ? 'auto' : 'smooth' });
+      }
+    }
+    if (moving.current && Math.abs(el.scrollLeft - aim.current) < 1) moving.current = false;
+    // bubbles may open over the night on either side of the scene; while the strip pans they are placed where it lands
+    const left = narrow ? -(moving.current ? aim.current : el.scrollLeft) : inset;
+    const sl = view.paper && over.current.querySelector('.slip');
+    const taken = sl ? [{ x0: view.paper.x * s - sl.offsetWidth / 2, y0: view.paper.y * s - sl.offsetHeight, w: sl.offsetWidth, h: sl.offsetHeight }] : [];
+    place(bubbles.current, view.want, s, [-left, el.clientWidth - left], taken);
     declutter(over.current);
   }, [view, s, narrow, inset]);
-
-  // on a phone the strip pans to whoever is acting
-  useEffect(() => {
-    const el = root.current;
-    if (!narrow || !view || view.focus === null) return;
-    const x = Math.round(Math.min(W - el.clientWidth, Math.max(0, view.focus - el.clientWidth / 2)));
-    if (aim.current !== null && Math.abs(x - aim.current) <= 40) return;
-    const first = aim.current === null;
-    aim.current = x;
-    el.scrollTo({ left: x, behavior: first || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  }, [view && view.focus, narrow]);
 
   const size = { width: W * s, height: H * s };
   return (
@@ -235,7 +248,7 @@ export default function Dome({ lang, beats, at, sky, stamps }) {
             {view.tags.map((g) => (
               <span key={g.id} className={`tag${g.two ? ' two' : ''}${g.rank > 1 ? ' idle' : ''}`} data-rank={g.rank} style={{ left: g.x * s, top: g.y * s }}>{g.name}</span>
             ))}
-            {view.paper && <span className="slip" style={{ left: view.paper.x * s, top: view.paper.y * s, width: 22 * s, height: 10 * s }}>{view.paper.text}</span>}
+            {view.paper && <span className="slip" style={{ left: view.paper.x * s, top: view.paper.y * s, minWidth: 22 * s, height: Math.max(10 * s, 14) }}>{view.paper.text}</span>}
             {view.want.map((b) => (
               <div key={b.id + (b.think ? 't' : 's')} ref={(el) => (el ? bubbles.current.set(b.id, el) : bubbles.current.delete(b.id))} className={`bub${b.think ? ' think' : ''}`}>
                 {b.think ? <><span className="dots">{[0, 1, 2].map((i) => <i key={i} className={i === b.on ? 'on' : undefined} />)}</span><span>{w.seconds(b.secs)}</span></> : b.text}

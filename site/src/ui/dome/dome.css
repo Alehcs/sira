@@ -57,6 +57,10 @@
 .dome .bub.think i { display: block; width: 4px; height: 4px; background: var(--bubble-muted); }
 .dome .bub.think i.on { background: var(--bubble-text); }
 .dome .slip {
-  position: absolute; display: flex; align-items: center; justify-content: center;
+  position: absolute; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  transform: translate(-50%, -100%); padding: 0 3px; white-space: nowrap;
   font: 600 12px/1 'IBM Plex Mono', ui-monospace, monospace; color: var(--bubble-text); background: var(--bubble);
+  border-bottom: 1px solid var(--pp0);
 }
+/* at one pixel a tile the slip grows past the drawn paper so its number fits */
+.dome.compact .slip { font-size: 11px; padding: 0 2px; }
