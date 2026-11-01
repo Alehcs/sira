@@ -17,6 +17,7 @@ Site: **https://alehcs.github.io/sira/** (the lab, Beat SIRA, the forecasts and 
 On 37 objects from a test split it had never seen, in an evaluation pre-registered and timestamped before it ran ([`evidence/plan.json`](evidence/plan.json)):
 
 - **It forecast better than Muse alone and than its own physics alone.** SIRA minus Muse alone: +0.98 nats per measurement (95% interval 0.41 to 1.64), about 2.7 times the probability on what the sky actually did. SIRA minus physics alone: +0.30 (0.12 to 0.52), about 1.35 times. Both hold in each of the two runs. The edge comes from pooling physics with Muse's own forecast; on plain SN Ia, physics alone is slightly better.
+- **The edge is Muse's, not averaging's.** Measured after the plan, so not pre-registered: pooling the same physics with climatology instead of Muse's forecast loses 0.30 nats per measurement (0.11 to 0.54), although alone Muse scores about the same as climatology.
 - **When the sky surprised it, Muse Wonder proposed an invisible lens.** Wonder builds models from 7 physical pieces, a lens among them, while the lab's own hypotheses never include one. On 4 of the 6 surprises the lens forecast the data it had not seen far better than the old hypotheses, and no SN Ia surprised the physics. In the full replays it also put a lens on a superluminous supernova, and won its test there because the lab has no superluminous model: one false discovery. One Le Verrier did as well as five, at a fifth of the cost.
 - **Its physics code puts a supernova's host galaxy near the right distance from the light curve alone:** median redshift error 5.6% on 18 well-measured SN Ia, 12.3% on all 29, above the 10% bar its acceptance test sets for all fits.
 - **Its physics code says "I don't know".** Asked whether a light curve is a gravitational lens or a supernova, it was right on all 26 decisive verdicts and abstained on 7 of 33.
@@ -47,6 +48,8 @@ Model ids: `muse-spark-1.3` and `muse-wonder-1.0` on Meta's Model API, and `meta
 
 Built with Muse Spark Open. Every candidate SIRA considers meets Muse Spark Open first, served by Baseten (`meta-models/muse-spark-open-1026`): the reader judges its first-detection images, real or bogus, and the lookouts pick which ones get the full team. It runs in every nightly job, every Beat SIRA round and every Investigate run, with no fallback to another model; look for the `reader` and `lookout` events in `ledger.jsonl`.
 
+On 160 held-out ZTF candidates the reader tells a real source from a bad subtraction with 91.3% balanced accuracy (95% interval 86.9 to 95.6%, AUC 0.97), for about one US cent a read. The real ones are 2024 supernovae of the Bright Transient Survey and the bogus ones carry ALeRCE's stamp classifier labels; every read is in [`evidence/reader`](evidence/reader).
+
 ## Built during the hackathon
 
 Kickoff was Monday, October 26, 2026 at 12:00 ET (16:00 UTC). This repository was created at 23:33 UTC that day, and every line of code, prompt, test, figure and page in it was written after that, in the commits on `main` (times below in Chile, UTC−3):
@@ -68,7 +71,7 @@ make docker           # the same in a clean container
 make physics          # also reruns the distance and lens-or-supernova headlines from a fresh ALeRCE snapshot
 ```
 
-`make reproduce` recomputes the results from the replay ledgers in `evidence/test`, the Le Verrier runs in `evidence/leverrier` and the public ledger, and fails if any number differs from `evidence/results.json`. Rerunning the replays themselves needs Meta and Baseten keys (`uv run sira replay --split test --per 10 --out evidence/test/a`) and about US$23 a run; Muse's answers vary between runs, which is why the plan has two.
+`make reproduce` recomputes the results from the replay ledgers in `evidence/test`, the Le Verrier runs in `evidence/leverrier`, the reader's reads in `evidence/reader` and the public ledger, and fails if any number differs from `evidence/results.json`. Rerunning the replays themselves needs Meta and Baseten keys (`uv run sira replay --split test --per 10 --out evidence/test/a`) and about US$23 a run; Muse's answers vary between runs, which is why the plan has two.
 
 ## Check the bets yourself
 

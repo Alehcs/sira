@@ -10,7 +10,7 @@ from . import ledger, replay
 from .archive import night_of
 from .fetch import client
 from .ledger import Ledger
-from .live import _at, measure
+from .live import _at, chance, measure
 from .team import DOUBTED
 
 RIVALS = ("sira", "b0", "b1", "b2")
@@ -61,7 +61,7 @@ def case_scores(path: Path, truth: dict) -> dict | None:
     out = {"logs": {k: [] for k in RIVALS}, "crps": {k: [] for k in RIVALS}, "pits": {k: [] for k in RIVALS},
            "ablations": {}, "class_loss": {"sira": [], "b1": [], "b2": []}, "senior": [], "cost_usd": 0.0,
            "bets": 0, "dropped": 0, "remembered": 0, "extra_skeptics_usd": 0.0, "senior_usd": 0.0,
-           "surprises": 0, "verdicts": []}
+           "surprises": 0, "verdicts": [], "partner": [], "questions": []}
     reviewed = {b for b, p in bets.items() if (p.get("director") or {}).get("senior")}
     for e in entries:
         p = e["payload"]
@@ -102,6 +102,22 @@ def case_scores(path: Path, truth: dict) -> dict | None:
                 plain = _unreviewed(bet, p)
                 if plain:
                     out["senior"].append(p["log_score"] - measure(plain, p["kind"], *args)["log_score"])
+            # the same physics pooled half and half with Muse's forecast, then with climatology instead
+            llm = next((q for q in _at(bet["forecasts"], p["mjd"], p["band"]) if q[0] == "llm"), None)
+            if llm is not None:
+                physics = _at(bet["baselines"]["b1"], p["mjd"], p["band"])
+                b0 = _at(bet["baselines"]["b0"], p["mjd"], p["band"])[0]
+                out["partner"].append(measure(replay._pool(physics, llm, 0.5), p["kind"], *args)["log_score"]
+                                      - measure(replay._pool(physics, b0, 0.5), p["kind"], *args)["log_score"])
+        elif e["kind"] == "answer" and not p.get("void") and bets.get(p["bet"], {}).get("model") != "leverrier":
+            # a settled question, with the chance each rival's sealed forecast gave the same yes
+            bet = bets[p["bet"]]
+            q = bet[p.get("which", "question")]
+            row = {"object": p["object"], "yes": p["yes"], "sira": p["p_yes"]}
+            for k in RIVALS[1:]:
+                grid = bet.get("baselines", {}).get(k)
+                row[k] = chance(_at(grid, q["mjd"], q["band"]), q["reference"], q.get("direction", "above")) if grid else None
+            out["questions"].append(row)
     if not out["logs"]["sira"]:
         return None
     return out
@@ -173,6 +189,49 @@ def replays(root: Path, runs: dict[str, Path]) -> dict:
                                "sira_minus_unreviewed": _mean(x for c in reviewed for x in c["senior"]),
                                "ci95": _boot([np.mean(c["senior"]) for c in reviewed]) if reviewed else None,
                                "senior_usd": round(sum(c["senior_usd"] for c in every), 2)}
+    out["posthoc"] = posthoc(rows, per, runs, every)
+    return out
+
+
+def posthoc(rows: list[dict], per: dict, runs: dict, every: list[dict]) -> dict:
+    # measured after the plan, so not pre-registered: Muse against climatology as the physics' partner, and the questions
+    partner = []
+    for r in rows:
+        got = [per[run][r["object"]]["partner"] for run in runs if per[run].get(r["object"]) and per[run][r["object"]]["partner"]]
+        if got:
+            partner.append(float(np.mean([np.mean(g) for g in got])))
+    asked = [q for c in every for q in c["questions"]]
+    yes = np.array([q["yes"] for q in asked], float)
+    rate = float(yes.mean()) if asked else 0.0
+    scored = {}
+    for k in RIVALS:
+        p = np.array([q[k] for q in asked], float)
+        scored[k] = {"right": _mean((p > 0.5) == (yes == 1)), "brier": _mean((p - yes) ** 2)}
+    return {"muse_or_climatology_as_partner": {"cases": len(partner), "mean": _mean(partner), "ci95": _boot(partner),
+                                               "cases_ahead": sum(x > 0 for x in partner)},
+            "questions": {"answered": len(asked), "objects": len({q["object"] for q in asked}), "yes_rate": round(rate, 3),
+                          "base_rate_brier": round(rate * (1 - rate), 3), "by_forecaster": scored}}
+
+
+def readers(folder: Path) -> dict:
+    # the stamp reader on 160 held-out candidates, each protocol recomputed from its own reads
+    from . import reader
+
+    runs = {}
+    for path in sorted(Path(folder).glob("holdout-*.json")):
+        data = json.loads(path.read_text())
+        runs[data["protocol"]] = data
+    out = {name: reader.metrics(d["rows"]) | {"model": d["model"], "code": d["code"], "usd_per_read": d["usd_per_read"]}
+           for name, d in runs.items()}
+    if {"v1", "v2"} <= runs.keys():
+        # McNemar's exact test on the candidates exactly one protocol read right
+        right = {name: {r["oid"]: r["label"] == r["truth"] for r in d["rows"]} for name, d in runs.items()}
+        both = right["v1"].keys() & right["v2"].keys()
+        gained = sum(right["v2"][o] and not right["v1"][o] for o in both)
+        lost = sum(right["v1"][o] and not right["v2"][o] for o in both)
+        n = gained + lost
+        tail = sum(math.comb(n, i) for i in range(min(gained, lost) + 1)) / 2 ** n if n else 1.0
+        out["v2_vs_v1"] = {"gained": gained, "lost": lost, "p": round(min(1.0, 2 * tail), 3)}
     return out
 
 
@@ -399,6 +458,8 @@ def collect(root: Path, ledger_dir: Path | None, seq: int | None = None) -> dict
         results["leverrier"] = leverriers(root / "leverrier", plan["team_size"]["leverrier"]["objects"])
     if (root / "physics.json").exists():
         results["physics"] = json.loads((root / "physics.json").read_text())
+    if (root / "reader").exists():
+        results["reader"] = readers(root / "reader")
     if ledger_dir:
         results["live"] = live(Ledger(ledger_dir).entries(), seq)
     return results

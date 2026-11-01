@@ -59,3 +59,27 @@ def test_two_runs_of_the_same_case_count_as_one_object(season):  # noqa: F811
     assert out["cases"] == 1 and out["rows"][0]["runs"] == 2 and not out["failed"]
     assert out["primary"]["b2"]["mean"] == pytest.approx(out["rows"][0]["sira_minus"]["b2"], abs=1e-3)
     assert set(out["forecasters"]) == {"sira", "b0", "b1", "b2"} and "no_llm" in out["ablations"]
+
+
+def test_the_replays_also_report_muse_against_climatology_and_the_questions_after_the_plan(season):  # noqa: F811
+    answers = ANSWERS | {"no physics code to help": {"classes": {"ia": 0.6, "ii": 0.4},
+                                                     "forecast": [{"band": "r", "day": 1, "flux": 50, "sd": 10}]}}
+    replay.case(season, "ZTF26test", season / "a", reply(answers), gap=5, n=3)
+    out = evidence.replays(season, {"a": season / "a"})["posthoc"]
+    partner = out["muse_or_climatology_as_partner"]
+    assert partner["cases"] == 1 and partner["cases_ahead"] in (0, 1) and len(partner["ci95"]) == 2
+    asked = out["questions"]
+    assert set(asked["by_forecaster"]) == {"sira", "b0", "b1", "b2"} and asked["objects"] <= 1
+    assert 0 <= asked["base_rate_brier"] <= 0.25
+
+
+def test_the_reader_is_scored_from_its_own_reads_and_the_protocols_are_compared_pair_by_pair(tmp_path):
+    truth = ["real"] * 4 + ["bogus"] * 4
+    rows = lambda wrong: [{"oid": f"Z{i}", "truth": t, "label": ("bogus" if t == "real" else "real") if i in wrong else t,
+                           "p_real": 0.2 if (t == "real") == (i in wrong) else 0.8} for i, t in enumerate(truth)]
+    for name, wrong in (("v1", {0, 4}), ("v2", set())):
+        (tmp_path / f"holdout-{name}.json").write_text(json.dumps({"protocol": name, "model": "spark-open", "code": "c",
+                                                                   "usd_per_read": 0.01, "rows": rows(wrong)}))
+    out = evidence.readers(tmp_path)
+    assert out["v2"]["balanced_accuracy"] == 1.0 and out["v1"]["balanced_accuracy"] == 0.75 and out["v2"]["auc"] == 1.0
+    assert out["v2_vs_v1"] == {"gained": 2, "lost": 0, "p": 0.5}

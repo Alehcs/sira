@@ -1083,6 +1083,41 @@
     ],
     "senior_usd": 3.45
    }
+  },
+  "posthoc": {
+   "muse_or_climatology_as_partner": {
+    "cases": 37,
+    "mean": 0.302,
+    "ci95": [
+     0.114,
+     0.535
+    ],
+    "cases_ahead": 28
+   },
+   "questions": {
+    "answered": 223,
+    "objects": 33,
+    "yes_rate": 0.439,
+    "base_rate_brier": 0.246,
+    "by_forecaster": {
+     "sira": {
+      "right": 0.758,
+      "brier": 0.159
+     },
+     "b0": {
+      "right": 0.592,
+      "brier": 0.243
+     },
+     "b1": {
+      "right": 0.677,
+      "brier": 0.22
+     },
+     "b2": {
+      "right": 0.771,
+      "brier": 0.166
+     }
+    }
+   }
   }
  },
  "leverrier": {
@@ -3952,6 +3987,49 @@
      "verdict": "ia"
     }
    ]
+  }
+ },
+ "reader": {
+  "v1": {
+   "n": 160,
+   "real": 80,
+   "bogus": 80,
+   "balanced_accuracy": 0.875,
+   "ci95": [
+    0.825,
+    0.925
+   ],
+   "real_recall": 0.95,
+   "bogus_recall": 0.8,
+   "auc": 0.906953125,
+   "unanswered": 0,
+   "passes_gate": true,
+   "model": "spark-open",
+   "code": "0df12fe97ad768e8d442cabb78553b84f63b83da",
+   "usd_per_read": 0.00979
+  },
+  "v2": {
+   "n": 160,
+   "real": 80,
+   "bogus": 80,
+   "balanced_accuracy": 0.913,
+   "ci95": [
+    0.869,
+    0.956
+   ],
+   "real_recall": 0.925,
+   "bogus_recall": 0.9,
+   "auc": 0.967421875,
+   "unanswered": 0,
+   "passes_gate": true,
+   "model": "spark-open",
+   "code": "0df12fe97ad768e8d442cabb78553b84f63b83da",
+   "usd_per_read": 0.00971
+  },
+  "v2_vs_v1": {
+   "gained": 13,
+   "lost": 7,
+   "p": 0.263
   }
  },
  "live": {
