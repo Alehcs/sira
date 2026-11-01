@@ -13,6 +13,7 @@ const WINDOW = 40; // days of light curve shown before a round opens
 const KEPT = 'practice';
 const PRACTICE = '#beat/practice';
 const POLL = 5 * 60000; // while no round is known, ask again this often
+const RETRY = 15000; // after a failed ask, wait this long, then twice as long each time up to POLL
 const level = (v) => Number(Number(v).toFixed(1)); // every threshold rounds as the numbers on the page do
 
 // the next bell after t: rounds close at 21:00 UTC, as crowd.CLOSE sets it
@@ -296,6 +297,7 @@ export default function Beat({ lang, live }) {
   const [rows, setRows] = useState(supabase ? null : []);
   const [clock, setClock] = useState(Date.now);
   const [offline, setOffline] = useState(!supabase);
+  const [fails, setFails] = useState(0);
   const [values, setValues] = useState({});
   const [mine, setMine] = useState({});
   const [alias, setAlias] = useState('');
@@ -313,12 +315,16 @@ export default function Beat({ lang, live }) {
   // every question not yet closed, so one about to open can count down and appear on time
   const load = () => {
     const now = new Date();
+    // a failed ask keeps what is already known and counts toward the next wait
+    const lost = () => { setOffline(true); setRows((r) => r || []); setFails((n) => n + 1); };
     supabase.from('questions').select('*').gt('closes_at', now.toISOString()).order('id').then(({ data, error }) => {
-      if (error) { setOffline(true); setRows([]); return; }
+      if (error) { lost(); return; }
+      setOffline(false);
+      setFails(0);
       setClock(Date.now());
       setRows(data);
       loadMine(data.filter((q) => new Date(q.opens_at) <= now).map((q) => q.id));
-    });
+    }, lost);
   };
 
   useEffect(() => {
@@ -336,12 +342,13 @@ export default function Beat({ lang, live }) {
     return () => clearInterval(tick);
   }, []);
   useEffect(() => {
-    // ask again the moment a round opens or closes, and every few minutes while none is known
-    if (!supabase || offline || rows === null) return undefined;
+    // ask again the moment a round opens or closes, every few minutes while none is known, and after an error with growing waits
+    if (!supabase || rows === null) return undefined;
     const at = [next, end].filter((t) => t !== null);
-    const timer = setTimeout(load, at.length ? Math.max(1000, Math.min(...at) - Date.now() + 1000) : POLL);
+    const wait = fails ? Math.min(POLL, RETRY * 2 ** (fails - 1)) : at.length ? Math.max(1000, Math.min(...at) - Date.now() + 1000) : POLL;
+    const timer = setTimeout(load, wait);
     return () => clearTimeout(timer);
-  }, [rows, offline]);
+  }, [rows, fails]);
   useEffect(() => {
     const follow = () => setPracticing(window.location.hash === PRACTICE);
     window.addEventListener('hashchange', follow);
@@ -390,9 +397,9 @@ export default function Beat({ lang, live }) {
     : next !== null ? { at: next, says: w.toOpen(f.chile(new Date(next).toISOString())) }
       : { at: bell, says: w.toNext(f.chile(new Date(bell).toISOString()), f.short(new Date(bell).toISOString())) };
 
-  // the row under the title, on the open round, the next one, or the last one the site has
+  // the row under the title, on the round the clock counts to: the open one, the next to open, or the one of the next bell
   const coming = rows ? rows.filter((q) => (open ? Date.parse(q.opens_at) <= clock : Date.parse(q.opens_at) > clock)) : [];
-  const id = coming.length ? coming[0].round : beat.rounds.length ? beat.rounds[0].round : null;
+  const id = rows === null ? null : coming.length ? coming[0].round : new Date(goal.at).toISOString().slice(0, 10);
   const round = id && beat.rounds.find((r) => r.round === id);
   const asked = coming.length || (round ? round.questions.length : 0);
   const sira = beat.board.find((r) => r.who === 'sira');
