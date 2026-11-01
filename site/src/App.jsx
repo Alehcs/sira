@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Archive from './Archive.jsx';
 import Beat from './Beat.jsx';
 import Investigate from './Investigate.jsx';
+import Hero from './Hero.jsx';
 import Lab from './Lab.jsx';
 import Logbook from './Logbook.jsx';
 import Telegrams from './Telegrams.jsx';
@@ -53,10 +54,21 @@ export default function App() {
   const [lang, setLang] = useState(firstLang);
   const [theme, setTheme] = useState(firstTheme);
   const [tab, setTab] = useState(fromHash);
+  const [labView, setLabView] = useState(null);
   const live = useJson('data/live.json');
   const lab = useJson('replays/lab.json');
   const book = useJson('replays/logbook.json');
   const w = WORDS[lang];
+
+  // the opening band's button: the featured case, scrolled into view once it is on the page
+  const watch = () => {
+    setLabView('featured');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('case');
+      if (el) el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+    });
+  };
 
   useEffect(() => {
     const follow = () => setTab(fromHash());
@@ -90,8 +102,9 @@ export default function App() {
           </div>
         </div>
       </header>
+      {tab === 'lab' && live && live.proof && <Hero lang={lang} proof={live.proof} onWatch={watch} />}
       <main className="wrap">
-        {tab === 'lab' && (lab ? <Lab lang={lang} data={lab} live={live} /> : <p className="muted">{w.loading}</p>)}
+        {tab === 'lab' && (lab ? <Lab lang={lang} data={lab} view={labView} setView={setLabView} /> : <p className="muted">{w.loading}</p>)}
         {tab === 'live' && <Investigate lang={lang} live={live} />}
         {tab === 'archive' && <Archive lang={lang} live={live} />}
         {tab === 'beat' && <Beat lang={lang} live={live} />}

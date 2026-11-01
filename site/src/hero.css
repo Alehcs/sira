@@ -1,0 +1,71 @@
+/* the Lab's opening band stays night-lit in both themes, like the observatory, over the real sky of the featured case */
+.hero {
+  --night: #070a14; --hi: #ffffff; --ink: #e8ebf2; --mid: #c9d0dc; --low: #a7b1c2; --rule: rgba(232, 235, 242, 0.18); --warm: #ffe3a6;
+  position: relative; overflow: hidden; background: var(--night); color: var(--ink); border-bottom: 1px solid var(--hairline);
+}
+.hero :focus-visible { outline-color: var(--warm); }
+.hero .backdrop { position: absolute; inset: 0; }
+/* the field sits high, so the featured case's star clears the numbers */
+.hero .field { position: absolute; top: -40%; left: 50%; height: 140%; aspect-ratio: 1316 / 416; transform: translateX(-50%); z-index: 0; }
+.hero .field img { display: block; width: 100%; height: 100%; opacity: 0.9; }
+/* darkest behind the words on the left and under the numbers, so the stars stay visible on the right */
+.hero .backdrop::after {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, rgba(7, 10, 20, 0.95) 0%, rgba(7, 10, 20, 0.86) 42%, rgba(7, 10, 20, 0.6) 100%),
+    linear-gradient(0deg, rgba(7, 10, 20, 0.94) 0%, rgba(7, 10, 20, 0.2) 62%);
+}
+.hero .field.marks { z-index: 2; }
+.hero .spot { position: absolute; }
+.hero .spot i::before, .hero .spot i::after { content: ''; position: absolute; background: var(--warm); }
+.hero .spot i::before { left: -27px; top: -1px; width: 17px; height: 2px; }
+.hero .spot i::after { left: -1px; top: -27px; width: 2px; height: 17px; }
+.hero .spot b { position: absolute; left: 12px; top: 10px; font: 500 12px/1 'IBM Plex Mono', ui-monospace, monospace; color: var(--warm); white-space: nowrap; }
+
+.hero .inner { position: relative; z-index: 3; padding-top: 52px; padding-bottom: 38px; }
+.hero h1 { margin: 0; max-width: 780px; font: 600 52px/1.1 'STIX Two Text', serif; color: var(--hi); }
+.hero .what { margin: 20px 0 0; max-width: 62ch; font-size: 19px; line-height: 1.5; color: var(--mid); }
+.hero .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.hbtn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 20px;
+  border: 1px solid rgba(232, 235, 242, 0.55); border-radius: 3px; background: transparent;
+  color: var(--ink); font-size: 15.5px; font-weight: 500; text-decoration: none;
+}
+.hbtn:hover { border-color: var(--ink); }
+.hbtn.primary { background: #f4f0e7; border-color: #f4f0e7; color: #10151b; }
+.hbtn.primary:hover { background: var(--hi); border-color: var(--hi); }
+
+.hero .figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 32px; margin: 42px 0 0; padding-top: 26px; border-top: 1px solid var(--rule); }
+.hero .figs dt { font: 600 44px/1 'STIX Two Text', serif; color: var(--hi); }
+.hero .figs dd { margin: 10px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--low); }
+.hero .claims { display: inline-block; margin-top: 20px; font-size: 14.5px; color: var(--ink); }
+
+.hero .loop { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px 24px; margin: 34px 0 0; padding: 0; counter-reset: step; }
+.hero .loop li { counter-increment: step; padding-top: 14px; border-top: 2px solid var(--rule); }
+.hero .loop p { margin: 0; }
+.hero .loop .step { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.hero .loop b { font-size: 16px; font-weight: 600; color: var(--hi); }
+.hero .loop b::before { content: counter(step); margin-right: 8px; font: 500 13px 'IBM Plex Mono', ui-monospace, monospace; color: var(--low); }
+.hero .loop .step + p { margin-top: 8px; font-size: 13.5px; line-height: 1.45; color: var(--low); }
+.hero .model { padding: 1px 8px; border: 1px solid currentColor; border-radius: 10px; font: 500 11.5px/1.5 'IBM Plex Mono', ui-monospace, monospace; }
+.hero .model.open { color: #8be6cf; }
+.hero .model.spark { color: #8fc3d4; }
+.hero .model.wonder { color: #ffc08a; }
+.hero .model.survey { color: var(--mid); }
+
+@media (max-width: 1100px) {
+  .hero .loop { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .hero .figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero .field.marks { display: none; }
+}
+@media (max-width: 700px) {
+  .hero .inner { padding-top: 34px; padding-bottom: 30px; }
+  .hero h1 { font-size: 33px; }
+  .hero .what { font-size: 16.5px; }
+  .hero .actions .hbtn { flex: 1 1 auto; }
+  .hero .figs { gap: 18px 20px; margin-top: 34px; padding-top: 20px; }
+  .hero .figs dt { font-size: 32px; }
+  .hero .figs dd { font-size: 13.5px; }
+  .hero .loop { grid-template-columns: 1fr; gap: 14px; margin-top: 30px; }
+}

@@ -453,40 +453,16 @@ function useLatest() {
   return data;
 }
 
-// what SIRA does and what its pre-registered test showed, in numbers read from the committed results
-function Lede({ lang, proof }) {
-  const w = WORDS[lang].lab;
-  const f = format(lang);
-  const times = (v) => {
-    const x = Math.exp(Math.round(v * 100) / 100);
-    return `${f.num(x, x >= 2 ? 1 : 2)}×`;
-  };
-  const figs = [
-    [times(proof.vs_muse), w.proof.muse(proof.objects)],
-    [times(proof.vs_physics), w.proof.physics],
-    [w.outOf(proof.lens_wins, proof.surprises), w.proof.lens],
-    [f.money(proof.usd), w.proof.usd],
-  ];
-  return (
-    <section className="lede">
-      <p>{w.lede}</p>
-      <div className="proof">{figs.map(([big, small]) => <div key={small}><b>{big}</b><span>{small}</span></div>)}</div>
-      <a href="https://github.com/Alehcs/sira/blob/main/CLAIMS.md">{w.claims}</a>
-    </section>
-  );
-}
-
-export default function Lab({ lang, data, live }) {
+// the view lives in the app, so the opening band above can switch to the featured case and scroll down to it
+export default function Lab({ lang, data, view, setView }) {
   const latest = useLatest();
-  const [view, setView] = useState(null);
   const w = WORDS[lang].lab;
   if (latest === undefined) return <p className="muted">{WORDS[lang].loading}</p>;
   const has = !!(latest && latest.events && latest.events.length);
   // the featured case opens the page as the worked example; the latest investigation is one click away
   const shown = has && view ? view : 'featured';
   return (
-    <>
-      {live && live.proof && <Lede lang={lang} proof={live.proof} />}
+    <div id="case">
       {has && (
         <div className="seg labviews" role="group" aria-label={w.views.label}>
           {['featured', 'latest'].map((v) => <button key={v} type="button" aria-pressed={shown === v} onClick={() => setView(v)}>{w.views[v]}</button>)}
@@ -494,6 +470,6 @@ export default function Lab({ lang, data, live }) {
       )}
       {shown === 'featured' && <p className="replaynote">{w.replayNote}</p>}
       {shown === 'latest' ? <Latest key="latest" lang={lang} d={latest} /> : <Featured key="featured" lang={lang} data={data} />}
-    </>
+    </div>
   );
 }
