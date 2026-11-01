@@ -2,8 +2,6 @@ import { WORDS, format } from './words.js';
 import './hero.css';
 
 const BASE = import.meta.env.BASE_URL;
-// the featured case's position in the sky image, in its own pixels
-const SKY = { size: [1316, 416], at: [736, 210] };
 
 // the Lab's opening: what SIRA does, its pre-registered numbers and the loop, over the real sky of the featured case
 export default function Hero({ lang, proof, onWatch }) {
@@ -19,12 +17,10 @@ export default function Hero({ lang, proof, onWatch }) {
     [w.outOf(proof.lens_wins, proof.surprises), w.figs.lens],
     [f.money(proof.usd), w.figs.usd],
   ];
-  const at = { left: `${(100 * SKY.at[0]) / SKY.size[0]}%`, top: `${(100 * SKY.at[1]) / SKY.size[1]}%` };
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="backdrop" aria-hidden="true">
         <div className="field"><img src={`${BASE}replays/sky.jpg`} alt="" /></div>
-        <div className="field marks"><span className="spot" style={at}><i /><b>ZTF19aavisrq</b></span></div>
       </div>
       <div className="wrap inner">
         <h1 id="hero-title">{w.title}</h1>
