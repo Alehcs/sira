@@ -129,7 +129,9 @@ export function frame(t, st) {
   drawDome(st.sky);
   drawCatwalkRail();
   const heads = {};
-  heads.vig = drawLookouts(t);
+  // the two lookouts share one name and one bubble, above the pair
+  const vig = drawLookouts(t);
+  heads.vig = { x: (vig[0].x + vig[1].x) / 2, y: vig[0].y, top: Math.min(vig[0].top, vig[1].top) };
   drawMast(t);
   drawPedestal();
 
@@ -161,7 +163,8 @@ export function frame(t, st) {
   drawTelescope(t, st);
   heads.ztf = { x: OX - 2, y: YDC - 36, top: YDC - 40, bx: OX + RX - 6, by: YDC - 44 };
   const sp = slipAt();
-  heads.printer = { x: sp[0], y: sp[1], top: sp[1] - 8 };
+  // a line to the printer lands just above its slip, clear of the sealed number
+  heads.printer = { x: sp[0], y: sp[1], top: sp[1] - 15 };
 
   for (const e of st.talks) {
     const from = heads[e.who];
@@ -180,5 +183,5 @@ export const TAGS = {
   dir: [0, 3], sen: [0, 3], pro: [0, 3], ztf: [30, -6],
 };
 export const TWO = new Set(['ein', 'efi', 'eme']);
-export const SIDE = { lec: 'l', tia: 'l', tibc: 'l', tii: 'l', muse: 'l', ein: 'r', efi: 'r', eme: 'r', lv: 'r', dir: 'l', sen: 'r', pro: 'l', ztf: 'r' };
+export const SIDE = { vig: 'l', lec: 'l', tia: 'l', tibc: 'l', tii: 'l', muse: 'l', ein: 'r', efi: 'r', eme: 'r', lv: 'r', dir: 'l', sen: 'r', pro: 'l', ztf: 'r' };
 export const slip = slipAt;
