@@ -2,12 +2,14 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { WORDS } from '../words.js';
 
 // the agents' messages, oldest first, in their own scroll box, kept on the current step's message only while it follows
-export function Thread({ lang, label, current, follow = true, children }) {
+export function Thread({ lang, label, current, follow = true, onFree, children }) {
   const box = useRef(null);
   const pinned = useRef(true);
   const target = useRef(null);
   const following = useRef(follow);
   following.current = follow;
+  const freed = useRef(onFree);
+  freed.current = onFree;
   const [below, setBelow] = useState(false);
   const look = () => {
     const el = box.current;
@@ -30,7 +32,8 @@ export function Thread({ lang, label, current, follow = true, children }) {
     const watch = new ResizeObserver(() => { if (following.current && pinned.current) pin(false); look(); });
     watch.observe(el);
     watch.observe(el.firstElementChild);
-    const free = () => { pinned.current = false; };
+    // a reader who scrolls takes over: the thread stops following until they play or pick a step again
+    const free = () => { pinned.current = false; if (freed.current) freed.current(); };
     const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
     events.forEach((e) => el.addEventListener(e, free, { passive: true }));
     return () => { watch.disconnect(); events.forEach((e) => el.removeEventListener(e, free)); };
@@ -47,6 +50,7 @@ export function Thread({ lang, label, current, follow = true, children }) {
   const more = WORDS[lang].thread.more;
   const down = () => {
     pinned.current = false;
+    if (onFree) onFree();
     box.current.scrollBy({ top: box.current.clientHeight * 0.8, behavior: calm() ? 'auto' : 'smooth' });
   };
   return (

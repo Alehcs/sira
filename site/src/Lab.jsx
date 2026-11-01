@@ -223,11 +223,11 @@ function attachment(i, d, step, w, f) {
   return null;
 }
 
-// a replay opens on the given step with its thread from the top; the thread follows once the visitor plays or picks a step
+// a replay opens on the given step, playing if asked; the thread follows while it plays or once the visitor picks a step
 function useSteps(last, pace, first = last, auto = false) {
   const [step, setStep] = useState(first);
   const [playing, setPlaying] = useState(() => auto && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [follow, setFollow] = useState(false);
+  const [follow, setFollow] = useState(playing);
 
   // playing, each step lasts as long as the observatory takes to play it
   useEffect(() => {
@@ -244,7 +244,8 @@ function useSteps(last, pace, first = last, auto = false) {
     if (step >= last) setStep(0);
     setPlaying(true);
   };
-  return { step, playing, follow, go, play };
+  const free = () => setFollow(false);
+  return { step, playing, follow, go, play, free };
 }
 
 function Controls({ step, last, playing, go, play, w, name, children }) {
@@ -270,7 +271,7 @@ function Featured({ lang, data: d }) {
   const at = (n) => new Date(new Date(d.first_detection).getTime() + n * 86400000).toISOString();
   const scenes = useMemo(() => beats(d, text.says), [d, lang]);
   const pace = useMemo(() => lengths(scenes), [scenes]);
-  const { step, playing, follow, go, play } = useSteps(last, pace, 0, true);
+  const { step, playing, follow, go, play, free } = useSteps(last, pace, 0, true);
 
   // the figure at this step: what the sky had shown by then and the forecast sealed last
   const now = d.now[step];
@@ -306,12 +307,12 @@ function Featured({ lang, data: d }) {
         </div>
       </div>
       <div className="lab">
-        <Thread lang={lang} label={w.thread} current={step} follow={follow}>
-          {ROLES.slice(0, step + 1).map((r, i) => (
+        <Thread lang={lang} label={w.thread} current={step} follow={follow} onFree={free}>
+          {ROLES.map((r, i) => (
             <Message key={i} mark={w.marks[r]} name={w.names[r]} model={r === 'leverrier' && d.spent[i] === d.spent[i - 1] ? null : MODELS[r]}
               when={f.day(at(d.now[i]))} at={at(d.now[i])} cost={f.money(d.spent[i])} says={text.says[i]} text={text.events[i]}
               quote={d.said[i] ? { text: d.said[i], lang: 'en' } : null} current={i === step}>
-              {attachment(i, d, step, w, f)}
+              {attachment(i, d, Math.max(i, step), w, f)}
             </Message>
           ))}
         </Thread>
@@ -361,7 +362,7 @@ function Latest({ lang, d }) {
   const scenes = useMemo(() => liveBeats(d, stages), [d, stages]);
   const pace = useMemo(() => lengths(scenes), [scenes]);
   const last = stages.length - 1;
-  const { step, playing, follow, go, play } = useSteps(last, pace);
+  const { step, playing, follow, go, play, free } = useSteps(last, pace);
   const im = d.images || {};
   const q = d.question;
   const sealedAt = d.sealed_at || d.time;
@@ -412,8 +413,8 @@ function Latest({ lang, d }) {
         </div>
       </div>
       <div className="lab">
-        <Thread lang={lang} label={w.thread} current={step} follow={follow}>
-          {stages.slice(0, step + 1).flatMap((s, i) => s.events.map((e, j) => (
+        <Thread lang={lang} label={w.thread} current={step} follow={follow} onFree={free}>
+          {stages.flatMap((s, i) => s.events.map((e, j) => (
             <Message key={`${i}.${j}`} mark={live.marks[e.role] || '?'} name={who(e, live)} model={model(e)}
               when={typeof e.seconds === 'number' ? `${f.num(e.seconds, 0)} s` : null} at={`PT${Math.round(e.seconds || 0)}S`}
               cost={e.cost_usd ? cost(lang, f, e.cost_usd) : null} text={say(e, live, f, hyp)} quote={quote(e)} current={i === step}>
