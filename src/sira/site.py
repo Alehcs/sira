@@ -528,6 +528,18 @@ def proof(results: Path) -> dict | None:
             "usd": r["live"]["cost"]["usd_per_investigation"]}
 
 
+def laws(results: Path) -> dict | None:
+    # the pre-registered equation experiment as the Logbook shows it: the totals and every surprise's chosen law
+    found = json.loads(results.read_text()).get("equations") if results.exists() else None
+    if not found:
+        return None
+    rows = [{k: r[k] for k in ("object", "kind", "written", "lens_laws", "chosen")} for r in found["rows"] if r["surprised"]]
+    # the lensing events first, a written lens law before the rest, the strongest verdict first
+    rows.sort(key=lambda r: (r["kind"] != "microlensing", not (r["chosen"] or {}).get("lens_law"), -((r["chosen"] or {}).get("log10_e") or 0)))
+    return {"lenses": found["lenses"], "others": found["others"], "tsa_time": found["plan"]["tsa_time"],
+            "usd": found["usd"], "rows": rows}
+
+
 def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None, results: Path | None = None) -> dict:
     from datetime import timezone
 
@@ -547,6 +559,8 @@ def export(ledger_dir: Path, out: Path, now: datetime | None = None, quiet=None,
         data["survey"] = quiet()
     if results and (found := proof(results)):
         data["proof"] = found
+    if results and (found := laws(results)):
+        data["laws"] = found
     (out / "live.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
     (out / "latest.json").write_text(json.dumps(latest(entries, pics, now), separators=(",", ":"), ensure_ascii=False))
     book = archive.build(entries, pics, now)

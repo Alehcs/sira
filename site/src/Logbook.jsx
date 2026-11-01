@@ -60,6 +60,47 @@ function nodesOf(chain, lane, key, lang, w, f, selected, choose) {
   return out.map((n) => (n.key ? { ...n, pick: () => choose(n.key), pressed: selected === n.key } : n));
 }
 
+// an equation as it was written, with ^ for powers: the flux, then each helper it uses
+function written(eq) {
+  const right = (s) => String(s).split('=').pop().trim().replaceAll('**', '^');
+  return [`flux = ${right(eq.flux)}`, ...Object.entries(eq.helpers || {}).map(([k, v]) => `${k.replace('(t)', '')} = ${right(v)}`)].join('\n');
+}
+
+// the pre-registered equation experiment: every surprise, the law the lab kept and what the sky said of it
+function Laws({ laws, w, f }) {
+  const l = laws.lenses;
+  const o = laws.others;
+  return (
+    <section className="laws" aria-labelledby="laws">
+      <h2 id="laws">{w.laws}</h2>
+      <p className="lede">
+        {w.lawsLede({ n: l.surprised, wrote: l.any_lens_law, written: l.lens_laws_written, equations: l.equations_written, kept: l.chosen_lens_law,
+          won: l.verdicts.neptune, pieces: (l.pieces_verdicts || {}).neptune, m: o.surprised, c: o.verdicts.neptune })}
+      </p>
+      <p className="muted mono">{w.stamped(f.stamp(laws.tsa_time))}</p>
+      <ol className="lawlist">
+        {laws.rows.map((r) => {
+          const c = r.chosen;
+          return (
+            <li key={r.object}>
+              <p className="row">
+                <span className="mono">{r.object}</span>
+                <span className="muted">{w.kinds[r.kind]}</span>
+                {c && c.lens_law && <span className="lawtag">{w.lensLaw}</span>}
+                <span className={`out${c && TONE[c.verdict] ? ` ${TONE[c.verdict]}` : ''}`}>
+                  {c ? <>{w[c.verdict]}, {E} {f.num(c.log10_e, 1)}</> : w.notFitted}
+                </span>
+              </p>
+              {c && <h3 lang="en">{c.name}</h3>}
+              {c && <pre className="eq">{written(c.equation)}</pre>}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
 export default function Logbook({ lang, lanes, live }) {
   const w = WORDS[lang].log;
   const f = format(lang);
@@ -96,6 +137,7 @@ export default function Logbook({ lang, lanes, live }) {
   return (
     <div className="book">
       <h1>{w.lanes}</h1>
+      {live && live.laws && <Laws laws={live.laws} w={w} f={f} />}
       <section className="lanes" aria-label={w.lanes}>
         {rows.map((r) => (
           <div key={r.key} className="lane">

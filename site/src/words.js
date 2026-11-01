@@ -184,6 +184,10 @@ export const WORDS = {
       lanes: 'Le Verrier’s surprises', ideas: 'Wonder’s proposals', graveyard: 'Graveyard', empty: 'No idea has been buried yet.',
       leaps: { hidden: 'Hidden component', new: 'New model', instrument: 'Instrument' },
       chosen: 'Chosen and sealed', notSealed: 'Not sealed',
+      laws: 'The laws it wrote',
+      lawsLede: (x) => `In a test pre-registered before it ran, Muse Wonder had no pieces to build from. On the ${x.n} lensing events that surprised the lab it wrote the point-lens law on ${x.wrote} (${x.written} of its ${x.equations} equations), and the lab kept it on ${x.kept}. Its chosen laws won their test on ${x.won} of the ${x.n}, against ${x.pieces} when it builds from pieces. On the ${x.m} other surprises, ${x.c} of its chosen laws won anyway.`,
+      stamped: (t) => `plan timestamped ${t}`, lensLaw: 'lens law', notFitted: 'not fitted',
+      kinds: { microlensing: 'microlensing', ia: 'SN Ia', cc: 'core-collapse SN', rare: 'rare transient' },
     },
     beat: {
       title: 'Beat SIRA', today: 'Today’s questions', q: 'Question', you: 'You', no: 'no', yes: 'yes',
@@ -402,6 +406,10 @@ export const WORDS = {
       lanes: 'Las sorpresas de Le Verrier', ideas: 'Propuestas de Wonder', graveyard: 'Cementerio', empty: 'Todavía no se ha enterrado ninguna idea.',
       leaps: { hidden: 'Componente oculto', new: 'Modelo nuevo', instrument: 'Instrumento' },
       chosen: 'Elegida y sellada', notSealed: 'No sellada',
+      laws: 'Las leyes que escribió',
+      lawsLede: (x) => `En una prueba preregistrada antes de correrla, Muse Wonder no tuvo piezas con que armar. En los ${x.n} eventos de microlente que sorprendieron al laboratorio escribió la ley de la lente puntual en ${x.wrote} (${x.written} de sus ${x.equations} ecuaciones), y el laboratorio la eligió en ${x.kept}. Sus leyes elegidas ganaron su prueba en ${x.won} de los ${x.n}, contra ${x.pieces} cuando arma con piezas. En las ${x.m} otras sorpresas, ${x.c} de sus leyes elegidas ganaron igual.`,
+      stamped: (t) => `plan sellado el ${t}`, lensLaw: 'ley de lente', notFitted: 'sin ajuste',
+      kinds: { microlensing: 'microlente', ia: 'SN Ia', cc: 'SN de colapso', rare: 'transitorio raro' },
     },
     beat: {
       title: 'Apuesta contra SIRA', today: 'Preguntas de hoy', q: 'Pregunta', you: 'Tú', no: 'no', yes: 'sí',

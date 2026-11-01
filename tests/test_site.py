@@ -418,3 +418,13 @@ def test_the_lab_header_reads_its_numbers_from_the_committed_results(tmp_path):
     assert got["objects"] == len(results["test"]["rows"]) and got["lens_wins"] <= got["surprises"]
     assert got["usd"] == results["live"]["cost"]["usd_per_investigation"]
     assert site.proof(tmp_path / "missing.json") is None
+
+
+def test_the_logbook_shows_every_surprise_of_the_equation_experiment_lenses_first():
+    from pathlib import Path
+
+    got = site.laws(Path("evidence/results.json"))
+    found = json.loads(Path("evidence/results.json").read_text())["equations"]
+    assert len(got["rows"]) == found["lenses"]["surprised"] + found["others"]["surprised"]
+    kinds = [r["kind"] for r in got["rows"]]
+    assert kinds == sorted(kinds, key=lambda k: k != "microlensing") and got["tsa_time"] == found["plan"]["tsa_time"]

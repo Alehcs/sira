@@ -354,6 +354,15 @@ main.wrap { padding-top: 26px; }
 .tele .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
 .tele .top h2 { margin: 0; }
 .tele .recipe { margin: 12px 0 0; padding: 12px 14px; background: var(--raised); border: 1px solid var(--hairline); font: 13px/1.6 'IBM Plex Mono', monospace; white-space: pre-wrap; overflow-wrap: break-word; }
+.book .laws { margin-top: 22px; }
+.book .laws .lede { max-width: 78ch; margin: 10px 0 6px; font-size: 16.5px; line-height: 1.5; }
+.book .lawlist { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.book .lawlist li { padding: 12px 14px 14px; border: 1px solid var(--hairline); border-radius: 2px; background: var(--raised); }
+.book .lawlist .row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0; font-size: 14px; }
+.book .lawlist .out { margin-left: auto; }
+.book .lawlist h3 { margin: 8px 0 0; font-size: 16px; }
+.book .lawtag { padding: 0 7px; border: 1px solid var(--ok); border-radius: 9px; color: var(--ok); font: 500 12px/1.6 'IBM Plex Mono', monospace; }
+.book .eq { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.5 'IBM Plex Mono', monospace; color: var(--text); }
 .book .lanes { margin-top: 22px; border-top: 1px solid var(--hairline); }
 .book .lane { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px 24px; padding: 20px 0; border-bottom: 1px solid var(--hairline); }
 .book .whose { display: flex; flex-direction: column; gap: 4px; margin: 0; font-size: 14px; color: var(--muted); }
