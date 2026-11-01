@@ -385,10 +385,12 @@ export default function Investigate({ lang, live }) {
         </div>
       )}
       {cards.length > 0 && (
-        <div className="cards" role="radiogroup" aria-label={w.candidates}>
-          {cards.map((c) => <Card key={c.object} c={c} on={c === sel} ran={ran.get(c.object)} onPick={pick} w={w} f={f} />)}
+        <>
+          <div className="cards" role="radiogroup" aria-label={w.candidates}>
+            {cards.map((c) => <Card key={c.object} c={c} on={c === sel} ran={ran.get(c.object)} onPick={pick} w={w} f={f} />)}
+          </div>
           <p className="credit"><Credit /></p>
-        </div>
+        </>
       )}
       {below}
     </>
