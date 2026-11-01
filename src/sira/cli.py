@@ -166,6 +166,12 @@ def leverrier(args) -> None:
     print(json.dumps({k: v for k, v in report.items() if k != "events"}, indent=2, default=str))
 
 
+def stamp(args) -> None:
+    from .evidence import stamp as seal
+
+    print(json.dumps(seal(Path(args.path)), indent=2))
+
+
 def moments(args) -> None:
     from .highlights import highlights
 
@@ -243,6 +249,9 @@ def main() -> None:
     best.add_argument("--ledger", default="ledger")
     best.add_argument("--top", type=int, default=20)
     best.set_defaults(run=moments)
+    seal = sub.add_parser("stamp", help="timestamp a file, such as the evaluation plan, with FreeTSA and OpenTimestamps")
+    seal.add_argument("path")
+    seal.set_defaults(run=stamp)
     rerun = sub.add_parser("replay", help="replay snapshot cases through the whole lab, with B0, B1 and B2 beside it")
     rerun.add_argument("oids", nargs="*")
     rerun.add_argument("--root", default="data/snapshot")
