@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import subprocess
 import threading
 from collections import Counter
@@ -184,7 +185,8 @@ def code_version() -> str | None:
     try:
         return git("rev-parse", "HEAD") + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
     except Exception:
-        return None
+        # a copy without git history, such as the Docker image, is told its commit when it is built
+        return os.environ.get("SIRA_CODE")
 
 
 def _safe(fn, *args):

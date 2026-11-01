@@ -5,5 +5,7 @@ WORKDIR /sira
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --group evidence --no-install-project
 COPY . .
+ARG CODE=unknown
+ENV SIRA_CODE=${CODE}
 RUN uv sync --frozen --group evidence
 CMD ["make", "reproduce"]

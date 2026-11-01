@@ -19,5 +19,5 @@ ledger:
 	git clone --quiet --depth 1 --branch ledger $(REPO) ledger
 
 docker:
-	docker build -t sira .
+	docker build --build-arg CODE=$$(git rev-parse HEAD) -t sira .
 	docker run --rm sira
