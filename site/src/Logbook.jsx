@@ -97,7 +97,7 @@ function Against({ lang, w, f }) {
       <h3>{w.against(d.object)}</h3>
       <Figure lang={lang} start={null} points={d.past.concat(d.later).map(pt)} forecasts={forecasts} now={0} nowLabel={w.fitted}
         label={w.againstLabel(d.object)} />
-      <figcaption>{w.againstNote(d.later.length, d.verdict.log10_e, f)}</figcaption>
+      <figcaption>{w.againstNote(d.verdict.n, d.verdict.log10_e, f)}</figcaption>
     </figure>
   );
 }
