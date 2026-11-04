@@ -1,5 +1,5 @@
 REPO ?= https://github.com/Alehcs/sira
-FREEZE ?= 689
+FREEZE ?= 1024
 
 .PHONY: reproduce physics docker
 

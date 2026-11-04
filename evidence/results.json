@@ -5791,39 +5791,45 @@
  },
  "live": {
   "head": {
-   "seq": 666,
-   "hash": "d8c0c0c1de09a0911d85a2766ee01be9f1caf2db2c4d949a37c31a0941863798",
-   "tsa_time": "2026-11-01T00:08:28+00:00"
+   "seq": 863,
+   "hash": "51a11a0d5dbc17b920f39491f76618a3767fcebeb75b025e6c3a42637360dd66",
+   "tsa_time": "2026-11-03T03:09:09+00:00"
   },
   "record": {
-   "answered": 0,
-   "void": 0,
+   "answered": 1,
+   "void": 66,
    "right": 0,
-   "brier": null,
-   "log_score": null,
-   "rows": []
+   "brier": 0.37,
+   "log_score": -0.936,
+   "rows": [
+    {
+     "bet": "ZTF26acalney-20261030T0059",
+     "p_yes": 0.392,
+     "yes": true
+    }
+   ]
   },
   "cost": {
-   "nights": 4,
-   "investigated": 42,
-   "usd": 6.7,
-   "usd_per_investigation": 0.159,
+   "nights": 5,
+   "investigated": 48,
+   "usd": 8.61,
+   "usd_per_investigation": 0.179,
    "by_role_per_investigation": {
-    "director": 0.0107,
+    "director": 0.0109,
     "forecaster": 0.0013,
-    "llm_only": 0.0178,
-    "lookout": 0.0225,
-    "reader": 0.0254,
-    "senior": 0.0081,
-    "skeptic": 0.0313,
-    "theorist": 0.0423
+    "llm_only": 0.018,
+    "lookout": 0.0287,
+    "reader": 0.0312,
+    "senior": 0.0139,
+    "skeptic": 0.0326,
+    "theorist": 0.0428
    }
   },
   "lookouts": {
-   "looks": 72,
-   "voted": 17,
-   "vote_changed_decision": 1,
-   "extra_usd": 0.337
+   "looks": 110,
+   "voted": 27,
+   "vote_changed_decision": 3,
+   "extra_usd": 0.514
   }
  }
 }

@@ -20,7 +20,7 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | Muse does not remember the ordinary events SIRA works on. | Asked about 40 real ZTF transients from 2019 to 2025 by name and by sky position (Oct 26, before the firewall was built): Wonder remembered 5 of the 16 brightest, the newest SN2025rbs (peak July 2025), and Spark 3; neither remembered any of the other 24. US$0.34. Muse still never sees a name or a date | `memory`, `evidence/memory` |
 | One Le Verrier did as well as five, at a fifth of the cost. | 4 Neptune verdicts with 1, 3 or 5 proposals per surprise; US$0.43 against US$2.11 | `leverrier.sizes` |
 | Muse Spark Open, the open-weights model, tells a real new source from a bad subtraction on about 91% of ZTF candidates it was never tuned on. | Balanced accuracy 0.913 (95% interval 0.869 to 0.956) and AUC 0.97 on 160 held-out candidates: 80 real (2024 supernovae of the Bright Transient Survey) and 80 bogus as labelled by ALeRCE's stamp classifier. Measured on Oct 27 against a 0.85 gate set before the run, not part of the timestamped plan. US$0.0097 a read | `reader.v2`, `evidence/reader/holdout-v2.json` |
-| An investigation costs about 16 US cents in Muse calls. | US$0.159 per investigated transient, 42 live investigations over 4 nights | `live.cost`, figure `live` |
+| An investigation costs about 18 US cents in Muse calls. | US$0.179 per investigated transient, 48 live investigations over 5 nights | `live.cost`, figure `live` |
 | SIRA runs every night, on its own. | A scheduled GitHub Actions nightly since Oct 27, every run green. It bets only when ZTF has new candidates: 29, 15, 14, 12 and 1 bets on its first five nights, as ZTF went quiet | `.github/workflows/nightly.yml`, the repository's Actions history |
 | Anyone can pick a candidate on the site and watch the same team investigate it, live. | The Investigate tab starts a real run of the nightly team (reader, theorists, skeptics, director, forecaster) on a candidate the visitor picks; up to 10 a day, 2 to 3 minutes each; tested end to end on 2026-11-01 | Investigate tab, `.github/workflows/investigate.yml`, its Actions history |
 | Its verdicts are named for Le Verrier's two predictions: Neptune, which was real, and Vulcan, which never existed. | Neptune: the proposal beat the refitted old hypotheses on the next 40 days with e ≥ 20; Vulcan: e ≤ 1/20; anything between abstains. Le Verrier predicted Neptune from Uranus's orbit (found 1846) and Vulcan inside Mercury's orbit (1859), which does not exist | `src/sira/leverrier.py`, the site's verdict labels |
@@ -28,6 +28,7 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | In the featured case, SIRA's last bet gave 2.5% to the star brightening in 3 days, and it did not. | Bet of 2019-06-24, p = 0.025, answered no (log score −0.025) | `site/public/replays/lab.json`, `bets` |
 | Every line of SIRA's code was written during this hackathon. | First commit Oct 26 at 23:33 UTC, after the 16:00 UTC kickoff. Not ours: the open-source libraries, the public data and images, and the FreeTSA root certificate | `git log --reverse`, README "Built during the hackathon" |
 | Every bet is sealed before the sky answers, and anyone can check it. | Hash chain, FreeTSA RFC 3161 receipts and OpenTimestamps proofs on the `ledger` branch | `uv run sira verify --ledger ledger` |
+| SIRA's live record: 0 of 1 questions right. | Frozen at seq 1024, the head anchored by the nightly of 2026-11-03 (pre-registered). One question answered: ZTF26acalney, SIRA gave yes 39.2% and the answer was yes; Brier 0.370, log score −0.936. 66 questions void by the sealed rule, reported and not counted | `live.record`, figure `live` |
 
 ## Measured, not a selling point
 
@@ -39,7 +40,7 @@ The test-split numbers come from the evaluation pre-registered in [`evidence/pla
 | The 50/50 pool was adopted after the first dev replay. | The plan says the pool was fixed before any dev result could tune it. Its share was never tuned, but pooling itself came 32 minutes after the first dev replay showed Muse alone beating the physics (commits a130172 and d25af11, Oct 27), days before any test object was replayed | `git log` |
 | Review by Muse Wonder at max effort did not change the forecasts' quality. | −0.005 nats on 106 reviewed measurements (−0.035 to 0.153), US$3.45 on the test set | `test.team.director` |
 | The instrument and memory skeptics never changed a test bet. | 0 bets dropped, 0 objects flagged as remembered; US$0.013 extra per bet | `test.team.skeptics` |
-| The lookouts' vote of three rarely changes the call. | Changed 1 of 17 voted decisions, US$0.34 extra | `live.lookouts` |
+| The lookouts' vote of three rarely changes the call. | Changed 3 of 27 voted decisions, US$0.51 extra | `live.lookouts` |
 | Three of the 40 pre-registered test objects got no bet. | Their only checkpoint had 4 detections and the physics needs 5 | `test.failed` |
 | The test evaluation cost US$45 in Muse calls. | Two runs of 40 objects, 350 bets | `test.cost_usd` |
 | Writing its own equations, Le Verrier did worse than building from pieces. | On the same 6 lensing surprises its chosen laws won 2, abstained on 1 and lost 3; built from pieces they won 4 | `equations.lenses.verdicts`, `equations.lenses.pieces_verdicts` |
@@ -59,7 +60,6 @@ Computed from the same sealed test ledgers once the results were in, so not pre-
 
 | Sentence | Waits for |
 |---|---|
-| SIRA's live record: X of Y questions right. | Answered questions at the freeze head, the nightly of 2026-11-03 (pre-registered). None answered up to seq 689. ZTF has sent no data since Oct 29, 13:18 UTC; questions whose window falls in the gap are void by the sealed rule, reported and not counted |
 | Calibration night by night (F2). | At least 30 answered live questions |
 | Anything about SIRA beating human players. | Answered Beat SIRA rounds |
 
