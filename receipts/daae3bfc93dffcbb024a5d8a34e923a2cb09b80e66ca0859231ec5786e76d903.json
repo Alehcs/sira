@@ -1,0 +1,1 @@
+{"kind":"event","payload":{"case":"case-8ef9f2ef33","cost_usd":0,"decision":"pass","effort":null,"error":"BadRequestError","model":"meta-models/muse-spark-open-1026","object":"ZTF26aceawvu","priority":0,"role":"lookout","seconds":0.2,"why":""},"prev":"597962ec65c09db5aed1bd6679c89b60edf0e2c213be3a0f4a37ca84f3010e15","seq":1958,"time":"2026-11-08T00:37:27+00:00","v":2}
