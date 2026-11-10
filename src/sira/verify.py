@@ -130,12 +130,15 @@ def _online(c, bets: dict, outcomes: list[dict], now: float) -> list[str]:
         last = max(f["mjd"] for f in bet["forecasts"])
         rows = [r for r in live.observe(c, bet["object"], now)["photometry"]
                 if r["band"] in live.BANDS and bet["_seal"] < r["mjd"] <= last + 1]
-        actual = {(round(r["mjd"], 6), r["band"]): r for r in rows}
+        # the archive may list one epoch more than once, as a detection and as a limit
+        actual = {}
+        for r in rows:
+            actual.setdefault((round(r["mjd"], 6), r["band"]), []).append(r)
         scored = {(round(o["payload"]["mjd"], 6), o["payload"]["band"]): o["payload"] for o in outcomes
                   if o["payload"]["bet"] == bet["bet"]}
         for key, p in scored.items():
-            r = actual.get(key)
-            if r is None or (p["kind"] == "det" and not _close(round(r["flux"], 2), p["flux"])):
+            same = [r for r in actual.get(key, []) if r["kind"] == p["kind"]]
+            if not same or (p["kind"] == "det" and not any(_close(round(r["flux"], 2), p["flux"]) for r in same)):
                 problems.append(f"bet {bet['bet']}: a scored measurement at {key[0]} is not in the archive")
         if now > last + 3 and set(actual) - set(scored):
             problems.append(f"bet {bet['bet']}: {len(set(actual) - set(scored))} archive measurements left unscored")

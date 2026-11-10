@@ -65,6 +65,12 @@ def test_only_measurements_after_the_seal_are_scored(tmp_path, monkeypatch):
     assert live.resolve(book, None, 61346.0) == []
     assert all("b0" in o["payload"]["baselines"] for o in outcomes)
     assert verify_module.verify(tmp_path)["passes"]
+    # a night the archive publishes late, listed twice, is scored once
+    late = {"mjd": 61344.5, "band": "ztfr", "kind": "det", "flux": later[-1]["flux"], "flux_err": 3.0}
+    later += [late, late | {"kind": "limit", "mag": 20.5}]
+    added = live.resolve(book, None, 61360.0)
+    assert [(e["kind"], e["payload"]["mjd"]) for e in added] == [("outcome", 61344.5)]
+    assert verify_module.verify(tmp_path, online=True, now=61360.0)["passes"]
     lines = book.path.read_text().splitlines()
     forged = __import__("json").loads(lines[2])
     forged["payload"]["baselines"]["b0"]["log_score"] = -0.001

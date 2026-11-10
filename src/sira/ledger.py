@@ -166,3 +166,6 @@ def upgrade(root: Path) -> None:
     for proof in sorted((Path(root) / "receipts").glob("*.ots")):
         if ots_state(proof, proof.name.split(".")[0]) == "pending":
             subprocess.run([OTS, "upgrade", str(proof)], capture_output=True)
+    # ots keeps the old proof as a .bak, which the ledger does not need
+    for old in (Path(root) / "receipts").glob("*.ots.bak"):
+        old.unlink()

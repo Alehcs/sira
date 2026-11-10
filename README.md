@@ -8,7 +8,7 @@ Built by Alejandro Cornejo (solo, Indie track) for the Meta Global AI Developer 
 
 Site: **https://alehcs.github.io/sira/** (the lab, Beat SIRA, the forecasts and the archive). Live ledger: the [`ledger`](https://github.com/Alehcs/sira/tree/ledger) branch.
 
-> Status: betting live every night since October 27, 2026. ZTF has sent no new data since October 29, 13:18 UTC; questions whose answer window falls in that gap are void by the sealed rule, reported and not counted.
+> Status: betting live every night since October 27, 2026. ZTF sent no data from October 29, 13:18 UTC, until November 2; questions whose answer window fell in that gap are void by the sealed rule, reported and not counted. Measurements the archive publishes late are scored when they arrive.
 
 ![How SIRA works](docs/diagram.svg)
 

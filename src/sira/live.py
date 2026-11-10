@@ -250,14 +250,16 @@ def resolve(ledger: Ledger, c, now: float, look=None, seals: dict | None = None,
     for bet in (e["payload"] for e in entries if e["kind"] == "bet"):
         last_day = max(f["mjd"] for f in bet["forecasts"])
         sealed = seals.get(bet["bet"])
-        # never score a bet that was not sealed, and stop once its window has closed
-        if sealed is None or now > last_day + 3:
+        # never score a bet that was not sealed; the archive can publish a night days late, so keep looking
+        if sealed is None:
             continue
         rows = [r for r in look(bet["object"], now)["photometry"]
                 if r["band"] in BANDS and sealed < r["mjd"] <= last_day + 1]
         for r in rows:
+            # the archive may list one epoch twice; a detection comes first, and only one counts
             if (bet["bet"], r["mjd"], r["band"]) in done:
                 continue
+            done.add((bet["bet"], r["mjd"], r["band"]))
             parts = _at(bet["forecasts"], r["mjd"], r["band"])
             # rounded first, so anyone can recompute the score from the ledger alone
             if r["kind"] == "det":
