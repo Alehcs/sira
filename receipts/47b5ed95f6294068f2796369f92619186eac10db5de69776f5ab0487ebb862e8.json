@@ -1,0 +1,1 @@
+{"kind":"event","payload":{"case":"case-220c532eb5","cost_usd":0,"decision":"pass","effort":null,"error":"BadRequestError","model":"meta-models/muse-spark-open-1026","object":"ZTF22abghbis","priority":0,"role":"lookout","seconds":0.2,"why":""},"prev":"4a5666f58947cb614dc4c23b7cc7bb40353a2e297e9708447cf048758674e339","seq":2708,"time":"2026-11-11T01:18:47+00:00","v":2}
